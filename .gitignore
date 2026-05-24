@@ -1,0 +1,7 @@
+generator/data/oddlua_stats.sqlite
+generator/backups/
+generator/reports/
+generator/dist/
+**/__pycache__/
+*.tmp
+*.log

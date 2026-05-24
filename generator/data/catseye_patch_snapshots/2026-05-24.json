@@ -1,0 +1,44 @@
+{
+  "sourceDate": "2026-05-24",
+  "snapshotName": "Aahtacos_30102 THF OddLua Task 4",
+  "localInstallPath": "C:\\Games\\CatsEyeXI\\catseyexi-client",
+  "catseyeSources": [
+    {
+      "kind": "local_gearexport",
+      "path": "C:\\Games\\CatsEyeXI\\catseyexi-client\\Ashita\\config\\addons\\gearexport\\Aahtacos_30102_gear.lua",
+      "usedFor": "Owned gear, item levels, item jobs, current gearexport metadata"
+    },
+    {
+      "kind": "local_character_snapshot",
+      "path": "C:\\Games\\CatsEyeXI\\catseyexi-client\\Ashita\\config\\addons\\gearexport\\Aahtacos_30102\\Aahtacos_30102_character.json",
+      "usedFor": "Aahtacos THF level and character-state eligibility"
+    },
+    {
+      "kind": "catseye_jobs",
+      "url": "https://www.bg-wiki.com/ffxi/CatsEyeXI_Systems/Jobs",
+      "usedFor": "Catseye THF job feature assumptions"
+    },
+    {
+      "kind": "official_patch_notes",
+      "url": "https://new.catseyexi.com/patch-notes",
+      "usedFor": "Catseye patch context for server-specific behavior"
+    }
+  ],
+  "knownThfFactsUsed": [
+    "THF has Dual Wield I at level 20 on Catseye.",
+    "THF has Dual Wield II at level 40 on Catseye.",
+    "THF has Assassin at level 50 on Catseye.",
+    "THF has Bully at level 60 on Catseye.",
+    "Aahtacos is treated as THF58 from the character snapshot, so Bully is not assumed.",
+    "Viper Bite is early enough to matter for THF dagger mode.",
+    "Wasp Sting and Viper Bite have increased damage on Catseye.",
+    "Treasure Hunter has Catseye-specific caps and proc behavior."
+  ],
+  "builderAssumptions": [
+    "Use CharacterSnapshot.job_level('THF') for THF level eligibility, not GearExport.currentJob.",
+    "Reject fishing, crafting, utility, travel, wrong-job, wrong-level, and wrong-weapon-family fallback gear from combat playstyles.",
+    "Preserve Melt kill speed for Treasure mode when no useful eligible Treasure Hunter gear exists.",
+    "Emit generated packs to OddLua/dist only; do not write into the live Catseye install."
+  ],
+  "confidence": "local_export_plus_committed_catseye_plan_snapshot"
+}

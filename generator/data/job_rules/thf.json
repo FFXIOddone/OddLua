@@ -1,0 +1,99 @@
+{
+  "job": "THF",
+  "sourceDate": "2026-05-24",
+  "rulesVersion": 1,
+  "sources": [
+    {
+      "kind": "local_character_snapshot",
+      "path": "C:\\Games\\CatsEyeXI\\catseyexi-client\\Ashita\\config\\addons\\gearexport\\Aahtacos_30102\\Aahtacos_30102_character.json"
+    },
+    {
+      "kind": "catseye_jobs",
+      "url": "https://www.bg-wiki.com/ffxi/CatsEyeXI_Systems/Jobs"
+    },
+    {
+      "kind": "official_patch_notes",
+      "url": "https://new.catseyexi.com/patch-notes"
+    }
+  ],
+  "catseyeFacts": [
+    "Dual Wield I at level 20",
+    "Dual Wield II at level 40",
+    "Assassin at level 50",
+    "Bully at level 60",
+    "Viper Bite obtained at 40 dagger skill",
+    "Wasp Sting and Viper Bite have increased damage on CatsEyeXI",
+    "Treasure Hunter has CatsEyeXI-specific caps and proc behavior"
+  ],
+  "levelSource": "CharacterSnapshot.job_level('THF')",
+  "defaultPlaystyle": "Melt",
+  "playstyles": [
+    {
+      "name": "Melt",
+      "command": "style melt",
+      "weaponFamily": "any",
+      "combatEnabled": true,
+      "priorityRoles": ["melee_offense", "accuracy", "str", "dex", "weapon_skill"],
+      "hardExclusions": ["Fishing", "Crafting", "Utility", "LevelIneligible", "WrongJob"],
+      "reason": "Default raw kill-speed style for Aahtacos THF58; longer-lived targets are worse."
+    },
+    {
+      "name": "Dagger",
+      "command": "style dagger",
+      "weaponFamily": "dagger",
+      "combatEnabled": true,
+      "priorityRoles": ["dagger_skill", "melee_offense", "accuracy", "dex", "weapon_skill"],
+      "hardExclusions": ["Fishing", "Crafting", "Utility", "LevelIneligible", "WrongJob", "WrongWeaponFamily"],
+      "reason": "Bias dagger-family skill and weapon skill fit without equipping level-ineligible gear."
+    },
+    {
+      "name": "Safe",
+      "command": "style safe",
+      "weaponFamily": "any",
+      "combatEnabled": true,
+      "priorityRoles": ["evasion", "defense", "agi", "accuracy", "melee_offense"],
+      "hardExclusions": ["Fishing", "Crafting", "Utility", "LevelIneligible", "WrongJob"],
+      "reason": "Prefer survival and evasion fallback when available."
+    },
+    {
+      "name": "Treasure",
+      "command": "style treasure",
+      "weaponFamily": "any",
+      "combatEnabled": true,
+      "priorityRoles": ["treasure", "farming", "melee_offense", "accuracy"],
+      "hardExclusions": ["Fishing", "Crafting", "Utility", "LevelIneligible", "WrongJob"],
+      "degradeWithoutUsefulGear": false,
+      "reason": "Use useful Treasure Hunter gear when present; otherwise fall back without reducing kill speed."
+    },
+    {
+      "name": "Craft",
+      "command": "style craft",
+      "weaponFamily": "none",
+      "combatEnabled": false,
+      "nonEngagedOnly": true,
+      "priorityRoles": ["crafting", "utility"],
+      "hardExclusions": ["Combat", "Engaged"],
+      "reason": "Crafting and utility gear is allowed only outside combat."
+    }
+  ],
+  "classificationRoles": [
+    "dagger",
+    "sword",
+    "weapon",
+    "armor",
+    "accessory",
+    "melee_offense",
+    "accuracy",
+    "dex",
+    "agi",
+    "str",
+    "evasion",
+    "defense",
+    "treasure",
+    "farming",
+    "crafting",
+    "fishing",
+    "utility"
+  ],
+  "confidence": "catseye_aware_local_contract"
+}
