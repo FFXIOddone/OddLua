@@ -2,7 +2,7 @@
 
 Default playstyle: `Melt`.
 
-The first THF pack is calibrated for Aahtacos from the Catseye export snapshot dated `2026-05-24`. The live gear export says the character is currently on `SAM75/WAR37`, but OddLua uses the character snapshot's THF level for THF eligibility. For this slice, Aahtacos is treated as `THF58`. Gear stat roles and scores are sourced from `OddLua/data/oddlua_stats.sqlite` when that generated database is available. That database is built from server SQL plus food item scripts, including gear modifiers, weapon damage/delay, augments, merits, traits, weapon skills, usable item data, and food stat boosts. Exact item-name hints are only a fallback for environments without server stats.
+The first THF pack is calibrated for Aahtacos from the Catseye export snapshot dated `2026-05-24`. The live gear export says the character is currently on `SAM75/WAR37`, but OddLua uses the character snapshot's THF level for THF eligibility. For this slice, Aahtacos is treated as `THF58`. Gear stat roles and scores are sourced from `OddLua/data/oddlua_stats.sqlite` when that generated database is available. That database is built from server SQL plus food item scripts, including gear modifiers, weapon damage/delay, augments, merits, traits, weapon skills, usable item data, Catseye equipment overrides, and food stat boosts. Exact item-name hint fallback is intentionally disabled; unresolved gear should remain empty or rejected until real table data exists.
 
 Catseye THF facts used by this builder:
 

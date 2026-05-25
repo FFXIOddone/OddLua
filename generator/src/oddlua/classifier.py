@@ -1,112 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Iterable
 
 from .gearexport import GearItem
-from .itemstats import ItemMod, ItemStatsIndex
-
-
-ARMOR_SLOTS = {"Head", "Body", "Hands", "Legs", "Feet"}
-ACCESSORY_SLOTS = {"Neck", "Ear1", "Ear2", "Ring1", "Ring2", "Back", "Waist"}
-WEAPON_SLOTS = {"Main", "Sub", "Range", "Ammo"}
-
-UTILITY_NAMES = {
-    "anniversary ring",
-    "chariot band",
-    "dcl.grd. ring",
-    "echad ring",
-    "emperor band",
-    "empress band",
-    "instant warp",
-    "sprinter's shoes",
-    "warp ring",
-}
-UTILITY_WORDS = ("teleport", "warp", "exp bonus", "experience point", "movement speed")
-FISHING_WORDS = ("fish", "fsh.", "fishing", "rod", "lure", "insect ball", "minnow", "bait")
-CRAFTING_WORDS = (
-    "artisan",
-    "bonewrk.",
-    "carpenter",
-    "clothcraft",
-    "craft",
-    "goldsmith",
-    "leathercraft",
-    "smithing",
-    "weaver",
-    "woodworking",
-)
-
-DAGGER_WORDS = ("baselard", "beestinger", "dagger", "dirk", "jambiya", "knife", "kris", "kukri", "pugio", "stiletto")
-SWORD_WORDS = ("blade", "epee", "falchion", "fleuret", "rapier", "saber", "sabre", "scimitar", "spatha", "sword", "tuck")
-CLUB_WORDS = ("club", "hammer", "mace", "maul", "wand")
-STAFF_WORDS = ("cane", "pole", "rod", "staff")
-HAND_TO_HAND_WORDS = ("baghnakhs", "cesti", "claws", "h2h", "knuckles", "patas")
-GREAT_AXE_WORDS = ("great axe", "greataxe", "labrys", "voulge")
-GREAT_SWORD_WORDS = ("claymore", "great sword", "greatsword", "zweihander")
-GREAT_KATANA_WORDS = ("great katana", "greatkatana", "nodachi", "odachi", "tachi")
-KATANA_WORDS = ("gatana", "katana", "kunai", "ninjato", "wakizashi")
-SCYTHE_WORDS = ("scythe", "sickle", "zaghnal")
-POLEARM_WORDS = ("glaive", "halberd", "lance", "partisan", "spear", "trident")
-AXE_WORDS = ("axe", "tabar", "tomahawk")
-BOW_WORDS = ("bow", "longbow", "shortbow")
-GUN_WORDS = ("arquebus", "bullet", "gun", "hexagun", "pistol", "rifle")
-THROWING_WORDS = ("boomerang", "chakram", "dart", "shuriken", "throwing")
-INSTRUMENT_WORDS = ("flute", "harp", "horn", "instrument", "lute")
-AMMO_WORDS = ("arrow", "bolt", "bullet", "cartridge", "quiver", "shot")
-STAT_ROLE_WORDS = {
-    "accuracy": ("accuracy", "acc+"),
-    "dex": ("dex", "dexterity"),
-    "agi": ("agi", "agility"),
-    "str": ("str", "strength"),
-    "evasion": ("evasion", "eva+"),
-}
-EXACT_ITEM_ROLE_HINTS = {
-    "acid kukri": ("accuracy",),
-    "corrosive kukri": ("accuracy",),
-    "life belt": ("accuracy",),
-    "peacock charm": ("accuracy",),
-    "sniper's mantle": ("accuracy",),
-    "sniper's ring": ("accuracy",),
-    "rajas ring": ("str", "dex"),
-    "spike necklace": ("str", "dex"),
-    "wing earring": ("dex", "agi"),
-    "brawn earring": ("str",),
-    "sun ring": ("str",),
-    "crow beret": ("evasion",),
-    "crow bracers": ("evasion",),
-    "crow hose": ("evasion",),
-    "crow jupon": ("evasion",),
-    "dodge earring": ("evasion",),
-    "eris' earring": ("evasion",),
-    "noct brais": ("agi", "evasion"),
-    "noct gaiters": ("agi", "evasion"),
-}
-TREASURE_WORDS = ("assassin's armlets", "raider", "rogue", "thief's knife", "treasure hunter", "vajra")
-NON_STAT_RAW_KEYS = {
-    "id",
-    "name",
-    "count",
-    "level",
-    "slot",
-    "slots",
-    "slot_mask",
-    "category",
-    "jobs",
-    "job_mask",
-    "container",
-    "container_id",
-    "storage",
-    "index",
-    "flags",
-    "stack",
-    "extra",
-    "augment_type",
-    "augment_path",
-    "augment_rank",
-    "augment_trial",
-    "augment_trial_complete",
-}
+from .itemstats import EquipmentStats, ItemMod, ItemStatsIndex
 
 
 @dataclass(frozen=True)
@@ -122,14 +20,28 @@ class ClassifiedItem:
     confidence: str
     confidence_score: float
     server_mods: tuple[tuple[str, int], ...]
+    pet_server_mods: tuple[tuple[str, int], ...]
+    server_level: int | None
+    server_jobs_mask: int | None
+    server_slot_mask: int | None
+    server_removal_slot_mask: int | None
 
     def level_eligible(self, character_level: int) -> bool:
-        if character_level <= 0:
-            return False
-        return self.item.level <= 0 or self.item.level <= character_level
+        if self.server_level is not None:
+            return character_level > 0 and (self.server_level <= 0 or self.server_level <= character_level)
+        return False
 
     def job_eligible(self, job: str) -> bool:
-        return self.item.has_job(job)
+        equipment = self._server_equipment_view()
+        if equipment is not None:
+            return equipment.job_eligible(job)
+        return False
+
+    def slot_eligible(self, slot: str) -> bool:
+        equipment = self._server_equipment_view()
+        if equipment is not None:
+            return equipment.has_slot(slot)
+        return False
 
     def manifest_metadata(self) -> dict[str, object]:
         return {
@@ -144,7 +56,26 @@ class ClassifiedItem:
             "confidence": self.confidence,
             "confidenceScore": self.confidence_score,
             "serverMods": dict(self.server_mods),
+            "petServerMods": dict(self.pet_server_mods),
+            "serverLevel": self.server_level,
+            "serverJobsMask": self.server_jobs_mask,
+            "serverSlotMask": self.server_slot_mask,
+            "serverRemovalSlotMask": self.server_removal_slot_mask,
         }
+
+    def _server_equipment_view(self) -> EquipmentStats | None:
+        if self.server_level is None or self.server_jobs_mask is None or self.server_slot_mask is None:
+            return None
+        return EquipmentStats(
+            item_id=self.item.id,
+            name=self.item.name,
+            level=self.server_level,
+            ilevel=0,
+            jobs=self.server_jobs_mask,
+            shield_size=0,
+            slot_mask=self.server_slot_mask,
+            removal_slot_mask=self.server_removal_slot_mask or 0,
+        )
 
 
 def classify_items(
@@ -160,11 +91,14 @@ def classify_item(
     *,
     item_stats: ItemStatsIndex | None = None,
 ) -> ClassifiedItem:
-    slot_family = slot_family_for(item)
-    weapon_family = weapon_family_for(item)
-    search_text = _search_text(item)
-    excluded, exclusion_reason = _exclusion(search_text)
+    server_equipment = _server_equipment_for(item, item_stats)
+    slot_family = slot_family_for(item, item_stats=item_stats)
+    weapon_family = weapon_family_for(item, item_stats=item_stats)
+    excluded = False
+    exclusion_reason = ""
     server_mods = _server_mods_for(item, item_stats)
+    pet_server_mods = _server_pet_mods_for(item, item_stats)
+    server_weapon_family_reason = _server_weapon_family_reason(item, item_stats, weapon_family)
 
     roles: list[str] = []
     reasons: list[str] = []
@@ -173,6 +107,8 @@ def classify_item(
         roles.extend(_excluded_roles(exclusion_reason))
         reasons.append(exclusion_reason)
     else:
+        if server_weapon_family_reason:
+            reasons.append(server_weapon_family_reason)
         if slot_family in {"weapon", "armor", "accessory"}:
             roles.append("combat")
         if slot_family == "weapon" and weapon_family not in {"fishing_rod", "fishing_ammo", "unknown"}:
@@ -195,20 +131,17 @@ def classify_item(
             reasons.append("Ranged weapon or ammunition")
         if slot_family == "armor":
             roles.append("defense")
-        stat_roles, stat_reasons = _stat_roles_for(item, item_stats, server_mods)
+        stat_roles, stat_reasons = _stat_roles_for(item, item_stats, server_mods, pet_server_mods)
         roles.extend(stat_roles)
         reasons.extend(stat_reasons)
         if "evasion" in stat_roles:
             roles.append("defense")
             reasons.append("Evasion or survival item")
-        if _contains_any(search_text, TREASURE_WORDS):
-            roles.extend(("treasure", "farming"))
-            reasons.append("Treasure Hunter or farming item")
 
     roles_tuple = _unique(roles)
     tags = _tags(slot_family, weapon_family, roles_tuple, exclusion_reason)
     if not reasons:
-        reasons.append("Rule-based local gearexport classification")
+        reasons.append("Server-data classification found no weighted combat evidence")
 
     return ClassifiedItem(
         item=item,
@@ -219,90 +152,48 @@ def classify_item(
         excluded=excluded,
         exclusion_reason=exclusion_reason,
         reasons=tuple(reasons),
-        confidence="rule_based_local_gearexport",
-        confidence_score=0.8 if not excluded else 0.9,
+        confidence="server_data_tables",
+        confidence_score=0.95 if item_stats is not None else 0.0,
         server_mods=tuple((mod.name, mod.value) for mod in server_mods),
+        pet_server_mods=tuple((mod.name, mod.value) for mod in pet_server_mods),
+        server_level=server_equipment.level if server_equipment else None,
+        server_jobs_mask=server_equipment.jobs if server_equipment else None,
+        server_slot_mask=server_equipment.slot_mask if server_equipment else None,
+        server_removal_slot_mask=server_equipment.removal_slot_mask if server_equipment else None,
     )
 
 
-def slot_family_for(item: GearItem) -> str:
-    category = item.category.lower()
-    if "craft" in category or "fishing" in category:
-        return "utility"
-    if "weapon" in category:
-        return "weapon"
-    if "armor" in category:
-        return "armor"
-    if "accessory" in category:
-        return "accessory"
-
-    slots = set(_split_slots(item.slot))
-    if slots & WEAPON_SLOTS:
-        return "weapon"
-    if slots & ARMOR_SLOTS:
-        return "armor"
-    if slots & ACCESSORY_SLOTS:
-        return "accessory"
+def slot_family_for(
+    item: GearItem,
+    *,
+    item_stats: ItemStatsIndex | None = None,
+) -> str:
+    if item_stats is not None:
+        equipment = item_stats.equipment_for_item_id(item.id)
+        if equipment is not None:
+            return equipment.slot_family()
+        if item_stats.weapon_stats_for_item_id(item.id) is not None:
+            return "weapon"
     return "unknown"
 
 
-def weapon_family_for(item: GearItem) -> str:
-    text = _search_text(item)
-    slot_text = item.slot.lower()
-    if "ammo" in slot_text and _contains_any(text, AMMO_WORDS):
-        return "ammo"
-    if _contains_any(text, ("lure", "insect ball", "bait", "minnow")) and "ammo" in item.slot.lower():
-        return "fishing_ammo"
-    if "rod" in text and ("range" in item.slot.lower() or "fishing" in text):
-        return "fishing_rod"
-    if "grip" in text:
-        return "grip"
-    if "shield" in text:
-        return "shield"
-    if _contains_any(text, INSTRUMENT_WORDS):
-        return "instrument"
-    if _contains_any(text, HAND_TO_HAND_WORDS):
-        return "hand_to_hand"
-    if _contains_any(text, DAGGER_WORDS):
-        return "dagger"
-    if _contains_any(text, GREAT_AXE_WORDS):
-        return "great_axe"
-    if _contains_any(text, GREAT_SWORD_WORDS):
-        return "great_sword"
-    if _contains_any(text, GREAT_KATANA_WORDS):
-        return "great_katana"
-    if _contains_any(text, KATANA_WORDS):
-        return "katana"
-    if _contains_any(text, SCYTHE_WORDS):
-        return "scythe"
-    if _contains_any(text, POLEARM_WORDS):
-        return "polearm"
-    if _contains_any(text, SWORD_WORDS):
-        return "sword"
-    if _contains_any(text, CLUB_WORDS):
-        return "club"
-    if _contains_any(text, STAFF_WORDS):
-        return "staff"
-    if _contains_any(text, AXE_WORDS):
-        return "axe"
-    if _contains_any(text, BOW_WORDS):
-        return "bow"
-    if _contains_any(text, GUN_WORDS):
-        return "gun"
-    if _contains_any(text, THROWING_WORDS):
-        return "throwing"
+def weapon_family_for(
+    item: GearItem,
+    *,
+    item_stats: ItemStatsIndex | None = None,
+) -> str:
+    if item_stats is not None:
+        server_family = item_stats.weapon_family_for_item_id(item.id)
+        if server_family:
+            return server_family
+        equipment = item_stats.equipment_for_item_id(item.id)
+        weapon_stats = item_stats.weapon_stats_for_item_id(item.id)
+        if equipment is not None and equipment.has_slot("Sub"):
+            if equipment.shield_size > 0:
+                return "shield"
+            if weapon_stats is not None and weapon_stats.skill == 0:
+                return "grip"
     return "unknown"
-
-
-def _exclusion(search_text: str) -> tuple[bool, str]:
-    name = search_text.split("\n", 1)[0]
-    if name in UTILITY_NAMES or _contains_any(search_text, UTILITY_WORDS):
-        return True, "Utility"
-    if _contains_any(search_text, FISHING_WORDS):
-        return True, "Fishing"
-    if _contains_any(search_text, CRAFTING_WORDS):
-        return True, "Crafting"
-    return False, ""
 
 
 def _excluded_roles(exclusion_reason: str) -> tuple[str, ...]:
@@ -319,14 +210,14 @@ def _stat_roles_for(
     item: GearItem,
     item_stats: ItemStatsIndex | None,
     server_mods: tuple[ItemMod, ...],
+    pet_server_mods: tuple[ItemMod, ...],
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     roles: list[str] = []
     reasons: list[str] = []
     explicit_roles: list[str] = []
-    stat_text = _stat_text(item)
 
     if item_stats is not None:
-        roles.extend(item_stats.role_names_for_mods(server_mods))
+        roles.extend(item_stats.role_names_for_mods(server_mods + pet_server_mods))
         if server_mods:
             role_text = ", ".join(
                 f"{mod.name}{mod.value:+d}"
@@ -335,20 +226,14 @@ def _stat_roles_for(
             )
             if role_text:
                 reasons.append(f"Server item_mods: {role_text}")
-
-    for role, words in STAT_ROLE_WORDS.items():
-        if _contains_any(stat_text, words):
-            explicit_roles.append(role)
-
-    roles.extend(explicit_roles)
-    if explicit_roles:
-        reasons.append("Explicit stat evidence: " + ", ".join(_unique(explicit_roles)))
-
-    if item_stats is None:
-        hinted_roles = EXACT_ITEM_ROLE_HINTS.get(item.name.lower(), tuple())
-        if hinted_roles:
-            roles.extend(hinted_roles)
-            reasons.append(f"Exact item role hint: {item.name}")
+        if pet_server_mods:
+            role_text = ", ".join(
+                f"{mod.name}{mod.value:+d}"
+                for mod in pet_server_mods
+                if mod.value != 0
+            )
+            if role_text:
+                reasons.append(f"Server item_mods_pet: {role_text}")
 
     return _unique(roles), tuple(reasons)
 
@@ -362,6 +247,37 @@ def _server_mods_for(
     return item_stats.mods_for_item_id(item.id)
 
 
+def _server_pet_mods_for(
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+) -> tuple[ItemMod, ...]:
+    if item_stats is None:
+        return tuple()
+    return item_stats.pet_mods_for_item_id(item.id)
+
+
+def _server_equipment_for(
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+) -> EquipmentStats | None:
+    if item_stats is None:
+        return None
+    return item_stats.equipment_for_item_id(item.id)
+
+
+def _server_weapon_family_reason(
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+    weapon_family: str,
+) -> str:
+    if item_stats is None or weapon_family == "unknown":
+        return ""
+    weapon_stats = item_stats.weapon_stats_for_item_id(item.id)
+    if weapon_stats is None:
+        return ""
+    return f"Server item_weapon skill {weapon_stats.skill} identifies {weapon_family} family."
+
+
 def _tags(slot_family: str, weapon_family: str, roles: tuple[str, ...], exclusion_reason: str) -> tuple[str, ...]:
     tags = [f"slot:{slot_family}"]
     if weapon_family != "unknown":
@@ -370,41 +286,6 @@ def _tags(slot_family: str, weapon_family: str, roles: tuple[str, ...], exclusio
     if exclusion_reason:
         tags.append(f"exclude:{exclusion_reason}")
     return tuple(tags)
-
-
-def _search_text(item: GearItem) -> str:
-    fields: list[str] = [item.name.lower(), item.category.lower(), item.augment_text.lower()]
-    for key, value in item.raw_stats.items():
-        if key in {"jobs", "job_mask", "container", "container_id", "index", "extra"}:
-            continue
-        fields.append(str(key).lower())
-        fields.append(_raw_value_text(value))
-    return "\n".join(field for field in fields if field)
-
-
-def _stat_text(item: GearItem) -> str:
-    fields: list[str] = [item.augment_text.lower()]
-    for key, value in item.raw_stats.items():
-        normalized_key = str(key).lower()
-        if normalized_key in NON_STAT_RAW_KEYS:
-            continue
-        fields.append(normalized_key)
-        fields.append(_raw_value_text(value))
-    return "\n".join(field for field in fields if field)
-
-
-def _raw_value_text(value: Any) -> str:
-    if value is None:
-        return ""
-    return str(value).lower()
-
-
-def _split_slots(slot: str) -> tuple[str, ...]:
-    return tuple(part.strip() for part in slot.split("/") if part.strip())
-
-
-def _contains_any(text: str, needles: Iterable[str]) -> bool:
-    return any(needle in text for needle in needles)
 
 
 def _unique(values: Iterable[str]) -> tuple[str, ...]:

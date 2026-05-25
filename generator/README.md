@@ -10,7 +10,11 @@ Build the stats database from the repository root:
 powershell -ExecutionPolicy Bypass -File .\OddLua\Build-OddLuaStatsDb.ps1
 ```
 
-That command writes `OddLua\data\oddlua_stats.sqlite` with gear modifiers, weapon damage/delay, augments, merits, traits, weapon skills, usable item data, mob resist/profile tables, and food stat boosts parsed from `server\scripts\items`. The builder scores eligible owned gear from those stats; hard-coded item preferences are not used for combat set selection.
+That command writes `OddLua\data\oddlua_stats.sqlite` with gear modifiers, conditional item latents, pet gear modifiers, weapon damage/delay, augments, merits, traits, abilities, spells, status effects, weapon skills, usable item data, mob resist/profile tables, and food stat boosts parsed from `server\scripts\items`. The builder scores eligible owned gear from those stats and records the mechanics surfaces used by each playstyle; hard-coded item preferences are not used for combat set selection.
+
+If the running Catseye client has produced a `*_client_items.json` dump with `/gearexport resources`, the stats builder also imports the newest dump under `C:\Games\CatsEyeXI\catseyexi-client\Ashita\config\addons\gearexport`. Client resource data is used as the authoritative Catseye source for item level, job mask, slot mask, and basic weapon damage/delay. Server SQL remains the default source for item mods, food effects, augments, merits, traits, and scripts, but explicit Catseye wiki equipment stat overrides are imported from broad page scans when the page text gives a concrete stat value for an exact item-name match.
+
+Generated Lua profiles also include a level-37 subjob model for every viable subjob on that main job. The profile exports `profile.Subjobs`, `profile.HasSubjobCapability(...)`, and `/lac fwd subjob`, `/lac fwd subjob traits`, `/lac fwd subjob spells`, and `/lac fwd subjob abilities` so live testing can confirm things like `/NIN` shadows, Dual Wield ranks, `/DNC` waltzes, `/WAR` Provoke, or `/SCH` stratagems from the Catseye stats database.
 
 Build the first pack from the repository root:
 
