@@ -38,7 +38,7 @@ VIABLE_SUBJOBS_BY_MAIN_JOB = {
     "MNK": ("WAR", "NIN", "DNC", "THF", "SAM"),
     "WHM": ("SCH", "RDM", "BLM", "SMN", "NIN"),
     "BLM": ("RDM", "WHM", "SCH", "NIN", "SMN"),
-    "RDM": ("NIN", "SCH", "WHM", "BLM", "DNC", "WAR"),
+    "RDM": ("NIN", "THF", "SCH", "WHM", "BLM", "DNC", "WAR"),
     "THF": ("NIN", "WAR", "DNC", "RNG", "SAM"),
     "PLD": ("WAR", "NIN", "RDM", "DNC", "WHM", "BLU"),
     "DRK": ("SAM", "WAR", "NIN", "THF", "DNC", "WHM"),
@@ -64,14 +64,14 @@ BASE_CAPABILITIES_BY_SUBJOB = {
     "WHM": ("cure", "status_removal", "protect_shell", "sneak_invisible"),
     "BLM": ("elemental_magic", "warp", "sleep", "magic_burst"),
     "RDM": ("fast_cast", "cure", "enfeeble", "enhancing", "sneak_invisible"),
-    "THF": ("sneak_attack", "treasure_hunter", "evasion", "flee"),
+    "THF": ("sneak_attack", "treasure_hunter", "evasion", "flee", "dual_wield"),
     "PLD": ("sentinel", "shield", "cure", "defense_boost"),
     "DRK": ("last_resort", "souleater", "dark_magic", "attack_boost"),
     "BST": ("charm", "reward", "pet_utility"),
     "BRD": ("song", "support", "resist_status"),
     "RNG": ("ranged_accuracy", "sharpshot", "scavenge"),
     "SAM": ("store_tp", "meditate", "third_eye", "weapon_skill"),
-    "NIN": ("dual_wield", "shadows", "ninjutsu", "subtle_blow"),
+    "NIN": ("dual_wield", "shadows", "ninjutsu", "subtle_blow", "daken"),
     "DRG": ("jump", "attack_bonus", "accuracy_bonus"),
     "SMN": ("auto_refresh", "avatar_support", "mp_sustain"),
     "BLU": ("cocoon", "blue_utility", "healing_breeze", "wild_carrot"),
@@ -310,6 +310,8 @@ def _derive_capabilities(
 
     if "DUAL_WIELD" in trait_names:
         capabilities.append("dual_wield")
+    if "DAKEN" in trait_names:
+        capabilities.append("daken")
     if any(name.startswith("utsusemi_") for name in spell_names):
         capabilities.append("shadows")
     if any(name.startswith("cure") for name in spell_names):

@@ -2,23 +2,38 @@ local profile = {};
 
 local state = {
     Playstyle = 'Damage',
+    NumberRowPaletteEnabled = true,
     WarpRingLocked = false,
-    WarpUsePending = false,
-    WarpClearPending = false,
-    WarpUseAt = nil,
-    WarpClearAt = nil,
+    SecondarySlotLocks = {},
+    SecondarySlotLockContextSetNames = nil,
+    MechanicsProbes = false,
+    MechanicsExecution = false,
+    ReconcileEnabled = true,
+    ReconcileSnapshotSeq = 0,
+    ReconcilePendingSnapshot = nil,
+    ReconcileScanScheduled = false,
+    ReconcileScanToken = 0,
+    ReconcileLastRecordedSignature = nil,
+    ReconcileLast = nil,
+    ReconcileLogDirectoryReady = false,
+    ReconcileLastWriteError = nil,
+    StableEquipForcePending = false,
+    OddLuaRefreshPending = false,
+    OddLuaRefreshLastStatus = 'none',
+
 };
 
 local sets = {
     Playstyle_Damage = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -28,14 +43,15 @@ local sets = {
     },
 
     Playstyle_Accuracy = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -45,48 +61,51 @@ local sets = {
     },
 
     Playstyle_WeaponSkill = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
         Head = 'Conqueror\'s Helm',
         Neck = 'Moepapa Medal',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Suppanomimi',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Venture Ring',
         Ring2 = 'Portus Annulet',
-        Back = 'Oneiros Cappa',
+        Back = 'Ram Mantle',
         Waist = 'Warwolf Belt',
         Legs = 'Republic Subligar',
         Feet = 'Adsilio Boots +1',
     },
 
     Playstyle_DrainAbsorb = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Damage = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -96,14 +115,15 @@ local sets = {
     },
 
     Accuracy = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -113,50 +133,50 @@ local sets = {
     },
 
     WeaponSkill = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
         Head = 'Conqueror\'s Helm',
         Neck = 'Moepapa Medal',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Suppanomimi',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Venture Ring',
         Ring2 = 'Portus Annulet',
-        Back = 'Oneiros Cappa',
+        Back = 'Ram Mantle',
         Waist = 'Warwolf Belt',
         Legs = 'Republic Subligar',
         Feet = 'Adsilio Boots +1',
     },
 
     DrainAbsorb = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Idle = {
         Main = 'Terra\'s Staff',
-        Sub = 'Raptor Strap +1',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
         Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Colossus\'s Earring',
-        Ear2 = 'Relaxing Earring',
         Body = 'Darksteel Harness',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
+        Hands = 'Homam Manopolas',
         Back = 'Colossus\'s Mantle',
         Waist = 'Hierarch Belt',
         Legs = 'Darksteel Subligar',
@@ -165,19 +185,24 @@ local sets = {
 
     Resting = {
         Main = 'Chatoyant Staff',
-        Sub = 'Raptor Strap +1',
-        Head = 'Faerie Hairpin',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Relaxing Earring',
-        Ear2 = 'Loquac. Earring',
+        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
-        Back = 'Colossus\'s Mantle',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Ram Mantle',
         Waist = 'Hierarch Belt',
         Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
+    },
+
+    InCity = {
+        Legs = 'Blood Cuisses',
     },
 
     Movement = {
@@ -198,15 +223,13 @@ local sets = {
 
     Aftercast = {
         Main = 'Terra\'s Staff',
-        Sub = 'Raptor Strap +1',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
         Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Colossus\'s Earring',
-        Ear2 = 'Relaxing Earring',
         Body = 'Darksteel Harness',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
+        Hands = 'Homam Manopolas',
         Back = 'Colossus\'s Mantle',
         Waist = 'Hierarch Belt',
         Legs = 'Darksteel Subligar',
@@ -216,16 +239,16 @@ local sets = {
     PDT = {
         Main = 'Terra\'s Staff',
         Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Abyss Burgeonet',
         Neck = 'Ryl.Sqr. Collar',
         Ear1 = 'Colossus\'s Earring',
         Ear2 = 'Pagondas Earring',
         Body = 'Darksteel Harness',
-        Hands = 'Swift Gages',
+        Hands = 'Homam Manopolas',
         Ring1 = 'Alert Ring',
         Ring2 = 'Corneus Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Warwolf Belt',
+        Waist = 'Marid Belt',
         Legs = 'Darksteel Subligar',
         Feet = 'Dst. Leggings',
     },
@@ -233,18 +256,18 @@ local sets = {
     MDT = {
         Main = 'Chatoyant Staff',
         Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Walahra Turban',
         Neck = 'Colossus\'s Torque',
         Ear1 = 'Star Earring',
         Ear2 = 'Green Earring',
         Body = 'Scp. Harness +1',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Homam Manopolas',
         Ring1 = 'Emerald Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Warwolf Belt',
+        Waist = 'Marid Belt',
         Legs = 'Blood Cuisses',
-        Feet = 'Blood Greaves',
+        Feet = 'Homam Gambieras',
     },
 
     Crafting = {
@@ -267,14 +290,15 @@ local sets = {
     },
 
     TP = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -286,29 +310,30 @@ local sets = {
     Hybrid = {
         Main = 'Terra\'s Staff',
         Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Abyss Burgeonet',
         Neck = 'Ryl.Sqr. Collar',
         Ear1 = 'Colossus\'s Earring',
         Ear2 = 'Pagondas Earring',
         Body = 'Darksteel Harness',
-        Hands = 'Swift Gages',
+        Hands = 'Homam Manopolas',
         Ring1 = 'Alert Ring',
         Ring2 = 'Corneus Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Warwolf Belt',
+        Waist = 'Marid Belt',
         Legs = 'Darksteel Subligar',
         Feet = 'Dst. Leggings',
     },
 
     TPAccuracy = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Reign Grip',
+        Ammo = 'Bomb Core',
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Portus Annulet',
         Ring2 = 'Sniper\'s Ring',
         Back = 'Accura Cape',
@@ -318,16 +343,15 @@ local sets = {
     },
 
     Precast = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -335,16 +359,15 @@ local sets = {
     },
 
     FastCast = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -352,14 +375,15 @@ local sets = {
     },
 
     Midcast = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -370,13 +394,14 @@ local sets = {
 
     Cure = {
         Main = 'Chatoyant Staff',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Loquac. Earring',
         Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Alucinor Mitts',
         Ring1 = 'Karka Ring',
         Ring2 = 'Aqua Ring',
         Back = 'Colossus\'s Mantle',
@@ -387,13 +412,14 @@ local sets = {
 
     Healing = {
         Main = 'Chatoyant Staff',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Loquac. Earring',
         Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Alucinor Mitts',
         Ring1 = 'Karka Ring',
         Ring2 = 'Aqua Ring',
         Back = 'Colossus\'s Mantle',
@@ -403,16 +429,15 @@ local sets = {
     },
 
     Enhancing = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -420,16 +445,15 @@ local sets = {
     },
 
     EnhancingDuration = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -438,13 +462,14 @@ local sets = {
 
     Stoneskin = {
         Main = 'Chatoyant Staff',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Loquac. Earring',
         Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Alucinor Mitts',
         Ring1 = 'Karka Ring',
         Ring2 = 'Aqua Ring',
         Back = 'Colossus\'s Mantle',
@@ -455,15 +480,13 @@ local sets = {
 
     Refresh = {
         Main = 'Terra\'s Staff',
-        Sub = 'Raptor Strap +1',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
         Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Colossus\'s Earring',
-        Ear2 = 'Relaxing Earring',
         Body = 'Darksteel Harness',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
+        Hands = 'Homam Manopolas',
         Back = 'Colossus\'s Mantle',
         Waist = 'Hierarch Belt',
         Legs = 'Darksteel Subligar',
@@ -472,13 +495,14 @@ local sets = {
 
     Regen = {
         Main = 'Chatoyant Staff',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Loquac. Earring',
         Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Alucinor Mitts',
         Ring1 = 'Karka Ring',
         Ring2 = 'Aqua Ring',
         Back = 'Colossus\'s Mantle',
@@ -488,16 +512,15 @@ local sets = {
     },
 
     SneakInvisible = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -507,48 +530,47 @@ local sets = {
     Barspell = {
         Main = 'Chatoyant Staff',
         Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Walahra Turban',
         Neck = 'Colossus\'s Torque',
         Ear1 = 'Star Earring',
         Ear2 = 'Green Earring',
         Body = 'Scp. Harness +1',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Homam Manopolas',
         Ring1 = 'Emerald Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Warwolf Belt',
+        Waist = 'Marid Belt',
         Legs = 'Blood Cuisses',
-        Feet = 'Blood Greaves',
+        Feet = 'Homam Gambieras',
     },
 
     Phalanx = {
         Main = 'Chatoyant Staff',
         Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Walahra Turban',
         Neck = 'Colossus\'s Torque',
         Ear1 = 'Star Earring',
         Ear2 = 'Green Earring',
         Body = 'Scp. Harness +1',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Homam Manopolas',
         Ring1 = 'Emerald Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Warwolf Belt',
+        Waist = 'Marid Belt',
         Legs = 'Blood Cuisses',
-        Feet = 'Blood Greaves',
+        Feet = 'Homam Gambieras',
     },
 
     Aquaveil = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -556,16 +578,15 @@ local sets = {
     },
 
     Haste = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -573,14 +594,15 @@ local sets = {
     },
 
     Enfeebling = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -590,14 +612,15 @@ local sets = {
     },
 
     Sleep = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -607,14 +630,15 @@ local sets = {
     },
 
     Bind = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -624,14 +648,15 @@ local sets = {
     },
 
     Gravity = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -641,14 +666,15 @@ local sets = {
     },
 
     Silence = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -658,14 +684,15 @@ local sets = {
     },
 
     Slow = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -675,14 +702,15 @@ local sets = {
     },
 
     Paralyze = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -692,14 +720,15 @@ local sets = {
     },
 
     Blind = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -709,14 +738,15 @@ local sets = {
     },
 
     Dispel = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -726,14 +756,15 @@ local sets = {
     },
 
     Dia = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -743,31 +774,33 @@ local sets = {
     },
 
     Bio = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Divine = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -777,99 +810,105 @@ local sets = {
     },
 
     Elemental = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Nuke = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     DarkMagic = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     DrainAspir = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Absorb = {
-        Main = 'Chatoyant Staff',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Bomb Core',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Loquac. Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Venture Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
+        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Stun = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Novio Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Karka Ring',
         Ring2 = 'Insect Ring',
         Back = 'Colossus\'s Mantle',
@@ -878,202 +917,16 @@ local sets = {
         Feet = 'Mountain Gaiters',
     },
 
-    BlueMagic = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Portus Annulet',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Oneiros Cappa',
-        Waist = 'Headlong Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    PhysicalBlueMagic = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Portus Annulet',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Oneiros Cappa',
-        Waist = 'Headlong Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    MagicalBlueMagic = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Aife\'s Medal',
-        Ear1 = 'Novio Earring',
-        Ear2 = 'Moldavite Earring',
-        Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
-        Ring1 = 'Snow Ring',
-        Ring2 = 'Zircon Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Magic Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    Song = {
-        Main = 'Stormblade',
-        Sub = 'Reign Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Flower Necklace',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Loquac. Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Insect Ring',
-        Ring2 = 'Pearl Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    SongDebuff = {
-        Main = 'Stormblade',
-        Sub = 'Reign Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Flower Necklace',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Loquac. Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Insect Ring',
-        Ring2 = 'Pearl Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    SongBuff = {
-        Main = 'Stormblade',
-        Sub = 'Reign Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Flower Necklace',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Loquac. Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Insect Ring',
-        Ring2 = 'Pearl Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    Geomancy = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Aife\'s Medal',
-        Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Karka Ring',
-        Ring2 = 'Tamas Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    Summoning = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Faerie Hairpin',
-        Neck = 'Beak Necklace',
-        Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    BloodPactRage = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Faerie Hairpin',
-        Neck = 'Beak Necklace',
-        Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Hierarch Belt',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    BloodPactWard = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Faerie Hairpin',
-        Neck = 'Beak Necklace',
-        Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    AvatarPerp = {
-        Main = 'Crimson Blade',
-        Sub = 'Omni Grip',
-        Head = 'Faerie Hairpin',
-        Neck = 'Beak Necklace',
-        Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Mana Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Hierarch Belt',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
     Ninjutsu = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Morion Tathlum',
+        Head = 'Walahra Turban',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Incubus Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Snow Ring',
         Ring2 = 'Insect Ring',
         Waist = 'Headlong Belt',
@@ -1082,16 +935,15 @@ local sets = {
     },
 
     Utsusemi = {
-        Main = 'Crimson Blade',
-        Sub = 'Raptor Strap +1',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Walahra Turban',
         Neck = 'Beak Necklace',
         Ear1 = 'Loquac. Earring',
-        Ear2 = 'Star Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Succor Ring',
-        Ring2 = 'Tamas Ring',
+        Hands = 'Swift Gages',
+        Ring1 = 'Tamas Ring',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
@@ -1099,14 +951,15 @@ local sets = {
     },
 
     NinjutsuEnfeeble = {
-        Main = 'Stormblade',
+        Main = 'Xbalanque',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Morion Tathlum',
+        Head = 'Walahra Turban',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Incubus Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Snow Ring',
         Ring2 = 'Insect Ring',
         Waist = 'Headlong Belt',
@@ -1114,183 +967,60 @@ local sets = {
         Feet = 'Homam Gambieras',
     },
 
-    Snapshot = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    RangedPreshot = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    Ranged = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    RangedMidshot = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    RangedAccuracy = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    RangedAttack = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Suppanomimi',
-        Ear2 = 'Titanis Earring',
-        Body = 'Phobos\'s Cuirass',
-        Hands = 'Swift Gages',
-        Ring1 = 'Blobnag Ring',
-        Ring2 = 'Marksman\'s Ring',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    QuickDraw = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Moepapa Medal',
-        Ear1 = 'Novio Earring',
-        Ear2 = 'Moldavite Earring',
-        Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
-        Ring1 = 'Blobnag Ring',
-        Ring2 = 'Emerald Ring',
-        Waist = 'Salire Belt',
-        Legs = 'Ryl.Sqr. Breeches',
-        Feet = 'Adsilio Boots +1',
-    },
-
     Weaponskill = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
         Head = 'Conqueror\'s Helm',
         Neck = 'Moepapa Medal',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Suppanomimi',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Venture Ring',
         Ring2 = 'Portus Annulet',
-        Back = 'Oneiros Cappa',
+        Back = 'Ram Mantle',
         Waist = 'Warwolf Belt',
         Legs = 'Republic Subligar',
         Feet = 'Adsilio Boots +1',
     },
 
     WeaponSkillAccuracy = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
         Head = 'Conqueror\'s Helm',
         Neck = 'Moepapa Medal',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Suppanomimi',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Venture Ring',
         Ring2 = 'Portus Annulet',
-        Back = 'Oneiros Cappa',
+        Back = 'Ram Mantle',
         Waist = 'Warwolf Belt',
         Legs = 'Republic Subligar',
         Feet = 'Adsilio Boots +1',
     },
 
     WSElemental = {
-        Main = 'Stormblade',
-        Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     JobAbility = {
-        Main = 'Stormblade',
-        Sub = 'Wivre Shield',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Xbalanque',
+        Sub = 'Raptor Strap +1',
+        Head = 'Walahra Turban',
         Neck = 'Bird Whistle',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Colossus\'s Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Corneus Ring',
         Ring2 = 'Portus Annulet',
         Back = 'Colossus\'s Mantle',
@@ -1300,618 +1030,2360 @@ local sets = {
     },
 
     Enmity = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
+        Main = 'Suzaku\'s Scythe',
+        Sub = 'Raptor Strap +1',
+        Head = 'Walahra Turban',
         Neck = 'Bird Whistle',
         Ear1 = 'Incubus Earring',
         Ear2 = 'Colossus\'s Earring',
         Body = 'Blood Scale Mail',
-        Hands = 'Alucinor Mitts',
+        Hands = 'Swift Gages',
         Ring1 = 'Corneus Ring',
         Ring2 = 'Portus Annulet',
         Back = 'Colossus\'s Mantle',
         Waist = 'Headlong Belt',
         Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    Waltz = {
-        Main = 'Stormblade',
-        Sub = 'Iron Ram Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Bird Whistle',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Mythril Earring',
-        Body = 'Scp. Harness +1',
-        Hands = 'Swift Gages',
-        Ring1 = 'Corneus Ring',
-        Ring2 = 'Portus Ring',
-        Back = 'Oneiros Cappa',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    Steps = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Portus Annulet',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Headlong Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    Samba = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Portus Annulet',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Headlong Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    Jump = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Stormblade',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Brutal Earring',
-        Body = 'Homam Corazza',
-        Hands = 'Alucinor Mitts',
-        Ring1 = 'Portus Annulet',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Accura Cape',
-        Waist = 'Headlong Belt',
-        Legs = 'Homam Cosciales',
-        Feet = 'Homam Gambieras',
-    },
-
-    PetReady = {
-        Main = 'Stormblade',
-        Sub = 'Iron Ram Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Portus Annulet',
-        Back = 'Accura Cape',
-        Waist = 'Tilt Belt',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    PetMagic = {
-        Main = 'Stormblade',
-        Sub = 'Iron Ram Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Aesir Ear Pendant',
-        Body = 'Homam Corazza',
-        Hands = 'Swift Gages',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Portus Annulet',
-        Back = 'Accura Cape',
-        Waist = 'Tilt Belt',
-        Legs = 'Republic Subligar',
-        Feet = 'Homam Gambieras',
-    },
-
-    PetTank = {
-        Main = 'Stormblade',
-        Sub = 'Tower Shield',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Chivalrous Chain',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Pagondas Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Snow Ring',
-        Ring2 = 'Aqua Ring',
-        Back = 'Oneiros Cappa',
-        Waist = 'Warwolf Belt',
-        Legs = 'Blood Cuisses',
-        Feet = 'Homam Gambieras',
-    },
-
-    Roll = {
-        Main = 'Stormblade',
-        Sub = 'Reign Grip',
-        Head = 'Conqueror\'s Helm',
-        Neck = 'Peacock Charm',
-        Ear1 = 'Wilderness Earring',
-        Ear2 = 'Loquac. Earring',
-        Body = 'Blood Scale Mail',
-        Hands = 'Swift Gages',
-        Ring1 = 'Marksman\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Charmer\'s Sash',
-        Legs = 'Blood Cuisses',
         Feet = 'Homam Gambieras',
     },
 
     Elemental_Fire = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Fire = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Fire = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Ice = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Ice = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Ice = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Wind = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Wind = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Wind = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Earth = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Earth = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Earth = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Thunder = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Thunder = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Thunder = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Lightning = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Lightning = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Lightning = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Water = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Water = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Water = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Light = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Light = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Light = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Elemental_Dark = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Weather_Dark = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
-        Head = 'Conqueror\'s Helm',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
         Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
     },
 
     Day_Dark = {
-        Main = 'Stormblade',
+        Main = 'Chatoyant Staff',
         Sub = 'Omni Grip',
+        Ammo = 'Hedgehog Bomb',
+        Head = 'Faerie Hairpin',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Back = 'Colossus\'s Mantle',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Meditate = {
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Swift Gages',
+        Waist = 'Headlong Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Homam Gambieras',
+    },
+
+    ThirdEye = {
+        Head = 'Empress Hairpin',
+        Neck = 'Ryl.Sqr. Collar',
+        Ear1 = 'Mythril Earring',
+        Ear2 = 'Mythril Earring',
+        Body = 'Scp. Harness +1',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Alert Ring',
+        Back = 'Colossus\'s Mantle',
+        Waist = 'Marid Belt',
+        Legs = 'Blood Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    Waltz = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Bird Whistle',
+        Ear1 = 'Mythril Earring',
+        Ear2 = 'Mythril Earring',
+        Body = 'Scp. Harness +1',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Alert Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Marid Belt',
+        Legs = 'Blood Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    Samba = {
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Homam Corazza',
+        Hands = 'Swift Gages',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Homam Gambieras',
+    },
+
+    Steps = {
+        Head = 'Walahra Turban',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Homam Corazza',
+        Hands = 'Swift Gages',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Wasp_Sting = {
+        Head = 'Empress Hairpin',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Alucinor Mitts',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Ram Mantle',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WSAcc_Wasp_Sting = {
+        Head = 'Aurum Armet',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Alucinor Mitts',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Ram Mantle',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WS_Gust_Slash = {
+        Head = 'Empress Hairpin',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WSAcc_Gust_Slash = {
+        Head = 'Aurum Armet',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Snow Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WS_Shadowstitch = {
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Flower Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Accura Cape',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Republic Subligar',
+        Feet = 'Siren\'s Sollerets',
+    },
+
+    WSAcc_Shadowstitch = {
+        Head = 'Aurum Armet',
+        Neck = 'Flower Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Energy_Steal = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Storm Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Energy_Steal = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Tilt Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Fast_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Alucinor Mitts',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Garnet Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WSAcc_Fast_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Alucinor Mitts',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Burning_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Burning_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Red_Lotus_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Red_Lotus_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Flat_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Flat_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Shining_Blade = {
         Head = 'Conqueror\'s Helm',
         Neck = 'Aife\'s Medal',
         Ear1 = 'Novio Earring',
         Ear2 = 'Moldavite Earring',
         Body = 'Abyss Cuirass',
-        Hands = 'Swift Gages',
+        Hands = 'Enyo\'s Gauntlets',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Shining_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Karka Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Seraph_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Enyo\'s Gauntlets',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Seraph_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Karka Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Circle_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Circle_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Spirits_Within = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Storm Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Spirits_Within = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Tilt Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Vorpal_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Vorpal_Blade = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Hard_Slash = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Hard_Slash = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Power_Slash = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Titanis Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Power_Slash = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Frostbite = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
         Ring1 = 'Snow Ring',
         Ring2 = 'Zircon Ring',
-        Back = 'Colossus\'s Mantle',
-        Waist = 'Salire Belt',
+        Waist = 'Charmer\'s Sash',
         Legs = 'Magic Cuisses',
         Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Frostbite = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Freezebite = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Freezebite = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Shockwave = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Shockwave = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Crescent_Moon = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Crescent_Moon = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Sickle_Moon = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Moepapa Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Suppanomimi',
+        Body = 'Amir Korazin',
+        Hands = 'Swift Gages',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Blobnag Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Adsilio Boots +1',
+    },
+
+    WSAcc_Sickle_Moon = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Suppanomimi',
+        Body = 'Homam Corazza',
+        Hands = 'Swift Gages',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Blobnag Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Spinning_Slash = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Abyssal Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Snow Ring',
+        Back = 'Accura Cape',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Spinning_Slash = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Abyssal Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Tilt Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Smash_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Smash_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Gale_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Gale_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Avalanche_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Avalanche_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Spinning_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Spinning_Axe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Rampage = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Rampage = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Iron_Tempest = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Iron_Tempest = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Sturmwind = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Sturmwind = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Brutal Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Armor_Break = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Titanis Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Armor_Break = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Keen_Edge = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Keen_Edge = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Weapon_Break = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Titanis Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Weapon_Break = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Corneus Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Oneiros Cappa',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Dark_Harvest = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Dark_Harvest = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Shadow_Of_Death = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Snow Ring',
+        Ring2 = 'Zircon Ring',
+        Waist = 'Charmer\'s Sash',
+        Legs = 'Magic Cuisses',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Shadow_Of_Death = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Abyss Gauntlets',
+        Ring1 = 'Portus Annulet',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Magic Cuisses',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Nightmare_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Nightmare_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Spinning_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Spinning_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Vorpal_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Vorpal_Scythe = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Guillotine = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Guillotine = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Cross_Reaper = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Venture Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Cross_Reaper = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Seraph_Strike = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Enyo\'s Gauntlets',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Mountain Gaiters',
+    },
+
+    WSAcc_Seraph_Strike = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Novio Earring',
+        Ear2 = 'Moldavite Earring',
+        Body = 'Abyss Cuirass',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Karka Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Homam Gambieras',
+    },
+
+    WS_Brainshaker = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Brainshaker = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Starlight = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Storm Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Starlight = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Tilt Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Moonlight = {
+        Head = 'Abyss Burgeonet',
+        Neck = 'Storm Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Headlong Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Moonlight = {
+        Head = 'Aurum Armet',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Tilt Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Skullbreaker = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Skullbreaker = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Homam Cosciales',
+        Feet = 'Amir Boots',
+    },
+
+    WS_True_Strike = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Mujin Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Wilderness Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Aqua Ring',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_True_Strike = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Incubus Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Portus Annulet',
+        Back = 'Accura Cape',
+        Waist = 'Warwolf Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Amir Boots',
+    },
+
+    WS_Judgment = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Aife\'s Medal',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Blood Scale Mail',
+        Hands = 'Amir Kolluks',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    WSAcc_Judgment = {
+        Head = 'Conqueror\'s Helm',
+        Neck = 'Chivalrous Chain',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Star Earring',
+        Body = 'Homam Corazza',
+        Hands = 'Homam Manopolas',
+        Ring1 = 'Aqua Ring',
+        Ring2 = 'Karka Ring',
+        Back = 'Accura Cape',
+        Waist = 'Salire Belt',
+        Legs = 'Abyss Flanchard',
+        Feet = 'Amir Boots',
+    },
+
+    BlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    PhysicalBlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    MagicalBlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Song = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SongDebuff = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SongBuff = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Geomancy = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Summoning = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    BloodPactRage = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    BloodPactWard = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    AvatarPerp = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Snapshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedPreshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Ranged = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedMidshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedAccuracy = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedAttack = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    QuickDraw = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Jump = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    PetReady = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    PetMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    PetTank = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Roll = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 };
 
 profile.Sets = sets;
 profile.Packer = {};
+profile.GetThreatEntities = nil;
 
 local subjobs = {
     SAM = {
@@ -1974,6 +3446,7 @@ local subjobs = {
             'shadows',
             'ninjutsu',
             'subtle_blow',
+            'daken',
         },
         abilities = {
         },
@@ -2013,6 +3486,7 @@ local subjobs = {
             'treasure_hunter',
             'evasion',
             'flee',
+            'dual_wield',
         },
         abilities = {
             { name = 'steal', level = 5, recast = 300, recastId = 60, ce = 1, ve = 300 },
@@ -2184,6 +3658,7 @@ local setIntents = {
     DrainAbsorb = 'MagicAccuracy',
     Idle = 'Idle',
     Resting = 'Idle',
+    InCity = 'Movement',
     Movement = 'Movement',
     Movement_City = 'Movement',
     Movement_Night = 'Movement',
@@ -2228,40 +3703,14 @@ local setIntents = {
     DrainAspir = 'DarkMagic',
     Absorb = 'DarkMagic',
     Stun = 'DarkMagic',
-    BlueMagic = 'BlueMagic',
-    PhysicalBlueMagic = 'BlueMagic',
-    MagicalBlueMagic = 'Nuke',
-    Song = 'Song',
-    SongDebuff = 'Song',
-    SongBuff = 'Song',
-    Geomancy = 'MagicAccuracy',
-    Summoning = 'MagicAccuracy',
-    BloodPactRage = 'PetDamage',
-    BloodPactWard = 'PetTank',
-    AvatarPerp = 'Refresh',
     Ninjutsu = 'Ninjutsu',
     Utsusemi = 'FastCast',
     NinjutsuEnfeeble = 'Ninjutsu',
-    Snapshot = 'RangedPreshot',
-    RangedPreshot = 'RangedPreshot',
-    Ranged = 'RangedAccuracy',
-    RangedMidshot = 'RangedAccuracy',
-    RangedAccuracy = 'RangedAccuracy',
-    RangedAttack = 'RangedAttack',
-    QuickDraw = 'QuickDraw',
     Weaponskill = 'Weaponskill',
     WeaponSkillAccuracy = 'Weaponskill',
     WSElemental = 'Weaponskill',
     JobAbility = 'TP',
     Enmity = 'Enmity',
-    Waltz = 'Cure',
-    Steps = 'Accuracy',
-    Samba = 'TP',
-    Jump = 'Weaponskill',
-    PetReady = 'PetDamage',
-    PetMagic = 'PetDamage',
-    PetTank = 'PetTank',
-    Roll = 'Roll',
     Elemental_Fire = 'Nuke',
     Weather_Fire = 'Nuke',
     Day_Fire = 'Nuke',
@@ -2289,6 +3738,124 @@ local setIntents = {
     Elemental_Dark = 'Nuke',
     Weather_Dark = 'Nuke',
     Day_Dark = 'Nuke',
+    Meditate = 'JobAbility',
+    ThirdEye = 'JobAbility',
+    Waltz = 'Cure',
+    Samba = 'TP',
+    Steps = 'Accuracy',
+    WS_Wasp_Sting = 'TP',
+    WSAcc_Wasp_Sting = 'TP',
+    WS_Gust_Slash = 'TP',
+    WSAcc_Gust_Slash = 'TP',
+    WS_Shadowstitch = 'TP',
+    WSAcc_Shadowstitch = 'TP',
+    WS_Energy_Steal = 'TP',
+    WSAcc_Energy_Steal = 'TP',
+    WS_Fast_Blade = 'TP',
+    WSAcc_Fast_Blade = 'TP',
+    WS_Burning_Blade = 'TP',
+    WSAcc_Burning_Blade = 'TP',
+    WS_Red_Lotus_Blade = 'TP',
+    WSAcc_Red_Lotus_Blade = 'TP',
+    WS_Flat_Blade = 'TP',
+    WSAcc_Flat_Blade = 'TP',
+    WS_Shining_Blade = 'TP',
+    WSAcc_Shining_Blade = 'TP',
+    WS_Seraph_Blade = 'TP',
+    WSAcc_Seraph_Blade = 'TP',
+    WS_Circle_Blade = 'TP',
+    WSAcc_Circle_Blade = 'TP',
+    WS_Spirits_Within = 'TP',
+    WSAcc_Spirits_Within = 'TP',
+    WS_Vorpal_Blade = 'TP',
+    WSAcc_Vorpal_Blade = 'TP',
+    WS_Hard_Slash = 'TP',
+    WSAcc_Hard_Slash = 'TP',
+    WS_Power_Slash = 'TP',
+    WSAcc_Power_Slash = 'TP',
+    WS_Frostbite = 'TP',
+    WSAcc_Frostbite = 'TP',
+    WS_Freezebite = 'TP',
+    WSAcc_Freezebite = 'TP',
+    WS_Shockwave = 'TP',
+    WSAcc_Shockwave = 'TP',
+    WS_Crescent_Moon = 'TP',
+    WSAcc_Crescent_Moon = 'TP',
+    WS_Sickle_Moon = 'TP',
+    WSAcc_Sickle_Moon = 'TP',
+    WS_Spinning_Slash = 'TP',
+    WSAcc_Spinning_Slash = 'TP',
+    WS_Smash_Axe = 'TP',
+    WSAcc_Smash_Axe = 'TP',
+    WS_Gale_Axe = 'TP',
+    WSAcc_Gale_Axe = 'TP',
+    WS_Avalanche_Axe = 'TP',
+    WSAcc_Avalanche_Axe = 'TP',
+    WS_Spinning_Axe = 'TP',
+    WSAcc_Spinning_Axe = 'TP',
+    WS_Rampage = 'TP',
+    WSAcc_Rampage = 'TP',
+    WS_Iron_Tempest = 'TP',
+    WSAcc_Iron_Tempest = 'TP',
+    WS_Sturmwind = 'TP',
+    WSAcc_Sturmwind = 'TP',
+    WS_Armor_Break = 'TP',
+    WSAcc_Armor_Break = 'TP',
+    WS_Keen_Edge = 'TP',
+    WSAcc_Keen_Edge = 'TP',
+    WS_Weapon_Break = 'TP',
+    WSAcc_Weapon_Break = 'TP',
+    WS_Dark_Harvest = 'TP',
+    WSAcc_Dark_Harvest = 'TP',
+    WS_Shadow_Of_Death = 'TP',
+    WSAcc_Shadow_Of_Death = 'TP',
+    WS_Nightmare_Scythe = 'TP',
+    WSAcc_Nightmare_Scythe = 'TP',
+    WS_Spinning_Scythe = 'TP',
+    WSAcc_Spinning_Scythe = 'TP',
+    WS_Vorpal_Scythe = 'TP',
+    WSAcc_Vorpal_Scythe = 'TP',
+    WS_Guillotine = 'TP',
+    WSAcc_Guillotine = 'TP',
+    WS_Cross_Reaper = 'TP',
+    WSAcc_Cross_Reaper = 'TP',
+    WS_Seraph_Strike = 'TP',
+    WSAcc_Seraph_Strike = 'TP',
+    WS_Brainshaker = 'TP',
+    WSAcc_Brainshaker = 'TP',
+    WS_Starlight = 'TP',
+    WSAcc_Starlight = 'TP',
+    WS_Moonlight = 'TP',
+    WSAcc_Moonlight = 'TP',
+    WS_Skullbreaker = 'TP',
+    WSAcc_Skullbreaker = 'TP',
+    WS_True_Strike = 'TP',
+    WSAcc_True_Strike = 'TP',
+    WS_Judgment = 'TP',
+    WSAcc_Judgment = 'TP',
+    BlueMagic = 'BlueMagic',
+    PhysicalBlueMagic = 'BlueMagic',
+    MagicalBlueMagic = 'Nuke',
+    Song = 'Song',
+    SongDebuff = 'Song',
+    SongBuff = 'Song',
+    Geomancy = 'MagicAccuracy',
+    Summoning = 'MagicAccuracy',
+    BloodPactRage = 'PetDamage',
+    BloodPactWard = 'PetTank',
+    AvatarPerp = 'Refresh',
+    Snapshot = 'RangedPreshot',
+    RangedPreshot = 'RangedPreshot',
+    Ranged = 'RangedAccuracy',
+    RangedMidshot = 'RangedAccuracy',
+    RangedAccuracy = 'RangedAccuracy',
+    RangedAttack = 'RangedAttack',
+    QuickDraw = 'QuickDraw',
+    Jump = 'Weaponskill',
+    PetReady = 'PetDamage',
+    PetMagic = 'PetDamage',
+    PetTank = 'PetTank',
+    Roll = 'Roll',
 };
 
 local styleAliases = {
@@ -2297,6 +3864,22149 @@ local styleAliases = {
     weaponskill = 'WeaponSkill',
     drainabsorb = 'DrainAbsorb',
 };
+
+local playstyleNames = {
+    'Damage',
+    'Accuracy',
+    'WeaponSkill',
+    'DrainAbsorb',
+};
+
+local numberRowBindings = {
+    { key = '1', label = 'Style-', literal = '/lac fwd styleprev', kind = 'action', toggle = '' },
+    { key = '2', label = 'Style+', literal = '/lac fwd stylenext', kind = 'action', toggle = '' },
+    { key = '3', label = 'Styles', literal = '/lac fwd styles', kind = 'action', toggle = '' },
+    { key = '4', label = 'Warp', literal = '/lac fwd warp', kind = 'action', toggle = '' },
+    { key = '5', label = 'Lockstyle', literal = '/lac fwd lockstyle', kind = 'action', toggle = '' },
+    { key = '6', label = 'Status', literal = '/lac fwd status', kind = 'action', toggle = '' },
+    { key = '7', label = 'Craft', literal = '/lac fwd utility craft', kind = 'utility', toggle = '' },
+    { key = '8', label = 'Move', literal = '/lac fwd utility movement', kind = 'utility', toggle = '' },
+    { key = '9', label = 'Auto 1', literal = '/lac fwd palette missing', kind = 'toggle', toggle = '' },
+    { key = '0', label = 'Auto 2', literal = '/lac fwd palette missing', kind = 'toggle', toggle = '' },
+    { key = '-', label = 'Job 1', literal = '/lac fwd palette missing', kind = 'job', toggle = '' },
+    { key = '=', label = 'Job 2', literal = '/lac fwd palette missing', kind = 'job', toggle = '' },
+};
+
+local DEFAULT_PLAYSTYLE = 'Damage';
+local STYLE_COMMANDS_TEXT = 'damage|accuracy|weaponskill|drainabsorb';
+local oddLuaRefresh = {
+    launcher = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\Run-OddLuaGameRefresh.cmd',
+    statusPath = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\reports\\game-refresh\\latest-status.json',
+    delaySeconds = 12,
+    resourceDelaySeconds = 18,
+    pollSeconds = 5,
+    maxPolls = 48,
+};
+
+local setSecondarySlotLocks = {};
+
+local nativeDualWieldMainJobs = {
+    DNC = true,
+    NIN = true,
+};
+
+local setRequiresDualWieldSub = {};
+
+local conditionalEquips = {};
+
+local mechanicsSwapPlanner = {
+    ['loaded'] = true,
+    ['plannerVersion'] = 2,
+    ['baselineSet'] = 'Aftercast',
+    ['supportedOpportunities'] = { 'hp_bridge_swap', 'mp_bridge_swap', 'negative_tick_avoidance' },
+    ['transitions'] = {},
+    ['skippedTransitions'] = {},
+};
+mechanicsSwapPlanner.transitions['Damage'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Damage',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19048,
+            ['item'] = 'Reign Grip',
+            ['reason'] = 'pool delta MP-25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Accuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Accuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19048,
+            ['item'] = 'Reign Grip',
+            ['reason'] = 'pool delta MP-25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WeaponSkill'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WeaponSkill',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19048,
+            ['item'] = 'Reign Grip',
+            ['reason'] = 'pool delta MP-25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 62,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DrainAbsorb'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DrainAbsorb',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 275,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Idle'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Idle',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17552,
+            ['item'] = 'Terra\'s Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 12580,
+            ['item'] = 'Darksteel Harness',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15295,
+            ['item'] = 'Hierarch Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 223,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Resting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Resting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15295,
+            ['item'] = 'Hierarch Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14792,
+            ['item'] = 'Relaxing Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 170,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 343,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['InCity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'InCity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 27,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 27,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['PDT'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'PDT',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17552,
+            ['item'] = 'Terra\'s Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 12580,
+            ['item'] = 'Darksteel Harness',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16056,
+            ['item'] = 'Pagondas Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11635,
+            ['item'] = 'Alert Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13104,
+            ['item'] = 'Ryl.Sqr. Collar',
+            ['reason'] = 'pool delta MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 117,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 60,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['MDT'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'MDT',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 13734,
+            ['item'] = 'Scp. Harness +1',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta HP-10, MP+10',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13343,
+            ['item'] = 'Green Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13448,
+            ['item'] = 'Emerald Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11590,
+            ['item'] = 'Colossus\'s Torque',
+            ['reason'] = 'pool delta MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 205,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 178,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['TP'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'TP',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19048,
+            ['item'] = 'Reign Grip',
+            ['reason'] = 'pool delta MP-25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Hybrid'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Hybrid',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17552,
+            ['item'] = 'Terra\'s Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 12580,
+            ['item'] = 'Darksteel Harness',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16056,
+            ['item'] = 'Pagondas Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11635,
+            ['item'] = 'Alert Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13104,
+            ['item'] = 'Ryl.Sqr. Collar',
+            ['reason'] = 'pool delta MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 117,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 60,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['TPAccuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'TPAccuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19048,
+            ['item'] = 'Reign Grip',
+            ['reason'] = 'pool delta MP-25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Precast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Precast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['FastCast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'FastCast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Midcast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Midcast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Cure'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Cure',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 321,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Healing'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Healing',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 321,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enhancing'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enhancing',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['EnhancingDuration'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'EnhancingDuration',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Stoneskin'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Stoneskin',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 321,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Refresh'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Refresh',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17552,
+            ['item'] = 'Terra\'s Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 12580,
+            ['item'] = 'Darksteel Harness',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15295,
+            ['item'] = 'Hierarch Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 223,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Regen'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Regen',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 321,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['SneakInvisible'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'SneakInvisible',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Barspell'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Barspell',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 13734,
+            ['item'] = 'Scp. Harness +1',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta HP-10, MP+10',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13343,
+            ['item'] = 'Green Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13448,
+            ['item'] = 'Emerald Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11590,
+            ['item'] = 'Colossus\'s Torque',
+            ['reason'] = 'pool delta MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 205,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 178,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Phalanx'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Phalanx',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 13734,
+            ['item'] = 'Scp. Harness +1',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta HP-10, MP+10',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13343,
+            ['item'] = 'Green Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13448,
+            ['item'] = 'Emerald Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11590,
+            ['item'] = 'Colossus\'s Torque',
+            ['reason'] = 'pool delta MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 205,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 178,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Aquaveil'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Aquaveil',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Haste'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Haste',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enfeebling'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enfeebling',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Sleep'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Sleep',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Bind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Bind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Gravity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Gravity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Silence'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Silence',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Slow'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Slow',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Paralyze'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Paralyze',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Blind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Blind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Dispel'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Dispel',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Dia'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Dia',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Bio'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Bio',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 275,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Divine'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Divine',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Nuke'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Nuke',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DarkMagic'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DarkMagic',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 275,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DrainAspir'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DrainAspir',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 275,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Absorb'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Absorb',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18139,
+            ['item'] = 'Bomb Core',
+            ['reason'] = 'pool delta MP-30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 100,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 275,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Stun'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Stun',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 42,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 217,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Ninjutsu'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Ninjutsu',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'pool delta MP-27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 164,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 177,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Utsusemi'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Utsusemi',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14812,
+            ['item'] = 'Loquac. Earring',
+            ['reason'] = 'pool delta HP-10, MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16263,
+            ['item'] = 'Beak Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 184,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 304,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['NinjutsuEnfeeble'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'NinjutsuEnfeeble',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15827,
+            ['item'] = 'Insect Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'pool delta MP-27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 164,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 177,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weaponskill'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weaponskill',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 62,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WeaponSkillAccuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WeaponSkillAccuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 62,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSElemental'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSElemental',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 120,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['JobAbility'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'JobAbility',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'pool delta HP+10, MP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13072,
+            ['item'] = 'Bird Whistle',
+            ['reason'] = 'pool delta HP+5, MP-20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 20917,
+            ['item'] = 'Xbalanque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 214,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 189,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enmity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enmity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16058,
+            ['item'] = 'Colossus\'s Earring',
+            ['reason'] = 'pool delta HP+10, MP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19016,
+            ['item'] = 'Raptor Strap +1',
+            ['reason'] = 'pool delta HP+15, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13072,
+            ['item'] = 'Bird Whistle',
+            ['reason'] = 'pool delta HP+5, MP-20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18043,
+            ['item'] = 'Suzaku\'s Scythe',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 214,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 189,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15195,
+            ['item'] = 'Faerie Hairpin',
+            ['reason'] = 'pool delta HP-70, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18633,
+            ['item'] = 'Chatoyant Staff',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 22199,
+            ['item'] = 'Omni Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 17277,
+            ['item'] = 'Hedgehog Bomb',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 175,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Meditate'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Meditate',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 164,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 149,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['ThirdEye'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'ThirdEye',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 13734,
+            ['item'] = 'Scp. Harness +1',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11635,
+            ['item'] = 'Alert Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11547,
+            ['item'] = 'Colossus\'s Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-65, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13104,
+            ['item'] = 'Ryl.Sqr. Collar',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 125,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 98,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Waltz'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Waltz',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 13734,
+            ['item'] = 'Scp. Harness +1',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14281,
+            ['item'] = 'Blood Cuisses',
+            ['reason'] = 'pool delta HP+27, MP+27',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13072,
+            ['item'] = 'Bird Whistle',
+            ['reason'] = 'pool delta HP+5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15890,
+            ['item'] = 'Marid Belt',
+            ['reason'] = 'pool delta HP+22, MP-48',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11635,
+            ['item'] = 'Alert Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 155,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Samba'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Samba',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Steps'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Steps',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 150,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 135,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Wasp_Sting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Wasp_Sting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-65, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = -15,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Wasp_Sting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Wasp_Sting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 54,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 79,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Gust_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Gust_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-65, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 27,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Gust_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Gust_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 45,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shadowstitch'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shadowstitch',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 27492,
+            ['item'] = 'Siren\'s Sollerets',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 20,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shadowstitch'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shadowstitch',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Energy_Steal'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Energy_Steal',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13167,
+            ['item'] = 'Storm Gorget',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Energy_Steal'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Energy_Steal',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15286,
+            ['item'] = 'Tilt Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Fast_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Fast_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Fast_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Fast_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Hands',
+            ['itemId'] = 11924,
+            ['item'] = 'Alucinor Mitts',
+            ['reason'] = 'pool delta HP-20, MP+5',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 79,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 79,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Burning_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Burning_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Burning_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Burning_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Red_Lotus_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Red_Lotus_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Red_Lotus_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Red_Lotus_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Flat_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Flat_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Flat_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Flat_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shining_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shining_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14962,
+            ['item'] = 'Enyo\'s Gauntlets',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 45,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 43,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shining_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shining_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 96,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 94,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Seraph_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Seraph_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14962,
+            ['item'] = 'Enyo\'s Gauntlets',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 45,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 43,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Seraph_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Seraph_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 96,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 94,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Circle_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Circle_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Circle_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Circle_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Spirits_Within'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Spirits_Within',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13167,
+            ['item'] = 'Storm Gorget',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Spirits_Within'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Spirits_Within',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15286,
+            ['item'] = 'Tilt Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Vorpal_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Vorpal_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Vorpal_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Vorpal_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Hard_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Hard_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Hard_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Hard_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Power_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Power_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14765,
+            ['item'] = 'Titanis Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Power_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Power_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Frostbite'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Frostbite',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Frostbite'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Frostbite',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Freezebite'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Freezebite',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Freezebite'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Freezebite',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shockwave'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shockwave',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shockwave'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shockwave',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 111,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Crescent_Moon'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Crescent_Moon',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Crescent_Moon'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Crescent_Moon',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Sickle_Moon'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Sickle_Moon',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 28272,
+            ['item'] = 'Adsilio Boots +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14739,
+            ['item'] = 'Suppanomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11631,
+            ['item'] = 'Blobnag Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10943,
+            ['item'] = 'Moepapa Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 40,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Sickle_Moon'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Sickle_Moon',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14739,
+            ['item'] = 'Suppanomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11631,
+            ['item'] = 'Blobnag Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 28050,
+            ['item'] = 'Swift Gages',
+            ['reason'] = 'pool delta HP-5, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 94,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 54,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Spinning_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Spinning_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14741,
+            ['item'] = 'Abyssal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Spinning_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Spinning_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14741,
+            ['item'] = 'Abyssal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15286,
+            ['item'] = 'Tilt Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 28,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Smash_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Smash_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Smash_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Smash_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Gale_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Gale_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Gale_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Gale_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Avalanche_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Avalanche_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Avalanche_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Avalanche_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Spinning_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Spinning_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Spinning_Axe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Spinning_Axe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Rampage'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Rampage',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Rampage'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Rampage',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Iron_Tempest'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Iron_Tempest',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Iron_Tempest'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Iron_Tempest',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Sturmwind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Sturmwind',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Sturmwind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Sturmwind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Armor_Break'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Armor_Break',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14765,
+            ['item'] = 'Titanis Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Armor_Break'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Armor_Break',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Keen_Edge'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Keen_Edge',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Keen_Edge'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Keen_Edge',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Weapon_Break'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Weapon_Break',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14765,
+            ['item'] = 'Titanis Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Weapon_Break'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Weapon_Break',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11630,
+            ['item'] = 'Corneus Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 10972,
+            ['item'] = 'Oneiros Cappa',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Dark_Harvest'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Dark_Harvest',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Dark_Harvest'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Dark_Harvest',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shadow_Of_Death'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shadow_Of_Death',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14640,
+            ['item'] = 'Snow Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13486,
+            ['item'] = 'Zircon Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28445,
+            ['item'] = 'Charmer\'s Sash',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 87,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shadow_Of_Death'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shadow_Of_Death',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12924,
+            ['item'] = 'Magic Cuisses',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15109,
+            ['item'] = 'Abyss Gauntlets',
+            ['reason'] = 'pool delta HP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 76,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Nightmare_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Nightmare_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Nightmare_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Nightmare_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 83,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Spinning_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Spinning_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Spinning_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Spinning_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 83,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Vorpal_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Vorpal_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Vorpal_Scythe'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Vorpal_Scythe',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Guillotine'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Guillotine',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Guillotine'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Guillotine',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 111,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Cross_Reaper'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Cross_Reaper',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Cross_Reaper'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Cross_Reaper',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 83,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Seraph_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Seraph_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14962,
+            ['item'] = 'Enyo\'s Gauntlets',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 45,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 43,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Seraph_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Seraph_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 15094,
+            ['item'] = 'Abyss Cuirass',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15661,
+            ['item'] = 'Homam Gambieras',
+            ['reason'] = 'pool delta HP+31, MP+31',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14724,
+            ['item'] = 'Moldavite Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14808,
+            ['item'] = 'Novio Earring',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 96,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 94,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Brainshaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Brainshaker',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Brainshaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Brainshaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Starlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Starlight',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13167,
+            ['item'] = 'Storm Gorget',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Starlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Starlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15286,
+            ['item'] = 'Tilt Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Moonlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Moonlight',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15079,
+            ['item'] = 'Abyss Burgeonet',
+            ['reason'] = 'pool delta HP-20, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13167,
+            ['item'] = 'Storm Gorget',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15941,
+            ['item'] = 'Headlong Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Moonlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Moonlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 16155,
+            ['item'] = 'Aurum Armet',
+            ['reason'] = 'pool delta HP-50, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15286,
+            ['item'] = 'Tilt Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Skullbreaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Skullbreaker',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Skullbreaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Skullbreaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15576,
+            ['item'] = 'Homam Cosciales',
+            ['reason'] = 'pool delta HP+26, MP+26',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 99,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 74,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_True_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_True_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 28490,
+            ['item'] = 'Wilderness Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10933,
+            ['item'] = 'Mujin Necklace',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 25,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_True_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_True_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16052,
+            ['item'] = 'Incubus Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 10761,
+            ['item'] = 'Portus Annulet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15294,
+            ['item'] = 'Warwolf Belt',
+            ['reason'] = 'pool delta MP-48',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 48,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Judgment'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Judgment',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14368,
+            ['item'] = 'Blood Scale Mail',
+            ['reason'] = 'pool delta HP+42, MP+42',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14933,
+            ['item'] = 'Amir Kolluks',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 10942,
+            ['item'] = 'Aife\'s Medal',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 67,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 105,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Judgment'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Judgment',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Body',
+            ['itemId'] = 14488,
+            ['item'] = 'Homam Corazza',
+            ['reason'] = 'pool delta HP+28, MP+28',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15124,
+            ['item'] = 'Abyss Flanchard',
+            ['reason'] = 'pool delta MP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 15991,
+            ['item'] = 'Star Earring',
+            ['reason'] = 'pool delta MP+20',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14905,
+            ['item'] = 'Homam Manopolas',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15688,
+            ['item'] = 'Amir Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 14632,
+            ['item'] = 'Aqua Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 11632,
+            ['item'] = 'Karka Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 27779,
+            ['item'] = 'Conqueror\'s Helm',
+            ['reason'] = 'pool delta HP-25, MP-50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15523,
+            ['item'] = 'Chivalrous Chain',
+            ['reason'] = 'pool delta MP-20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Waist',
+            ['itemId'] = 28425,
+            ['item'] = 'Salire Belt',
+            ['reason'] = 'pool delta MP-23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'pool delta HP-10, MP-10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Back',
+            ['itemId'] = 11532,
+            ['item'] = 'Accura Cape',
+            ['reason'] = 'pool delta HP-20, MP-20',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 100,
+            ['targetFlat'] = 73,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 223,
+            ['targetFlat'] = 111,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.skippedTransitions['Movement'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_City'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_Night'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_DuskToDawn'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Crafting'] = 'utility_set';
+
+local blueMagicRoutes = {
+    ['1000 needles'] = 'MagicalBlueMagic',
+    ['actinic burst'] = 'Enfeebling',
+    ['amorphic spikes'] = 'PhysicalBlueMagic',
+    ['amplification'] = 'Enhancing',
+    ['animating wail'] = 'Enhancing',
+    ['asuran claws'] = 'PhysicalBlueMagic',
+    ['auroral drape'] = 'Enfeebling',
+    ['awful eye'] = 'Enfeebling',
+    ['bad breath'] = 'MagicalBlueMagic',
+    ['battery charge'] = 'Enhancing',
+    ['battle dance'] = 'PhysicalBlueMagic',
+    ['blank gaze'] = 'Enfeebling',
+    ['blastbomb'] = 'MagicalBlueMagic',
+    ['blitzstrahl'] = 'MagicalBlueMagic',
+    ['blood drain'] = 'MagicalBlueMagic',
+    ['blood saber'] = 'MagicalBlueMagic',
+    ['bludgeon'] = 'PhysicalBlueMagic',
+    ['body slam'] = 'PhysicalBlueMagic',
+    ['bomb toss'] = 'MagicalBlueMagic',
+    ['cannonball'] = 'PhysicalBlueMagic',
+    ['chaotic eye'] = 'Enfeebling',
+    ['charged whisker'] = 'MagicalBlueMagic',
+    ['cimicine discharge'] = 'Enfeebling',
+    ['claw cyclone'] = 'PhysicalBlueMagic',
+    ['cocoon'] = 'Enhancing',
+    ['cold wave'] = 'Enfeebling',
+    ['corrosive ooze'] = 'MagicalBlueMagic',
+    ['cursed sphere'] = 'MagicalBlueMagic',
+    ['death ray'] = 'MagicalBlueMagic',
+    ['death scissors'] = 'PhysicalBlueMagic',
+    ['delta thrust'] = 'PhysicalBlueMagic',
+    ['diamondhide'] = 'Enhancing',
+    ['digest'] = 'MagicalBlueMagic',
+    ['dimensional death'] = 'PhysicalBlueMagic',
+    ['disseverment'] = 'PhysicalBlueMagic',
+    ['dream flower'] = 'Enfeebling',
+    ['empty thrash'] = 'PhysicalBlueMagic',
+    ['enervation'] = 'Enfeebling',
+    ['exuviation'] = 'Cure',
+    ['eyes on me'] = 'MagicalBlueMagic',
+    ['feather barrier'] = 'Enhancing',
+    ['feather storm'] = 'PhysicalBlueMagic',
+    ['feather tickle'] = 'Enfeebling',
+    ['filamented hold'] = 'Enfeebling',
+    ['firespit'] = 'MagicalBlueMagic',
+    ['flying hip press'] = 'MagicalBlueMagic',
+    ['foot kick'] = 'PhysicalBlueMagic',
+    ['frenetic rip'] = 'PhysicalBlueMagic',
+    ['frightful roar'] = 'Enfeebling',
+    ['frost breath'] = 'MagicalBlueMagic',
+    ['frypan'] = 'PhysicalBlueMagic',
+    ['geist wall'] = 'Enfeebling',
+    ['goblin rush'] = 'PhysicalBlueMagic',
+    ['grand slam'] = 'PhysicalBlueMagic',
+    ['head butt'] = 'PhysicalBlueMagic',
+    ['healing breeze'] = 'Cure',
+    ['heat breath'] = 'MagicalBlueMagic',
+    ['heavy strike'] = 'PhysicalBlueMagic',
+    ['hecatomb wave'] = 'MagicalBlueMagic',
+    ['helldive'] = 'PhysicalBlueMagic',
+    ['hydro shot'] = 'PhysicalBlueMagic',
+    ['hysteric barrage'] = 'PhysicalBlueMagic',
+    ['ice break'] = 'MagicalBlueMagic',
+    ['infrasonics'] = 'Enfeebling',
+    ['jet stream'] = 'PhysicalBlueMagic',
+    ['jettatura'] = 'Enfeebling',
+    ['light of penance'] = 'Enfeebling',
+    ['lowing'] = 'Enfeebling',
+    ['maelstrom'] = 'MagicalBlueMagic',
+    ['magic fruit'] = 'Cure',
+    ['magic hammer'] = 'MagicalBlueMagic',
+    ['magnetite cloud'] = 'MagicalBlueMagic',
+    ['mandibular bite'] = 'PhysicalBlueMagic',
+    ['memento mori'] = 'Enhancing',
+    ['metallic body'] = 'Enhancing',
+    ['mind blast'] = 'MagicalBlueMagic',
+    ['mp drainkiss'] = 'MagicalBlueMagic',
+    ['mysterious light'] = 'MagicalBlueMagic',
+    ['occultation'] = 'Enhancing',
+    ['pinecone bomb'] = 'PhysicalBlueMagic',
+    ['plasma charge'] = 'Enhancing',
+    ['plenilune embrace'] = 'Cure',
+    ['poison breath'] = 'MagicalBlueMagic',
+    ['pollen'] = 'Cure',
+    ['power attack'] = 'PhysicalBlueMagic',
+    ['quad continuum'] = 'PhysicalBlueMagic',
+    ['quadrastrike'] = 'PhysicalBlueMagic',
+    ['queasyshroom'] = 'PhysicalBlueMagic',
+    ['radiant breath'] = 'MagicalBlueMagic',
+    ['ram charge'] = 'PhysicalBlueMagic',
+    ['reactor cool'] = 'Enhancing',
+    ['refueling'] = 'Enhancing',
+    ['regeneration'] = 'Enhancing',
+    ['regurgitation'] = 'MagicalBlueMagic',
+    ['rending deluge'] = 'MagicalBlueMagic',
+    ['saline coat'] = 'Enhancing',
+    ['sandspin'] = 'MagicalBlueMagic',
+    ['sandspray'] = 'Enfeebling',
+    ['screwdriver'] = 'PhysicalBlueMagic',
+    ['seedspray'] = 'PhysicalBlueMagic',
+    ['self-destruct'] = 'MagicalBlueMagic',
+    ['sheep song'] = 'Enfeebling',
+    ['sickle slash'] = 'PhysicalBlueMagic',
+    ['smite of rage'] = 'PhysicalBlueMagic',
+    ['soporific'] = 'Enfeebling',
+    ['sound blast'] = 'Enfeebling',
+    ['spinal cleave'] = 'PhysicalBlueMagic',
+    ['spiral spin'] = 'PhysicalBlueMagic',
+    ['sprout smack'] = 'PhysicalBlueMagic',
+    ['stinking gas'] = 'Enfeebling',
+    ['sub-zero smash'] = 'PhysicalBlueMagic',
+    ['sudden lunge'] = 'PhysicalBlueMagic',
+    ['tail slap'] = 'PhysicalBlueMagic',
+    ['temporal shift'] = 'Enfeebling',
+    ['terror touch'] = 'PhysicalBlueMagic',
+    ['thermal pulse'] = 'MagicalBlueMagic',
+    ['triumphant roar'] = 'Enhancing',
+    ['uppercut'] = 'PhysicalBlueMagic',
+    ['venom shell'] = 'Enfeebling',
+    ['vertical cleave'] = 'PhysicalBlueMagic',
+    ['voracious trunk'] = 'Enfeebling',
+    ['warm-up'] = 'Enhancing',
+    ['whirl of rage'] = 'PhysicalBlueMagic',
+    ['white wind'] = 'Cure',
+    ['wild carrot'] = 'Cure',
+    ['wild oats'] = 'PhysicalBlueMagic',
+    ['wind breath'] = 'MagicalBlueMagic',
+    ['yawn'] = 'Enfeebling',
+    ['zephyr mantle'] = 'Enhancing',
+};
+
+local weaponSkillRoutes = {
+    ['armor_break'] = 'WS_Armor_Break',
+    ['avalanche_axe'] = 'WS_Avalanche_Axe',
+    ['brainshaker'] = 'WS_Brainshaker',
+    ['burning_blade'] = 'WS_Burning_Blade',
+    ['circle_blade'] = 'WS_Circle_Blade',
+    ['crescent_moon'] = 'WS_Crescent_Moon',
+    ['cross_reaper'] = 'WS_Cross_Reaper',
+    ['dark_harvest'] = 'WS_Dark_Harvest',
+    ['energy_steal'] = 'WS_Energy_Steal',
+    ['fast_blade'] = 'WS_Fast_Blade',
+    ['flat_blade'] = 'WS_Flat_Blade',
+    ['freezebite'] = 'WS_Freezebite',
+    ['frostbite'] = 'WS_Frostbite',
+    ['gale_axe'] = 'WS_Gale_Axe',
+    ['guillotine'] = 'WS_Guillotine',
+    ['gust_slash'] = 'WS_Gust_Slash',
+    ['hard_slash'] = 'WS_Hard_Slash',
+    ['iron_tempest'] = 'WS_Iron_Tempest',
+    ['judgment'] = 'WS_Judgment',
+    ['keen_edge'] = 'WS_Keen_Edge',
+    ['moonlight'] = 'WS_Moonlight',
+    ['nightmare_scythe'] = 'WS_Nightmare_Scythe',
+    ['power_slash'] = 'WS_Power_Slash',
+    ['rampage'] = 'WS_Rampage',
+    ['red_lotus_blade'] = 'WS_Red_Lotus_Blade',
+    ['seraph_blade'] = 'WS_Seraph_Blade',
+    ['seraph_strike'] = 'WS_Seraph_Strike',
+    ['shadow_of_death'] = 'WS_Shadow_Of_Death',
+    ['shadowstitch'] = 'WS_Shadowstitch',
+    ['shining_blade'] = 'WS_Shining_Blade',
+    ['shockwave'] = 'WS_Shockwave',
+    ['sickle_moon'] = 'WS_Sickle_Moon',
+    ['skullbreaker'] = 'WS_Skullbreaker',
+    ['smash_axe'] = 'WS_Smash_Axe',
+    ['spinning_axe'] = 'WS_Spinning_Axe',
+    ['spinning_scythe'] = 'WS_Spinning_Scythe',
+    ['spinning_slash'] = 'WS_Spinning_Slash',
+    ['spirits_within'] = 'WS_Spirits_Within',
+    ['starlight'] = 'WS_Starlight',
+    ['sturmwind'] = 'WS_Sturmwind',
+    ['true_strike'] = 'WS_True_Strike',
+    ['vorpal_blade'] = 'WS_Vorpal_Blade',
+    ['vorpal_scythe'] = 'WS_Vorpal_Scythe',
+    ['wasp_sting'] = 'WS_Wasp_Sting',
+    ['weapon_break'] = 'WS_Weapon_Break',
+};
+
+local weaponSkillAccuracyRoutes = {
+    ['armor_break'] = 'WSAcc_Armor_Break',
+    ['avalanche_axe'] = 'WSAcc_Avalanche_Axe',
+    ['brainshaker'] = 'WSAcc_Brainshaker',
+    ['burning_blade'] = 'WSAcc_Burning_Blade',
+    ['circle_blade'] = 'WSAcc_Circle_Blade',
+    ['crescent_moon'] = 'WSAcc_Crescent_Moon',
+    ['cross_reaper'] = 'WSAcc_Cross_Reaper',
+    ['dark_harvest'] = 'WSAcc_Dark_Harvest',
+    ['energy_steal'] = 'WSAcc_Energy_Steal',
+    ['fast_blade'] = 'WSAcc_Fast_Blade',
+    ['flat_blade'] = 'WSAcc_Flat_Blade',
+    ['freezebite'] = 'WSAcc_Freezebite',
+    ['frostbite'] = 'WSAcc_Frostbite',
+    ['gale_axe'] = 'WSAcc_Gale_Axe',
+    ['guillotine'] = 'WSAcc_Guillotine',
+    ['gust_slash'] = 'WSAcc_Gust_Slash',
+    ['hard_slash'] = 'WSAcc_Hard_Slash',
+    ['iron_tempest'] = 'WSAcc_Iron_Tempest',
+    ['judgment'] = 'WSAcc_Judgment',
+    ['keen_edge'] = 'WSAcc_Keen_Edge',
+    ['moonlight'] = 'WSAcc_Moonlight',
+    ['nightmare_scythe'] = 'WSAcc_Nightmare_Scythe',
+    ['power_slash'] = 'WSAcc_Power_Slash',
+    ['rampage'] = 'WSAcc_Rampage',
+    ['red_lotus_blade'] = 'WSAcc_Red_Lotus_Blade',
+    ['seraph_blade'] = 'WSAcc_Seraph_Blade',
+    ['seraph_strike'] = 'WSAcc_Seraph_Strike',
+    ['shadow_of_death'] = 'WSAcc_Shadow_Of_Death',
+    ['shadowstitch'] = 'WSAcc_Shadowstitch',
+    ['shining_blade'] = 'WSAcc_Shining_Blade',
+    ['shockwave'] = 'WSAcc_Shockwave',
+    ['sickle_moon'] = 'WSAcc_Sickle_Moon',
+    ['skullbreaker'] = 'WSAcc_Skullbreaker',
+    ['smash_axe'] = 'WSAcc_Smash_Axe',
+    ['spinning_axe'] = 'WSAcc_Spinning_Axe',
+    ['spinning_scythe'] = 'WSAcc_Spinning_Scythe',
+    ['spinning_slash'] = 'WSAcc_Spinning_Slash',
+    ['spirits_within'] = 'WSAcc_Spirits_Within',
+    ['starlight'] = 'WSAcc_Starlight',
+    ['sturmwind'] = 'WSAcc_Sturmwind',
+    ['true_strike'] = 'WSAcc_True_Strike',
+    ['vorpal_blade'] = 'WSAcc_Vorpal_Blade',
+    ['vorpal_scythe'] = 'WSAcc_Vorpal_Scythe',
+    ['wasp_sting'] = 'WSAcc_Wasp_Sting',
+    ['weapon_break'] = 'WSAcc_Weapon_Break',
+};
+
+
+
+local OVERT_DEFENSE_TARGET_COUNT = 3;
+local OVERT_DEFENSE_TP_UNLOCK = 700;
+local OVERT_DEFENSE_HP_FORCE_HPP = 60;
 
 local dangerousStatusBuffs = {
     bind = true,
@@ -2309,6 +26019,14 @@ local dangerousStatusBuffs = {
 };
 
 local dangerousStatusIds = { 2, 7, 10, 11, 15, 18, 19, 28 };
+
+local mountedStatusBuffs = {
+    chocobo = true,
+    mount = true,
+    mounted = true,
+};
+
+local mountedStatusIds = { 252 };
 
 local cityZoneIds = {
     [26] = true,  -- Tavnazian Safehold
@@ -2408,6 +26126,16 @@ if gFunc and gFunc.LoadFile then
     end
 end
 
+local conditionals = nil;
+if gFunc and gFunc.LoadFile then
+    local ok, loaded = pcall(function()
+        return gFunc.LoadFile('common/conditionals.lua');
+    end);
+    if ok then
+        conditionals = loaded;
+    end
+end
+
 local function message(text)
     text = '[Oddone DRK] ' .. tostring(text or '');
     if gFunc and gFunc.Message then
@@ -2456,11 +26184,881 @@ local function normalize(value)
     return string.lower(tostring(value or ''));
 end
 
+local function styleListText()
+    local parts = {};
+    for _, styleName in ipairs(playstyleNames) do
+        local token = normalize(styleName);
+        local label = token;
+        if styleName == state.Playstyle and styleName == DEFAULT_PLAYSTYLE then
+            label = label .. ' (current, default)';
+        elseif styleName == state.Playstyle then
+            label = label .. ' (current)';
+        elseif styleName == DEFAULT_PLAYSTYLE then
+            label = label .. ' (default)';
+        end
+        parts[#parts + 1] = label;
+    end
+    if #parts == 0 then
+        return STYLE_COMMANDS_TEXT;
+    end
+    return table.concat(parts, ' | ');
+end
+
+local function printStyleList()
+    message('Styles: ' .. styleListText() .. '. Use /lac fwd style <name>.');
+end
+
+local function printOddLuaHelp()
+    message('Quick start: /lac fwd help | styles | status | lockstyle | warp | subjob | mechanics help | reconcile status | refreshgear.');
+    message('Current style=' .. tostring(state.Playstyle) .. '; default=' .. tostring(DEFAULT_PLAYSTYLE) .. '.');
+    printStyleList();
+    message('Lockstyle: /lac fwd lockstyle equips the TP set first, then /lockstyle on.');
+    message('Reconciliation: /lac fwd reconcile on|off|status|last.');
+    message('Gear refresh: /lac fwd refreshgear queues /gearexport full, rebuilds OddLua, applies profiles, then reloads on success.');
+    message('One-button macros: review/load keybindings.txt; F-keys run /lac fwd commands.');
+end
+
+local function oddLuaStatusField(text, field)
+    if type(text) ~= 'string' then
+        return nil;
+    end
+    local pattern = '"' .. field .. '"%s*:%s*"([^"]*)"';
+    return string.match(text, pattern);
+end
+
+local function readOddLuaRefreshStatus()
+    if not io or not io.open then
+        return nil, 'io.open unavailable';
+    end
+
+    local file = io.open(oddLuaRefresh.statusPath, 'rb');
+    if not file then
+        return nil, 'status not ready';
+    end
+
+    local text = file:read('*a') or '';
+    file:close();
+    local status = normalize(oddLuaStatusField(text, 'state') or oddLuaStatusField(text, 'status') or '');
+    local detail = oddLuaStatusField(text, 'message') or '';
+    if status == '' then
+        return nil, 'status missing';
+    end
+    return status, detail;
+end
+
+local function pollOddLuaRefreshStatus(attempt)
+    attempt = tonumber(attempt or 1) or 1;
+    local status, detail = readOddLuaRefreshStatus();
+    if status == 'success' then
+        state.OddLuaRefreshPending = false;
+        state.OddLuaRefreshLastStatus = 'success';
+        message('OddLua gear refresh complete. Reloading LuAshitacast profile.');
+        queueTypedCommand('/lac reload', 1);
+        return;
+    elseif status == 'failed' or status == 'error' then
+        state.OddLuaRefreshPending = false;
+        state.OddLuaRefreshLastStatus = 'failed';
+        message('OddLua gear refresh failed: ' .. tostring(detail or '') .. '; status=' .. oddLuaRefresh.statusPath);
+        return;
+    end
+
+    state.OddLuaRefreshLastStatus = status or 'running';
+    if attempt >= oddLuaRefresh.maxPolls then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh still running or status unavailable after polling; check ' .. oddLuaRefresh.statusPath);
+        return;
+    end
+
+    if not scheduleTask(oddLuaRefresh.pollSeconds, function()
+        pollOddLuaRefreshStatus(attempt + 1);
+    end) then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh poll scheduling failed; check ' .. oddLuaRefresh.statusPath);
+    end
+end
+
+local function launchOddLuaGearRefresh()
+    if not ashita or not ashita.misc or not ashita.misc.execute then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed: ashita.misc.execute unavailable. Run the refresh script manually.');
+        return false;
+    end
+
+    local ok, err = pcall(function()
+        ashita.misc.execute(oddLuaRefresh.launcher, '');
+    end);
+    if not ok then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed to launch: ' .. tostring(err));
+        return false;
+    end
+
+    message('OddLua refresh launched. Polling status; log root is reports/game-refresh.');
+    pollOddLuaRefreshStatus(1);
+    return true;
+end
+
+local function startOddLuaGearRefresh(args)
+    local option = normalize(args and args[2]);
+    if option == 'status' then
+        local status, detail = readOddLuaRefreshStatus();
+        message('OddLua refresh status=' .. tostring(status or state.OddLuaRefreshLastStatus or 'unknown') .. '; detail=' .. tostring(detail or '') .. '; pending=' .. tostring(state.OddLuaRefreshPending == true));
+        return;
+    end
+
+    if state.OddLuaRefreshPending == true then
+        message('OddLua gear refresh is already pending; use /lac fwd refreshgear status.');
+        return;
+    end
+
+    local includeResources = option == 'resources' or option == 'full';
+    if not queueTypedCommand('/gearexport full', 1) then
+        message('OddLua gear refresh failed: could not queue /gearexport full.');
+        return;
+    end
+
+    state.OddLuaRefreshPending = true;
+    state.OddLuaRefreshLastStatus = 'queued';
+    if includeResources then
+        if not scheduleTask(2, function()
+            queueTypedCommand('/gearexport resources', 1);
+        end) then
+            queueTypedCommand('/gearexport resources', 1);
+        end
+    end
+
+    local delay = oddLuaRefresh.delaySeconds;
+    if includeResources then
+        delay = oddLuaRefresh.resourceDelaySeconds;
+    end
+    message('Queued /gearexport full. OddLua rebuild/apply will launch in ' .. tostring(delay) .. ' seconds.');
+    if not scheduleTask(delay, launchOddLuaGearRefresh) then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed: scheduler unavailable after gearexport. Run ' .. oddLuaRefresh.launcher .. ' manually.');
+    end
+end
+
+
+local reconciliationConfig = {
+    schema = 'oddlua.reconcile.v1',
+    player = 'Oddone',
+    playerId = '29938',
+    job = 'DRK',
+    logPath = 'logs/oddlua-reconcile-Oddone_29938-DRK.jsonl',
+    slotOrder = {
+    'Main',
+    'Sub',
+    'Range',
+    'Ammo',
+    'Head',
+    'Neck',
+    'Ear1',
+    'Ear2',
+    'Body',
+    'Hands',
+    'Ring1',
+    'Ring2',
+    'Back',
+    'Waist',
+    'Legs',
+    'Feet',
+    },
+};
+
+local function reconciliationJsonEscape(value)
+    value = tostring(value or '');
+    value = string.gsub(value, '\\', '\\\\');
+    value = string.gsub(value, '"', '\\"');
+    value = string.gsub(value, '\r', '\\r');
+    value = string.gsub(value, '\n', '\\n');
+    value = string.gsub(value, '\t', '\\t');
+    return '"' .. value .. '"';
+end
+
+local function reconciliationJsonBool(value)
+    if value == true then
+        return 'true';
+    end
+    return 'false';
+end
+
+local function ensureReconciliationLogDirectory()
+    if state.ReconcileLogDirectoryReady == true then
+        return true;
+    end
+
+    if ashita and ashita.fs and ashita.fs.exists and ashita.fs.exists('logs') then
+        state.ReconcileLogDirectoryReady = true;
+        return true;
+    end
+
+    if ashita and ashita.fs then
+        if ashita.fs.create_directory then
+            pcall(ashita.fs.create_directory, 'logs');
+        elseif ashita.fs.create_dir then
+            pcall(ashita.fs.create_dir, 'logs');
+        end
+    end
+
+    state.ReconcileLogDirectoryReady = true;
+    return true;
+end
+
+local function reconciliationExpectedName(value)
+    if type(value) == 'string' then
+        return value;
+    elseif type(value) == 'table' then
+        return value.Name or value.name or value[1];
+    end
+    return nil;
+end
+
+local function reconciliationExpectedMap(set)
+    local expected = {};
+    if type(set) ~= 'table' then
+        return expected;
+    end
+
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local name = reconciliationExpectedName(set[slot]);
+        if name ~= nil then
+            expected[slot] = tostring(name);
+        end
+    end
+    return expected;
+end
+
+local function reconciliationObservedName(entry)
+    if type(entry) == 'string' then
+        return entry;
+    elseif type(entry) == 'table' then
+        if entry.Name ~= nil then
+            return entry.Name;
+        end
+        if type(entry.Resource) == 'table' and type(entry.Resource.Name) == 'table' then
+            return entry.Resource.Name[1];
+        end
+        if type(entry.Item) == 'table' and entry.Item.Name ~= nil then
+            return entry.Item.Name;
+        end
+    end
+    return nil;
+end
+
+local function observeReconciliationEquipment()
+    if not gData or not gData.GetEquipment then
+        return nil, 'gData.GetEquipment unavailable';
+    end
+
+    local ok, equipment = pcall(gData.GetEquipment);
+    if not ok then
+        return nil, 'gData.GetEquipment failed';
+    end
+    if type(equipment) ~= 'table' then
+        return nil, 'gData.GetEquipment returned non-table';
+    end
+
+    local observed = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local name = reconciliationObservedName(equipment[slot]);
+        if name ~= nil and tostring(name) ~= '' then
+            observed[slot] = tostring(name);
+        end
+    end
+    return observed, nil;
+end
+
+local function reconciliationNamesMatch(expected, observed)
+    local expectedText = normalize(expected);
+    local observedText = normalize(observed);
+    if expectedText == 'remove' then
+        return observedText == '';
+    end
+    return expectedText == observedText;
+end
+
+local function compareReconciliationSnapshot(setName, expected, observed)
+    local mismatches = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local expectedName = expected[slot];
+        if expectedName ~= nil then
+            local observedName = observed[slot] or '';
+            if not reconciliationNamesMatch(expectedName, observedName) then
+                mismatches[#mismatches + 1] = {
+                    slot = slot,
+                    expected = tostring(expectedName),
+                    observed = tostring(observedName),
+                };
+            end
+        end
+    end
+
+    local status = 'match';
+    if #mismatches > 0 then
+        status = 'mismatch';
+    end
+    return {
+        set = setName,
+        status = status,
+        mismatches = mismatches,
+    };
+end
+
+local function encodeReconciliationMap(map)
+    local parts = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        if map and map[slot] ~= nil then
+            parts[#parts + 1] = reconciliationJsonEscape(slot) .. ':' .. reconciliationJsonEscape(map[slot]);
+        end
+    end
+    return '{' .. table.concat(parts, ',') .. '}';
+end
+
+local function encodeReconciliationMismatches(mismatches)
+    local parts = {};
+    for _, mismatch in ipairs(mismatches or {}) do
+        parts[#parts + 1] = '{'
+            .. '"slot":' .. reconciliationJsonEscape(mismatch.slot)
+            .. ',"expected":' .. reconciliationJsonEscape(mismatch.expected)
+            .. ',"observed":' .. reconciliationJsonEscape(mismatch.observed)
+            .. '}';
+    end
+    return '[' .. table.concat(parts, ',') .. ']';
+end
+
+local function encodeReconciliationSnapshot(snapshot)
+    local parts = {};
+    parts[#parts + 1] = '"schema":' .. reconciliationJsonEscape(reconciliationConfig.schema);
+    parts[#parts + 1] = '"player":' .. reconciliationJsonEscape(reconciliationConfig.player);
+    parts[#parts + 1] = '"playerId":' .. reconciliationJsonEscape(reconciliationConfig.playerId);
+    parts[#parts + 1] = '"job":' .. reconciliationJsonEscape(reconciliationConfig.job);
+    parts[#parts + 1] = '"sequence":' .. tostring(snapshot.sequence or 0);
+    parts[#parts + 1] = '"timestamp":' .. tostring(snapshot.timestamp or 0);
+    parts[#parts + 1] = '"set":' .. reconciliationJsonEscape(snapshot.set);
+    parts[#parts + 1] = '"status":' .. reconciliationJsonEscape(snapshot.status);
+    parts[#parts + 1] = '"force":' .. reconciliationJsonBool(snapshot.force == true);
+    parts[#parts + 1] = '"repair":' .. reconciliationJsonBool(snapshot.repair == true);
+    parts[#parts + 1] = '"repairQueued":' .. reconciliationJsonBool(snapshot.repairQueued == true);
+    parts[#parts + 1] = '"playstyle":' .. reconciliationJsonEscape(snapshot.playstyle);
+    parts[#parts + 1] = '"intent":' .. reconciliationJsonEscape(snapshot.intent);
+    parts[#parts + 1] = '"expected":' .. encodeReconciliationMap(snapshot.expected);
+    parts[#parts + 1] = '"observed":' .. encodeReconciliationMap(snapshot.observed);
+    parts[#parts + 1] = '"mismatches":' .. encodeReconciliationMismatches(snapshot.mismatches);
+    if snapshot.reason ~= nil then
+        parts[#parts + 1] = '"reason":' .. reconciliationJsonEscape(snapshot.reason);
+    end
+    return '{' .. table.concat(parts, ',') .. '}';
+end
+
+local function writeReconciliationSnapshot(snapshot)
+    if not io or not io.open then
+        return false, 'io.open unavailable';
+    end
+
+    ensureReconciliationLogDirectory();
+    local file, err = io.open(reconciliationConfig.logPath, 'ab');
+    if not file then
+        state.ReconcileLastWriteError = tostring(err or 'unknown write error');
+        return false, state.ReconcileLastWriteError;
+    end
+
+    file:write(encodeReconciliationSnapshot(snapshot), '\n');
+    file:close();
+    state.ReconcileLastWriteError = nil;
+    return true, nil;
+end
+
+local function reconciliationMismatchSlots(mismatches)
+    local parts = {};
+    for _, mismatch in ipairs(mismatches or {}) do
+        parts[#parts + 1] = tostring(mismatch.slot);
+    end
+    if #parts == 0 then
+        return 'none';
+    end
+    return table.concat(parts, ',');
+end
+
+local function reconciliationExpectedSignature(setName, expected)
+    local parts = { tostring(setName or '') };
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        if expected and expected[slot] ~= nil then
+            parts[#parts + 1] = tostring(slot) .. '=' .. tostring(expected[slot]);
+        end
+    end
+    return table.concat(parts, '|');
+end
+
+local function reconciliationDelayForSet(setName)
+    local intent = normalize(setIntents[setName] or '');
+    if intent == 'idle' or intent == 'movement' or intent == 'tp' then
+        return 0.35;
+    end
+    return 0.08;
+end
+
+local function reconciliationCanRepairIntent(intent)
+    local intentText = normalize(intent or '');
+    return intentText == 'tp' or intentText == 'idle' or intentText == 'movement';
+end
+
+local repairReconciliationMismatch;
+
+local function cancelPendingReconciliationSnapshot()
+    state.ReconcilePendingSnapshot = nil;
+    state.ReconcileScanScheduled = false;
+    state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+end
+
+local function recordPendingReconciliationSnapshot(token)
+    if token ~= nil and token ~= state.ReconcileScanToken then
+        return;
+    end
+    if state.ReconcileEnabled ~= true then
+        state.ReconcileScanScheduled = false;
+        state.ReconcilePendingSnapshot = nil;
+        return;
+    end
+
+    local pending = state.ReconcilePendingSnapshot;
+    state.ReconcileScanScheduled = false;
+    state.ReconcilePendingSnapshot = nil;
+    if type(pending) ~= 'table' then
+        return;
+    end
+
+    local observed, reason = observeReconciliationEquipment();
+    local snapshot;
+    if observed == nil then
+        snapshot = {
+            set = pending.set,
+            status = 'unknown_observation',
+            reason = reason or 'unknown observation failure',
+            mismatches = {},
+            expected = pending.expected,
+            observed = {},
+        };
+    else
+        snapshot = compareReconciliationSnapshot(pending.set, pending.expected, observed);
+        snapshot.expected = pending.expected;
+        snapshot.observed = observed;
+    end
+
+    snapshot.sequence = pending.sequence;
+    snapshot.timestamp = nowSeconds();
+    snapshot.force = pending.force == true;
+    snapshot.repair = pending.repair == true;
+    snapshot.repairQueued = false;
+    snapshot.playstyle = pending.playstyle;
+    snapshot.intent = pending.intent;
+    if snapshot.status == 'mismatch' and repairReconciliationMismatch then
+        snapshot.repairQueued = repairReconciliationMismatch(pending);
+    end
+    state.ReconcileLast = snapshot;
+    state.ReconcileLastRecordedSignature = pending.signature;
+    writeReconciliationSnapshot(snapshot);
+
+    if snapshot.status == 'mismatch' and snapshot.repairQueued ~= true then
+        local repairText = '';
+        if snapshot.repair == true then
+            repairText = '; repair=failed';
+        end
+        message('Reconcile mismatch set=' .. tostring(pending.set) .. '; slots=' .. reconciliationMismatchSlots(snapshot.mismatches) .. repairText .. '; log=' .. reconciliationConfig.logPath);
+    end
+end
+
+local function scheduleReconciliationSnapshot(setName, expectedSet, force, repair)
+    if state.ReconcileEnabled ~= true then
+        return;
+    end
+
+    local expected = reconciliationExpectedMap(expectedSet);
+    local signature = reconciliationExpectedSignature(setName, expected);
+    if repair ~= true and signature == state.ReconcileLastRecordedSignature then
+        if state.ReconcilePendingSnapshot and state.ReconcilePendingSnapshot.repair == true and state.ReconcilePendingSnapshot.signature == signature then
+            return;
+        end
+        cancelPendingReconciliationSnapshot();
+        return;
+    end
+
+    state.ReconcileSnapshotSeq = (state.ReconcileSnapshotSeq or 0) + 1;
+    state.ReconcilePendingSnapshot = {
+        sequence = state.ReconcileSnapshotSeq,
+        set = setName,
+        expected = expected,
+        force = force == true,
+        repair = repair == true,
+        playstyle = state.Playstyle,
+        intent = setIntents[setName] or '',
+        signature = signature,
+    };
+
+    if state.ReconcileScanScheduled == true then
+        return;
+    end
+
+    state.ReconcileScanScheduled = true;
+    state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+    local token = state.ReconcileScanToken;
+    if not scheduleTask(reconciliationDelayForSet(setName), function()
+        recordPendingReconciliationSnapshot(token);
+    end) then
+        recordPendingReconciliationSnapshot(token);
+    end
+end
+
+repairReconciliationMismatch = function(pending)
+    if type(pending) ~= 'table' then
+        return false;
+    end
+    if pending.repair == true or not reconciliationCanRepairIntent(pending.intent) then
+        return false;
+    end
+    if type(pending.expected) ~= 'table' or next(pending.expected) == nil then
+        return false;
+    end
+
+    local repaired = false;
+    if scale and scale.ForceEquipSet then
+        local ok = pcall(function()
+            scale.ForceEquipSet(pending.set, pending.expected, pending.intent);
+        end);
+        repaired = ok == true;
+    elseif gFunc and gFunc.ForceEquipSet then
+        local ok = pcall(function()
+            gFunc.ForceEquipSet(pending.expected);
+        end);
+        repaired = ok == true;
+    elseif gFunc and gFunc.EquipSet then
+        local ok = pcall(function()
+            gFunc.EquipSet(pending.expected);
+        end);
+        repaired = ok == true;
+    end
+
+    if repaired == true then
+        scheduleReconciliationSnapshot(pending.set, pending.expected, true, true);
+    end
+    return repaired;
+end
+
+local function handleReconcileCommand(args)
+    local command = normalize(args and args[2]);
+    if command == 'on' then
+        state.ReconcileEnabled = true;
+        message('Reconciliation snapshots enabled; log=' .. reconciliationConfig.logPath);
+    elseif command == 'off' then
+        state.ReconcileEnabled = false;
+        message('Reconciliation snapshots disabled.');
+    elseif command == 'status' or command == '' then
+        local lastStatus = 'none';
+        if state.ReconcileLast and state.ReconcileLast.status then
+            lastStatus = tostring(state.ReconcileLast.status);
+        end
+        message('Reconcile enabled=' .. tostring(state.ReconcileEnabled == true) .. '; last=' .. lastStatus .. '; log=' .. reconciliationConfig.logPath .. '; use reconcile on|off|status|last.');
+    elseif command == 'last' then
+        if not state.ReconcileLast then
+            message('Reconcile last: none yet; log=' .. reconciliationConfig.logPath);
+            return;
+        end
+        message('Reconcile last set=' .. tostring(state.ReconcileLast.set) .. '; status=' .. tostring(state.ReconcileLast.status) .. '; mismatches=' .. reconciliationMismatchSlots(state.ReconcileLast.mismatches) .. '; log=' .. reconciliationConfig.logPath);
+    else
+        message('Unknown reconcile command. Use reconcile on|off|status|last.');
+    end
+end
+
+
+local function weaponSkillRouteKey(name)
+    local text = normalize(name);
+    text = string.gsub(text, ':', '_');
+    text = string.gsub(text, '-', '_');
+    text = string.gsub(text, '%s+', '_');
+    text = string.gsub(text, '[^%w_]', '');
+    text = string.gsub(text, '_+', '_');
+    return text;
+end
+
 local function getPlayer()
     if gData and gData.GetPlayer then
         return gData.GetPlayer();
     end
     return nil;
+end
+
+local function mechanicsPlanForSet(setName)
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        return nil;
+    end
+    local transitions = mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return nil;
+    end
+    return transitions[setName];
+end
+
+local function mechanicsSkipReasonForSet(setName)
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        return nil;
+    end
+    local skippedTransitions = mechanicsSwapPlanner.skippedTransitions;
+    if type(skippedTransitions) ~= 'table' then
+        return nil;
+    end
+    return skippedTransitions[setName];
+end
+
+local function mechanicsWarningText(plan)
+    local warnings = plan and plan.warnings;
+    if type(warnings) ~= 'table' or #warnings == 0 then
+        return 'none';
+    end
+    return table.concat(warnings, ',');
+end
+
+local function mechanicsActionText(action)
+    if type(action) ~= 'table' then
+        return 'unknown action';
+    end
+    return tostring(action.phase or 'phase') .. ' ' .. tostring(action.slot or '?') .. '=' .. tostring(action.item or '?') .. ' (' .. tostring(action.reason or '') .. ')';
+end
+
+local function tableCount(value)
+    if type(value) ~= 'table' then
+        return 0;
+    end
+    local count = 0;
+    for _, _ in pairs(value) do
+        count = count + 1;
+    end
+    return count;
+end
+
+local function sortedMechanicsKeys(value)
+    local names = {};
+    if type(value) ~= 'table' then
+        return names;
+    end
+    for name, _ in pairs(value) do
+        table.insert(names, tostring(name));
+    end
+    table.sort(names);
+    return names;
+end
+
+local function mechanicsPlanActionWarningCounts()
+    local transitions = mechanicsSwapPlanner and mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return 0, 0;
+    end
+    local actionCount = 0;
+    local warningCount = 0;
+    for _, plan in pairs(transitions) do
+        if type(plan) == 'table' then
+            if type(plan.actions) == 'table' then
+                actionCount = actionCount + #plan.actions;
+            end
+            if type(plan.warnings) == 'table' then
+                warningCount = warningCount + #plan.warnings;
+            end
+        end
+    end
+    return actionCount, warningCount;
+end
+
+local function mechanicsListText(names)
+    if type(names) ~= 'table' or #names == 0 then
+        return 'none';
+    end
+    if #names <= 12 then
+        return table.concat(names, ',');
+    end
+    local visible = {};
+    for index = 1, 12 do
+        table.insert(visible, names[index]);
+    end
+    return table.concat(visible, ',') .. ' +' .. tostring(#names - 12) .. ' more';
+end
+
+local function printMechanicsList()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local plannedNames = sortedMechanicsKeys(mechanicsSwapPlanner.transitions);
+    local skippedNames = sortedMechanicsKeys(mechanicsSwapPlanner.skippedTransitions);
+    message('Mechanics planned sets (' .. tostring(#plannedNames) .. '): ' .. mechanicsListText(plannedNames));
+    message('Mechanics skipped sets (' .. tostring(#skippedNames) .. '): ' .. mechanicsListText(skippedNames));
+    return true;
+end
+
+local function mechanicsWarningTypeCounts()
+    local counts = {};
+    local transitions = mechanicsSwapPlanner and mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return counts;
+    end
+    for _, plan in pairs(transitions) do
+        local warnings = type(plan) == 'table' and plan.warnings or nil;
+        if type(warnings) == 'table' then
+            for _, warning in ipairs(warnings) do
+                local key = tostring(warning);
+                counts[key] = (counts[key] or 0) + 1;
+            end
+        end
+    end
+    return counts;
+end
+
+local function printMechanicsWarnings()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local counts = mechanicsWarningTypeCounts();
+    local names = sortedMechanicsKeys(counts);
+    if #names == 0 then
+        message('Mechanics warning types: none.');
+        return true;
+    end
+    for _, warning in ipairs(names) do
+        message('Mechanics warning type ' .. tostring(warning) .. ': ' .. tostring(counts[warning]));
+    end
+    return true;
+end
+
+local function mechanicsSkippedReasonCounts()
+    local counts = {};
+    local skippedTransitions = mechanicsSwapPlanner and mechanicsSwapPlanner.skippedTransitions;
+    if type(skippedTransitions) ~= 'table' then
+        return counts;
+    end
+    for _, reason in pairs(skippedTransitions) do
+        local key = tostring(reason);
+        counts[key] = (counts[key] or 0) + 1;
+    end
+    return counts;
+end
+
+local function printMechanicsSkipped()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local counts = mechanicsSkippedReasonCounts();
+    local names = sortedMechanicsKeys(counts);
+    if #names == 0 then
+        message('Mechanics skipped reasons: none.');
+        return true;
+    end
+    for _, reason in ipairs(names) do
+        message('Mechanics skipped reason ' .. tostring(reason) .. ': ' .. tostring(counts[reason]));
+    end
+    return true;
+end
+
+local function mechanicsTargetSet(args)
+    local setName = args and args[3];
+    if setName and sets[setName] then
+        return setName;
+    end
+    local alias = styleAliases[normalize(setName)];
+    if alias and sets['Playstyle_' .. alias] then
+        return 'Playstyle_' .. alias;
+    end
+    if alias and sets[alias] then
+        return alias;
+    end
+    if setName and sets['Playstyle_' .. tostring(setName)] then
+        return 'Playstyle_' .. tostring(setName);
+    end
+    return setName or '';
+end
+
+local function printMechanicsPlan(setName)
+    local plan = mechanicsPlanForSet(setName);
+    if not plan then
+        local skipReason = mechanicsSkipReasonForSet(setName);
+        if skipReason then
+            message('Mechanics transition skipped for ' .. tostring(setName) .. ': ' .. tostring(skipReason) .. '.');
+            return false;
+        end
+        message('No mechanics transition plan for ' .. tostring(setName) .. '.');
+        return false;
+    end
+    local actions = plan.actions or {};
+    message('Mechanics plan ' .. tostring(setName) .. ': actions=' .. tostring(#actions) .. '; warnings=' .. mechanicsWarningText(plan));
+    for index, action in ipairs(actions) do
+        message('Mechanics action ' .. tostring(index) .. ': ' .. mechanicsActionText(action));
+    end
+    return true;
+end
+
+local function playerMechanicsText(player)
+    if type(player) ~= 'table' then
+        return 'player unavailable';
+    end
+    local hp = player.HP or player.hp or player.CurrentHP or player.currentHP or '?';
+    local maxHp = player.MaxHP or player.maxHP or player.HPMax or player.hpmax or '?';
+    local mp = player.MP or player.mp or player.CurrentMP or player.currentMP or '?';
+    local maxMp = player.MaxMP or player.maxMP or player.MPMax or player.mpmax or '?';
+    return 'HP=' .. tostring(hp) .. '/' .. tostring(maxHp) .. '; MP=' .. tostring(mp) .. '/' .. tostring(maxMp);
+end
+
+local function probeMechanicsPlan(setName)
+    if state.MechanicsProbes ~= true then
+        message('Mechanics probes disabled. Use mechanics probes on.');
+        return false;
+    end
+    message('Mechanics probe ' .. tostring(setName) .. ': ' .. playerMechanicsText(getPlayer()));
+    return printMechanicsPlan(setName);
+end
+
+local function mechanicsStatus()
+    local loaded = mechanicsSwapPlanner and mechanicsSwapPlanner.loaded == true;
+    local baseline = mechanicsSwapPlanner and mechanicsSwapPlanner.baselineSet or '';
+    local plannerVersion = mechanicsSwapPlanner and mechanicsSwapPlanner.plannerVersion or 0;
+    local transitionCount = tableCount(mechanicsSwapPlanner and mechanicsSwapPlanner.transitions);
+    local skippedCount = tableCount(mechanicsSwapPlanner and mechanicsSwapPlanner.skippedTransitions);
+    local actionCount, warningCount = mechanicsPlanActionWarningCounts();
+    message('Mechanics planner loaded=' .. tostring(loaded) .. '; baseline=' .. tostring(baseline) .. '; version=' .. tostring(plannerVersion) .. '; transitions=' .. tostring(transitionCount) .. '; skipped=' .. tostring(skippedCount) .. '; actions=' .. tostring(actionCount) .. '; warnings=' .. tostring(warningCount) .. '; probes=' .. tostring(state.MechanicsProbes == true) .. '; execution=' .. tostring(state.MechanicsExecution == true));
+    message('Mechanics execution is disabled for this profile slice; use probes to validate timing before promotion.');
+end
+
+local function handleMechanicsCommand(args)
+    local subcommand = normalize(args and args[2]);
+    if subcommand == '' or subcommand == 'status' then
+        mechanicsStatus();
+        return;
+    elseif subcommand == 'help' then
+        message('mechanics status | mechanics list | mechanics warnings | mechanics skipped | mechanics probes on|off | mechanics plan <set> | mechanics probe <set>');
+        return;
+    elseif subcommand == 'list' then
+        printMechanicsList();
+        return;
+    elseif subcommand == 'warnings' then
+        printMechanicsWarnings();
+        return;
+    elseif subcommand == 'skipped' then
+        printMechanicsSkipped();
+        return;
+    elseif subcommand == 'probes' then
+        local value = normalize(args and args[3]);
+        if value == 'on' then
+            state.MechanicsProbes = true;
+        elseif value == 'off' then
+            state.MechanicsProbes = false;
+        end
+        message('Mechanics probes: ' .. (state.MechanicsProbes and 'on' or 'off') .. '.');
+        return;
+    elseif subcommand == 'plan' then
+        printMechanicsPlan(mechanicsTargetSet(args));
+        return;
+    elseif subcommand == 'probe' then
+        probeMechanicsPlan(mechanicsTargetSet(args));
+        return;
+    end
+    message('Unknown mechanics command. Use mechanics help.');
 end
 
 local function getAction()
@@ -2567,14 +27165,21 @@ local function getBuffCount(name)
     return 0;
 end
 
+local function hasBuff(name)
+    if name == nil or tostring(name) == '' then
+        return false;
+    end
+    return getBuffCount(name) > 0;
+end
+
 local function hasDangerousStatus()
     for name in pairs(dangerousStatusBuffs) do
-        if getBuffCount(name) > 0 then
+        if hasBuff(name) then
             return true;
         end
     end
     for _, id in ipairs(dangerousStatusIds) do
-        if getBuffCount(id) > 0 then
+        if hasBuff(id) then
             return true;
         end
     end
@@ -2617,6 +27222,29 @@ end
 
 profile.HasSubjobCapability = hasSubjobCapability;
 
+local function mainJobHasNativeDualWield()
+    return nativeDualWieldMainJobs['DRK'] == true;
+end
+
+local function setWithSubjobLegalOffhand(setName, set)
+    if type(set) ~= 'table' then
+        return set;
+    end
+    if setRequiresDualWieldSub[setName] ~= true then
+        return set;
+    end
+    if mainJobHasNativeDualWield() or hasSubjobCapability('dual_wield') then
+        return set;
+    end
+
+    local adjusted = {};
+    for slot, item in pairs(set) do
+        adjusted[slot] = item;
+    end
+    adjusted.Sub = 'remove';
+    return adjusted;
+end
+
 local function summarizeSubjobEntries(entries, label)
     local parts = {};
     for _, entry in ipairs(entries or {}) do
@@ -2651,6 +27279,46 @@ local function isResting(player)
     return status == 'resting' or status == 'healing' or status == '33' or status == '34';
 end
 
+local function isMounted(player)
+    if player then
+        if truthy(player.Mounted or player.mounted or player.IsMounted or player.isMounted or player.OnMount or player.onMount) then
+            return true;
+        end
+
+        local status = normalize(player.Status or player.status or player.StatusName or player.statusName);
+        if status == 'mounted' or status == 'mount' or status == 'chocobo' or status == '252' then
+            return true;
+        end
+    end
+
+    for name, _ in pairs(mountedStatusBuffs) do
+        if hasBuff(name) then
+            return true;
+        end
+    end
+    for _, id in ipairs(mountedStatusIds) do
+        if hasBuff(id) then
+            return true;
+        end
+    end
+    return false;
+end
+
+local function isOnFoot(player)
+    return not isMounted(player);
+end
+
+local function canEquipMovement(player, environment)
+    if isCity(environment) then
+        return true;
+    end
+    return not isEngaged(player) and isOnFoot(player);
+end
+
+local function shouldEquipInCityMovement(player, environment)
+    return isCity(environment);
+end
+
 local function playerHpp(player)
     if not player then
         return nil;
@@ -2669,10 +27337,19 @@ local function playerHpp(player)
     return nil;
 end
 
+local function playerTp(player)
+    if not player then
+        return 0;
+    end
+    return tonumber(player.TP or player.tp or player.TacticalPoints or player.tacticalPoints or 0) or 0;
+end
+
 local function isEmergencyHp(player)
     local hpp = playerHpp(player);
     return hpp ~= nil and hpp <= 35;
 end
+
+
 
 local function setNameFor(styleName)
     return 'Playstyle_' .. tostring(styleName or state.Playstyle);
@@ -2705,6 +27382,174 @@ local function isClearSet(set)
     return true;
 end
 
+local function firstAvailableDefensiveSet()
+    local candidates = { 'PDT', 'Playstyle_Safe', 'Safe', 'Survival', 'Tank', 'Evasion', 'Hybrid', 'MDT' };
+    for _, setName in ipairs(candidates) do
+        local set = sets[setName];
+        if type(set) == 'table' and not isClearSet(set) then
+            return setName;
+        end
+    end
+    return nil;
+end
+
+local function providedThreatEntities(player)
+    if type(profile.GetThreatEntities) == 'function' then
+        local ok, entities = pcall(profile.GetThreatEntities, player);
+        if ok and type(entities) == 'table' then
+            return entities;
+        end
+    end
+    if gData and type(gData.GetThreatEntities) == 'function' then
+        local ok, entities = pcall(gData.GetThreatEntities, player);
+        if ok and type(entities) == 'table' then
+            return entities;
+        end
+    end
+    return nil;
+end
+
+local function isIncrediblyToughEntity(entity)
+    if type(entity) ~= 'table' then
+        return false;
+    end
+    if entity.IsIncrediblyTough == true or entity.isIncrediblyTough == true then
+        return true;
+    end
+    local difficulty = normalize(
+        entity.Difficulty
+        or entity.difficulty
+        or entity.Check
+        or entity.check
+        or entity.CheckMessage
+        or entity.checkMessage
+        or entity.DifficultyText
+        or entity.difficultyText
+    );
+    return difficulty == 'it'
+        or difficulty == 'incredibly tough'
+        or difficulty == 'incredibly_tough'
+        or difficulty == 'incrediblytough';
+end
+
+local function addThreatIdentifier(identifiers, value)
+    if value ~= nil and tostring(value) ~= '' then
+        identifiers[tostring(value)] = true;
+    end
+end
+
+local function playerThreatIdentifiers(player)
+    local identifiers = {};
+    if type(player) ~= 'table' then
+        return identifiers;
+    end
+    addThreatIdentifier(identifiers, player.Id or player.ID or player.id);
+    addThreatIdentifier(identifiers, player.ServerId or player.ServerID or player.serverId or player.serverID);
+    addThreatIdentifier(identifiers, player.TargetIndex or player.targetIndex or player.Index or player.index);
+    addThreatIdentifier(identifiers, player.Name or player.name);
+    return identifiers;
+end
+
+local function threatValueIsActive(value)
+    if value == true then
+        return true;
+    end
+    if type(value) == 'number' then
+        return value > 0;
+    end
+    if type(value) == 'string' then
+        local normalized = normalize(value);
+        return normalized == 'true' or normalized == 'yes' or normalized == 'active' or tonumber(value) ~= nil and tonumber(value) > 0;
+    end
+    return type(value) == 'table';
+end
+
+local function threatEntryMatchesPlayer(entry, identifiers)
+    if type(entry) ~= 'table' then
+        return false;
+    end
+    local id = entry.Id or entry.ID or entry.id or entry.ServerId or entry.ServerID or entry.serverId or entry.serverID;
+    local index = entry.Index or entry.index or entry.TargetIndex or entry.targetIndex;
+    local name = entry.Name or entry.name;
+    if (id ~= nil and identifiers[tostring(id)] == true)
+        or (index ~= nil and identifiers[tostring(index)] == true)
+        or (name ~= nil and identifiers[tostring(name)] == true) then
+        return threatValueIsActive(entry.Threat or entry.threat or entry.Enmity or entry.enmity or true);
+    end
+    return false;
+end
+
+local function entityHasPlayerThreat(entity, player)
+    if type(entity) ~= 'table' then
+        return false;
+    end
+    for _, field in ipairs({ 'HasPlayerThreat', 'hasPlayerThreat', 'OnPlayerThreatTable', 'onPlayerThreatTable', 'PlayerThreat', 'playerThreat', 'ClaimedByPlayer', 'claimedByPlayer' }) do
+        if threatValueIsActive(entity[field]) then
+            return true;
+        end
+    end
+
+    local identifiers = playerThreatIdentifiers(player);
+    for _, field in ipairs({ 'TargetId', 'targetId', 'TargetID', 'targetID', 'TargetServerId', 'targetServerId', 'TargetIndex', 'targetIndex' }) do
+        local value = entity[field];
+        if value ~= nil and identifiers[tostring(value)] == true then
+            return true;
+        end
+    end
+
+    local threatTable = entity.ThreatTable or entity.threatTable or entity.Threat or entity.threat or entity.Enmity or entity.enmity;
+    if type(threatTable) ~= 'table' then
+        return false;
+    end
+    for key, value in pairs(threatTable) do
+        if identifiers[tostring(key)] == true and threatValueIsActive(value) then
+            return true;
+        end
+        if threatEntryMatchesPlayer(value, identifiers) then
+            return true;
+        end
+    end
+    return false;
+end
+
+local function countOvertDefenseThreats(player)
+    local entities = providedThreatEntities(player);
+    if type(entities) ~= 'table' then
+        return 0;
+    end
+
+    local count = 0;
+    for _, entity in pairs(entities) do
+        if isIncrediblyToughEntity(entity) and entityHasPlayerThreat(entity, player) then
+            count = count + 1;
+        end
+    end
+    return count;
+end
+
+local function shouldEquipOvertDefense(player)
+    if not player or not isEngaged(player) then
+        return nil;
+    end
+    if countOvertDefenseThreats(player) < OVERT_DEFENSE_TARGET_COUNT then
+        return nil;
+    end
+
+    local defensiveSet = firstAvailableDefensiveSet();
+    if not defensiveSet then
+        return nil;
+    end
+    local hpp = playerHpp(player);
+    if hpp ~= nil and hpp < OVERT_DEFENSE_HP_FORCE_HPP then
+        return defensiveSet;
+    end
+    local tp = playerTp(player);
+    if tp < OVERT_DEFENSE_TP_UNLOCK then
+        return defensiveSet;
+    end
+    return nil;
+end
+
 local function applyWarpRingLock(set)
     if state.WarpRingLocked ~= true or type(set) ~= 'table' then
         return set;
@@ -2718,37 +27563,323 @@ local function applyWarpRingLock(set)
     return lockedSet;
 end
 
+local function desiredSecondarySlotLocks(setName)
+    local desired = {};
+    local setLocks = setSecondarySlotLocks[setName];
+    if type(setLocks) ~= 'table' then
+        return desired;
+    end
+
+    for _, lockedSlots in pairs(setLocks) do
+        if type(lockedSlots) == 'table' then
+            for _, slot in ipairs(lockedSlots) do
+                desired[slot] = true;
+            end
+        end
+    end
+    return desired;
+end
+
+local function desiredSecondarySlotLocksForSetNames(setNames)
+    local desired = {};
+    if type(setNames) ~= 'table' then
+        return desired;
+    end
+
+    for _, setName in ipairs(setNames) do
+        local setDesired = desiredSecondarySlotLocks(setName);
+        for slot, _ in pairs(setDesired) do
+            desired[slot] = true;
+        end
+    end
+    return desired;
+end
+
+local function releaseSecondarySlotLocksNotInSetNames(setNames)
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        state.SecondarySlotLocks = {};
+        return;
+    end
+
+    local desired = desiredSecondarySlotLocksForSetNames(setNames);
+    local slotsToEnable = {};
+    for slot, _ in pairs(active) do
+        if desired[slot] ~= true then
+            slotsToEnable[#slotsToEnable + 1] = slot;
+        end
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        active[slot] = nil;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        if gFunc and gFunc.Enable then
+            gFunc.Enable(slot);
+        end
+    end
+end
+
+local function releaseSecondarySlotLocksNotInSet(setName)
+    local contextSetNames = state.SecondarySlotLockContextSetNames;
+    if type(contextSetNames) == 'table' then
+        releaseSecondarySlotLocksNotInSetNames(contextSetNames);
+        return;
+    end
+
+    releaseSecondarySlotLocksNotInSetNames({ setName });
+end
+
+local function applySecondarySlotLocksForSet(setName)
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        active = {};
+        state.SecondarySlotLocks = active;
+    end
+
+    local desired = desiredSecondarySlotLocks(setName);
+    local slotsToDisable = {};
+    for slot, _ in pairs(desired) do
+        if active[slot] ~= true then
+            slotsToDisable[#slotsToDisable + 1] = slot;
+        end
+    end
+
+    for _, slot in ipairs(slotsToDisable) do
+        active[slot] = true;
+    end
+
+    for _, slot in ipairs(slotsToDisable) do
+        if gFunc and gFunc.Disable then
+            gFunc.Disable(slot);
+        end
+    end
+end
+
+local function unlockSecondarySlotLocks()
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        state.SecondarySlotLocks = {};
+        return;
+    end
+
+    local slotsToEnable = {};
+    for slot, _ in pairs(active) do
+        slotsToEnable[#slotsToEnable + 1] = slot;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        active[slot] = nil;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        if gFunc and gFunc.Enable then
+            gFunc.Enable(slot);
+        end
+    end
+end
+
+local function applyConditionalEquipsForSet(setName, force)
+    if not conditionals or not conditionals.ApplyForSet then
+        return false;
+    end
+
+    return conditionals.ApplyForSet(conditionalEquips, setName, {
+        force = force,
+        gFunc = gFunc,
+        getEnvironment = getEnvironment,
+        getPlayer = getPlayer,
+        hasBuff = hasBuff,
+        state = state,
+    });
+end
+
+local reconciliationProtectedWeaponSlots = {
+    Main = true,
+    Sub = true,
+    Range = true,
+};
+
+local function copyEquipSet(set)
+    local copy = {};
+    if type(set) ~= 'table' then
+        return copy;
+    end
+    for slot, item in pairs(set) do
+        copy[slot] = item;
+    end
+    return copy;
+end
+
+local function overlayEquipSet(baseSet, overlay)
+    local result = copyEquipSet(baseSet);
+    if type(overlay) ~= 'table' then
+        return result;
+    end
+    for slot, item in pairs(overlay) do
+        result[slot] = item;
+    end
+    return result;
+end
+
+local function reconciliationEquipContext(force)
+    return {
+        force = force,
+        gFunc = gFunc,
+        getEnvironment = getEnvironment,
+        getPlayer = getPlayer,
+        hasBuff = hasBuff,
+        state = state,
+    };
+end
+
+local function conditionalOverlayForSet(setName, force)
+    if not conditionals or not conditionals.BuildOverlay then
+        return {};
+    end
+
+    local ok, overlay = pcall(function()
+        return conditionals.BuildOverlay(conditionalEquips[setName], reconciliationEquipContext(force));
+    end);
+    if ok and type(overlay) == 'table' then
+        return overlay;
+    end
+    return {};
+end
+
+local function shouldExpectProtectedWeapons(intent)
+    local status = nil;
+    if scale and scale.Status then
+        local ok, result = pcall(scale.Status);
+        if ok and type(result) == 'table' then
+            status = result;
+        end
+    end
+
+    if status and status.weaponLockEnabled == false then
+        return false;
+    end
+    if status and tonumber(status.tp or 0) and tonumber(status.tp or 0) > 0 then
+        return true;
+    end
+    if status and isEngaged(status) then
+        return intent ~= 'TP';
+    end
+
+    local player = getPlayer();
+    if playerTp(player) > 0 then
+        return true;
+    end
+    if isEngaged(player) then
+        return intent ~= 'TP';
+    end
+    return false;
+end
+
+local function expectedSetWithProtectedWeapons(expectedSet, requestedSet, intent)
+    local expected = copyEquipSet(expectedSet);
+    if not shouldExpectProtectedWeapons(intent) then
+        return expected;
+    end
+
+    local observed = observeReconciliationEquipment();
+    if type(observed) ~= 'table' then
+        return expected;
+    end
+
+    for slot, _ in pairs(reconciliationProtectedWeaponSlots) do
+        if requestedSet and requestedSet[slot] ~= nil and expected[slot] == nil and observed[slot] ~= nil then
+            expected[slot] = observed[slot];
+        end
+    end
+    return expected;
+end
+
+local function resolvedReconciliationExpectedSet(setName, requestedSet, appliedSet, force)
+    local expectedSet = copyEquipSet(appliedSet);
+    if next(expectedSet) == nil then
+        expectedSet = copyEquipSet(requestedSet);
+    end
+    expectedSet = expectedSetWithProtectedWeapons(expectedSet, requestedSet, setIntents[setName]);
+    expectedSet = overlayEquipSet(expectedSet, conditionalOverlayForSet(setName, force));
+    return expectedSet;
+end
+
+local function isStableEquipIntent(setName)
+    local intent = normalize(setIntents[setName] or '');
+    return intent == 'tp' or intent == 'idle' or intent == 'movement';
+end
+
+local function stableEquipForceForSet(setName, setToEquip, force)
+    if force == true then
+        if isStableEquipIntent(setName) then
+            state.StableEquipForcePending = false;
+        end
+        return true;
+    end
+    if state.StableEquipForcePending == true and isStableEquipIntent(setName) and not isClearSet(setToEquip) then
+        state.StableEquipForcePending = false;
+        return true;
+    end
+    return false;
+end
+
+local function markStableEquipForceNeeded(setName, force)
+    if force == true then
+        return;
+    end
+    if not isStableEquipIntent(setName) then
+        state.StableEquipForcePending = true;
+    end
+end
+
 local function equipNamedSet(setName, force)
     local set = sets[setName];
     if not set then
         return false;
     end
 
+    releaseSecondarySlotLocksNotInSet(setName);
+    local setToEquip = setWithSubjobLegalOffhand(setName, set);
+    local effectiveForce = stableEquipForceForSet(setName, setToEquip, force);
+
     if state.WarpRingLocked == true then
-        local lockedSet = applyWarpRingLock(set);
-        if force == true and gFunc and gFunc.ForceEquipSet then
+        local lockedSet = applyWarpRingLock(setToEquip);
+        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
             gFunc.ForceEquipSet(lockedSet);
         elseif gFunc and gFunc.EquipSet then
             gFunc.EquipSet(lockedSet);
         end
+        applyConditionalEquipsForSet(setName, effectiveForce);
+        applySecondarySlotLocksForSet(setName);
+        local equippedSet = resolvedReconciliationExpectedSet(setName, lockedSet, lockedSet, effectiveForce);
+        scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
+        markStableEquipForceNeeded(setName, effectiveForce);
         return true;
     end
 
-    if isClearSet(set) then
-        if force == true and gFunc and gFunc.ForceEquipSet then
-            gFunc.ForceEquipSet(set);
+    local appliedSet = setToEquip;
+    if isClearSet(setToEquip) then
+        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+            gFunc.ForceEquipSet(setToEquip);
         elseif gFunc and gFunc.EquipSet then
-            gFunc.EquipSet(set);
+            gFunc.EquipSet(setToEquip);
         end
-    elseif force == true and scale and scale.ForceEquipSet then
-        scale.ForceEquipSet(setName, set, setIntents[setName]);
-    elseif force == true and gFunc and gFunc.ForceEquipSet then
-        gFunc.ForceEquipSet(set);
+    elseif effectiveForce == true and scale and scale.ForceEquipSet then
+        appliedSet = scale.ForceEquipSet(setName, setToEquip, setIntents[setName]);
+    elseif effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+        gFunc.ForceEquipSet(setToEquip);
     elseif scale and scale.EquipSet then
-        scale.EquipSet(setName, set, setIntents[setName]);
+        appliedSet = scale.EquipSet(setName, setToEquip, setIntents[setName]);
     elseif gFunc and gFunc.EquipSet then
-        gFunc.EquipSet(set);
+        gFunc.EquipSet(setToEquip);
     end
+    applyConditionalEquipsForSet(setName, effectiveForce);
+    applySecondarySlotLocksForSet(setName);
+    local equippedSet = resolvedReconciliationExpectedSet(setName, setToEquip, appliedSet, effectiveForce);
+    scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
+    markStableEquipForceNeeded(setName, effectiveForce);
     return true;
 end
 
@@ -2758,6 +27889,30 @@ local function equipNamedSetIfNotClear(setName, force)
         return false;
     end
     return equipNamedSet(setName, force);
+end
+
+local function equipOvertDefensiveSet(setName)
+    if not setName then
+        return false;
+    end
+
+    local status = {};
+    if scale and scale.Status then
+        local ok, result = pcall(scale.Status);
+        if ok and type(result) == 'table' then
+            status = result;
+        end
+    end
+    local previousWeaponLockEnabled = status.weaponLockEnabled == true;
+
+    if scale and scale.SetWeaponLockEnabled then
+        scale.SetWeaponLockEnabled(false);
+    end
+    local ok, equipped = pcall(equipNamedSet, setName, true);
+    if scale and scale.SetWeaponLockEnabled then
+        scale.SetWeaponLockEnabled(previousWeaponLockEnabled);
+    end
+    return ok == true and equipped == true;
 end
 
 local function forceEquipInlineSet(set, ignoreWarpRingLock)
@@ -2780,13 +27935,23 @@ local function forceEquipInlineSet(set, ignoreWarpRingLock)
     return false;
 end
 
+local oddLuaWarpRing = {};
+
+function oddLuaWarpRing.lockRing2()
+    if gFunc and gFunc.Disable then
+        gFunc.Disable('Ring2');
+    end
+end
+
+function oddLuaWarpRing.unlockRing2()
+    if gFunc and gFunc.Enable then
+        gFunc.Enable('Ring2');
+    end
+end
+
 local function clearWarpRing()
     state.WarpRingLocked = false;
-    state.WarpUsePending = false;
-    state.WarpClearPending = false;
-    state.WarpUseAt = nil;
-    state.WarpClearAt = nil;
-
+    oddLuaWarpRing.unlockRing2();
     if forceEquipInlineSet({ Ring2 = 'remove' }, true) then
         message('Warp Ring removed from Ring2.');
     else
@@ -2794,56 +27959,42 @@ local function clearWarpRing()
     end
 end
 
-local function processWarpRingTimers()
-    local handled = false;
-    local now = nowSeconds();
-
-    if state.WarpRingLocked == true and state.WarpUsePending == true and state.WarpUseAt and now >= state.WarpUseAt then
-        handled = true;
-        state.WarpUsePending = false;
-        forceEquipInlineSet({ Ring2 = 'Warp Ring' });
-        local useQueued = queueTypedCommand('/item "Warp Ring" <me>', 1);
-        if useQueued then
-            message('Warp Ring use queued after 9 seconds.');
-        else
-            message('Warp Ring use failed: unable to queue item command.');
-        end
-    end
-
-    if state.WarpClearPending == true and state.WarpClearAt and now >= state.WarpClearAt then
-        handled = true;
+function oddLuaWarpRing.finishUse()
+    local useQueued = queueTypedCommand('/item "Warp Ring" <me>', 1);
+    if not useQueued then
+        message('Warp Ring use failed: unable to queue item command.');
         clearWarpRing();
+        return;
     end
-
-    return handled;
+    message('Warp Ring use queued. Ring2 unlocks in 10 seconds.');
+    if not scheduleTask(10, clearWarpRing) then
+        message('Warp Ring cleanup scheduling failed; use /lac fwd warpclear.');
+    end
 end
 
 local function useWarpRing()
+    if state.WarpRingLocked == true then
+        message('Warp Ring flow already running.');
+        return;
+    end
+
     state.WarpRingLocked = true;
-    if not forceEquipInlineSet({ Ring2 = 'Warp Ring' }) then
+    if not forceEquipInlineSet({ Ring2 = 'Warp Ring' }, true) then
         state.WarpRingLocked = false;
         message('Warp Ring equip failed: unable to force Ring2.');
         return;
     end
-
-    local now = nowSeconds();
-    state.WarpUsePending = true;
-    state.WarpClearPending = true;
-    state.WarpUseAt = now + 9;
-    state.WarpClearAt = now + 30;
-
-    local useScheduled = scheduleTask(9, processWarpRingTimers);
-    local cleanupScheduled = scheduleTask(30, processWarpRingTimers);
-    if useScheduled and cleanupScheduled then
-        message('Warp Ring armed: Ring2 locked; use in 9 seconds; Ring2 cleanup at 30 seconds.');
-    else
-        message('Warp Ring armed with default-tick fallback: Ring2 locked; use in 9 seconds; Ring2 cleanup at 30 seconds.');
+    oddLuaWarpRing.lockRing2();
+    message('Warp Ring equipped and locked in Ring2. Use fires in 10 seconds.');
+    if not scheduleTask(10, oddLuaWarpRing.finishUse) then
+        message('Warp Ring use scheduling failed.');
+        clearWarpRing();
     end
 end
 
 local function equipFirstAvailable(setNames, force)
     for _, setName in ipairs(setNames or {}) do
-        if setName and equipNamedSet(setName, force) then
+        if setName and equipNamedSetIfNotClear(setName, force) then
             return true;
         end
     end
@@ -2925,13 +28076,38 @@ local function equipCombatStyle(force)
     return equipNamedSet('Playstyle_Damage', force);
 end
 
-local function equipMovement(environment, force)
+local function lockstyleCombatSet()
+    if not equipNamedSet('TP', true) then
+        if not equipNamedSet(setNameFor('Damage'), true) then
+            message('Unable to equip TP set for lockstyle.');
+            return;
+        end
+    end
+
+    local function applyTpLockstyle()
+        if queueTypedCommand('/lockstyle on', 1) then
+            message('Lockstyle captured TP set.');
+        else
+            message('Lockstyle command unavailable; equip TP set manually, then use /lockstyle on.');
+        end
+    end
+
+    if not scheduleTask(0.3, applyTpLockstyle) then
+        applyTpLockstyle();
+    end
+end
+
+local function equipMovement(player, environment, force)
+    if not canEquipMovement(player, environment) then
+        return false;
+    end
+
     local equipped = false;
 
     if equipNamedSetIfNotClear('Movement', force) then
         equipped = true;
     end
-    if isCity(environment) and equipNamedSetIfNotClear('Movement_City', force) then
+    if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('Movement_City', force) then
         equipped = true;
     end
     if isNight(environment) and equipNamedSetIfNotClear('Movement_Night', force) then
@@ -2940,11 +28116,58 @@ local function equipMovement(environment, force)
     if isDuskToDawn(environment) and equipNamedSetIfNotClear('Movement_DuskToDawn', force) then
         equipped = true;
     end
+    if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('InCity', force) then
+        equipped = true;
+    end
 
     return equipped;
 end
 
-local function equipIdleState(player, force)
+local function addSecondarySlotLockSetNameIfNotClear(setNames, setName)
+    local set = sets[setName];
+    if set and not isClearSet(set) then
+        setNames[#setNames + 1] = setName;
+    end
+end
+
+local function addMovementSecondarySlotLockSetNames(setNames, player, environment)
+    if not canEquipMovement(player, environment) then
+        return;
+    end
+
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement');
+    if shouldEquipInCityMovement(player, environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_City');
+    end
+    if isNight(environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_Night');
+    end
+    if isDuskToDawn(environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_DuskToDawn');
+    end
+    if shouldEquipInCityMovement(player, environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'InCity');
+    end
+end
+
+local function idleSecondarySlotLockSetNames(player, environment)
+    local setNames = {};
+    if isClearSet(sets['Aftercast']) then
+        return setNames;
+    end
+
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Aftercast');
+    if #setNames == 0 then
+        if isClearSet(sets['Idle']) then
+            return setNames;
+        end
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Idle');
+    end
+    addMovementSecondarySlotLockSetNames(setNames, player, environment);
+    return setNames;
+end
+
+local function equipBaseIdleState(player, force)
     if isClearSet(sets['Aftercast']) then
         equipNamedSet('Aftercast', force);
         return true;
@@ -2959,20 +28182,40 @@ local function equipIdleState(player, force)
         equipped = equipNamedSetIfNotClear('Idle', force);
     end
 
-    equipMovement(getEnvironment(), force);
+    equipMovement(player, getEnvironment(), force);
     if equipped then
         return true;
     end
     return equipNamedSet('Idle', force);
 end
 
+local function equipIdleState(player, force)
+    local previousSecondarySlotLockContext = state.SecondarySlotLockContextSetNames;
+    state.SecondarySlotLockContextSetNames = idleSecondarySlotLockSetNames(player, getEnvironment());
+    local ok, equipped = pcall(equipBaseIdleState, player, force);
+    state.SecondarySlotLockContextSetNames = previousSecondarySlotLockContext;
+    if not ok then
+        error(equipped);
+    end
+    return equipped;
+end
+
 local function equipDefaultForPlayer(player, force)
     if hasDangerousStatus() then
         equipNamedSet('PDT', force);
-    elseif player and isEngaged(player) and isEmergencyHp(player) then
-        equipNamedSet('PDT', force);
     elseif player and isEngaged(player) then
-        equipCombatStyle(force);
+        local defensiveSet = shouldEquipOvertDefense(player);
+        if defensiveSet then
+            local equippedDefensive = equipOvertDefensiveSet(defensiveSet);
+            if equippedDefensive then
+                return;
+            end
+        end
+        if isEmergencyHp(player) then
+            equipNamedSet('PDT', force);
+        else
+            equipCombatStyle(force);
+        end
     elseif state.Playstyle == 'Craft' then
         if not equipNamedSet('Crafting', force) then
             equipNamedSet('Idle', force);
@@ -2984,14 +28227,193 @@ local function equipDefaultForPlayer(player, force)
     end
 end
 
-local function equipBlueMagic()
-    local active = activeCombatStyle();
-    if active == 'MagicalBlue' and equipNamedSet('Playstyle_MagicalBlue', false) then
-        return;
-    elseif active == 'PhysicalBlue' and equipNamedSet('Playstyle_PhysicalBlue', false) then
+local oddLuaNumberRow = {
+    renderEvent = 'oddlua_number_row_Oddone_29938_DRK',
+    imgui = nil,
+    overlayRegistered = false,
+    utilityFallbacks = {
+        craft = { 'Craft', 'Fishing', 'Gathering', 'Clamming', 'Movement', 'Resting', 'Treasure', 'Survival' },
+        movement = { 'Movement', 'Movement_City', 'Movement_Night', 'Movement_DuskToDawn', 'InCity', 'Survival' },
+    },
+};
+
+if type(require) == 'function' then
+    local ok, loaded = pcall(require, 'imgui');
+    if ok and loaded then
+        oddLuaNumberRow.imgui = loaded;
+    end
+end
+
+function oddLuaNumberRow.setBooleanValue(current, value)
+    local valueText = normalize(value);
+    if valueText == 'on' or valueText == 'enable' or valueText == 'enabled' then
+        return true;
+    elseif valueText == 'off' or valueText == 'disable' or valueText == 'disabled' then
+        return false;
+    end
+    return not current;
+end
+
+function oddLuaNumberRow.bindPalette()
+    if state.NumberRowPaletteEnabled ~= true then
         return;
     end
-    equipNamedSet('BlueMagic', false);
+    queueTypedCommand('/bind 1 /lac fwd styleprev', -1);
+    queueTypedCommand('/bind 2 /lac fwd stylenext', -1);
+    queueTypedCommand('/bind 3 /lac fwd styles', -1);
+    queueTypedCommand('/bind 4 /lac fwd warp', -1);
+    queueTypedCommand('/bind 5 /lac fwd lockstyle', -1);
+    queueTypedCommand('/bind 6 /lac fwd status', -1);
+    queueTypedCommand('/bind 7 /lac fwd utility craft', -1);
+    queueTypedCommand('/bind 8 /lac fwd utility movement', -1);
+    queueTypedCommand('/bind 9 /lac fwd palette missing', -1);
+    queueTypedCommand('/bind 0 /lac fwd palette missing', -1);
+    queueTypedCommand('/bind - /lac fwd palette missing', -1);
+    queueTypedCommand('/bind = /lac fwd palette missing', -1);
+end
+
+function oddLuaNumberRow.unbindPalette()
+    queueTypedCommand('/unbind 1', -1);
+    queueTypedCommand('/unbind 2', -1);
+    queueTypedCommand('/unbind 3', -1);
+    queueTypedCommand('/unbind 4', -1);
+    queueTypedCommand('/unbind 5', -1);
+    queueTypedCommand('/unbind 6', -1);
+    queueTypedCommand('/unbind 7', -1);
+    queueTypedCommand('/unbind 8', -1);
+    queueTypedCommand('/unbind 9', -1);
+    queueTypedCommand('/unbind 0', -1);
+    queueTypedCommand('/unbind -', -1);
+    queueTypedCommand('/unbind =', -1);
+end
+
+function oddLuaNumberRow.setPaletteEnabled(value)
+    local enabled = oddLuaNumberRow.setBooleanValue(state.NumberRowPaletteEnabled, value);
+    state.NumberRowPaletteEnabled = enabled;
+    if enabled then
+        oddLuaNumberRow.bindPalette();
+        message('OddLua number row palette: on');
+    else
+        oddLuaNumberRow.unbindPalette();
+        message('OddLua number row palette: off');
+    end
+end
+
+function oddLuaNumberRow.currentPlaystyleIndex()
+    for index, styleName in ipairs(playstyleNames) do
+        if styleName == state.Playstyle then
+            return index;
+        end
+    end
+    return 1;
+end
+
+function oddLuaNumberRow.cyclePlaystyle(delta)
+    if #playstyleNames == 0 then
+        message('No playstyles available.');
+        return false;
+    end
+    local index = oddLuaNumberRow.currentPlaystyleIndex();
+    local selectedIndex = ((index - 1 + delta) % #playstyleNames) + 1;
+    state.Playstyle = playstyleNames[selectedIndex];
+    message('Style=' .. state.Playstyle);
+    equipDefaultForPlayer(getPlayer(), true);
+    return true;
+end
+
+function oddLuaNumberRow.equipUtilityIntent(intent)
+    local fallback = oddLuaNumberRow.utilityFallbacks[normalize(intent)];
+    if type(fallback) ~= 'table' then
+        message('Not Applicable / Missing Equipment');
+        return false;
+    end
+    for _, setName in ipairs(fallback) do
+        if equipNamedSetIfNotClear(setName, true) then
+            message('Utility=' .. tostring(intent) .. '; set=' .. setName);
+            return true;
+        end
+    end
+    message('Not Applicable / Missing Equipment');
+    return false;
+end
+
+function oddLuaNumberRow.toggleIsOn(binding)
+    if not binding or binding.toggle == nil or binding.toggle == '' then
+        return false;
+    end
+    return state[binding.toggle] == true;
+end
+
+function oddLuaNumberRow.renderOverlay()
+    if state.NumberRowPaletteEnabled ~= true or oddLuaNumberRow.imgui == nil then
+        return;
+    end
+    local imgui = oddLuaNumberRow.imgui;
+    local flags = 0;
+    if bit and bit.bor then
+        flags = bit.bor(
+            ImGuiWindowFlags_NoDecoration or 0,
+            ImGuiWindowFlags_AlwaysAutoResize or 0,
+            ImGuiWindowFlags_NoMove or 0,
+            ImGuiWindowFlags_NoSavedSettings or 0,
+            ImGuiWindowFlags_NoFocusOnAppearing or 0,
+            ImGuiWindowFlags_NoNav or 0
+        );
+    end
+    local onColor = { 0.78, 1.0, 0.72, 1.0 };
+    local offColor = { 0.35, 0.40, 0.36, 1.0 };
+    local neutralColor = { 0.90, 0.94, 0.90, 1.0 };
+    local title = 'OddLua Oddone_29938 DRK';
+    if imgui.SetNextWindowPos then
+        imgui.SetNextWindowPos({ 16, 8 }, ImGuiCond_Always or 0);
+    end
+    if imgui.SetNextWindowBgAlpha then
+        imgui.SetNextWindowBgAlpha(0.42);
+    end
+    if imgui.Begin and imgui.Begin(title .. '##numberrow', true, flags) then
+        imgui.TextColored(neutralColor, title);
+        for index, binding in ipairs(numberRowBindings) do
+            if index > 1 and imgui.SameLine then
+                imgui.SameLine();
+            end
+            if binding.kind == 'toggle' and binding.toggle ~= '' then
+                if oddLuaNumberRow.toggleIsOn(binding) then
+                    imgui.TextColored(onColor, binding.key .. ' ' .. binding.label);
+                else
+                    imgui.TextColored(offColor, binding.key .. ' ' .. binding.label);
+                end
+            else
+                imgui.TextColored(neutralColor, binding.key .. ' ' .. binding.label);
+            end
+        end
+    end
+    if imgui.End then
+        imgui.End();
+    end
+end
+
+function oddLuaNumberRow.registerOverlay()
+    if oddLuaNumberRow.overlayRegistered == true or oddLuaNumberRow.imgui == nil or not ashita or not ashita.events then
+        return;
+    end
+    ashita.events.register('d3d_present', oddLuaNumberRow.renderEvent, oddLuaNumberRow.renderOverlay);
+    oddLuaNumberRow.overlayRegistered = true;
+end
+
+function oddLuaNumberRow.unregisterOverlay()
+    if oddLuaNumberRow.overlayRegistered ~= true or not ashita or not ashita.events then
+        return;
+    end
+    ashita.events.unregister('d3d_present', oddLuaNumberRow.renderEvent);
+    oddLuaNumberRow.overlayRegistered = false;
+end
+
+local function equipBlueMagic(name)
+    local route = blueMagicRoutes[normalize(name)];
+    if route and equipNamedSet(route, false) then
+        return;
+    end
+    equipFirstAvailable({ 'BlueMagic', 'PhysicalBlueMagic', 'MagicalBlueMagic', 'Midcast' }, false);
 end
 
 local function equipElementalMagic(action)
@@ -3120,6 +28542,10 @@ local function equipAbility()
         equipFirstAvailable({ 'BloodPactRage', 'PetReady', 'JobAbility' }, false);
     elseif actionType == 'blood pact: ward' then
         equipFirstAvailable({ 'BloodPactWard', 'PetTank', 'JobAbility' }, false);
+    elseif string.find(name, 'third eye', 1, true) then
+        equipFirstAvailable({ 'ThirdEye', 'JobAbility' }, false);
+    elseif string.find(name, 'meditate', 1, true) then
+        equipFirstAvailable({ 'Meditate', 'JobAbility' }, false);
     elseif string.find(name, 'provoke', 1, true) or string.find(name, 'sentinel', 1, true)
         or string.find(name, 'warcry', 1, true) or string.find(name, 'cover', 1, true)
         or string.find(name, 'palisade', 1, true) or string.find(name, 'flash', 1, true) then
@@ -3141,15 +28567,27 @@ end
 
 local function equipWeaponskill()
     local action = getAction();
-    local name = normalize(action and action.Name);
+    local name = action and action.Name;
+    local key = weaponSkillRouteKey(name);
+    local exactRoute = weaponSkillRoutes[key];
+    local accuracyRoute = weaponSkillAccuracyRoutes[key];
+    if state.Playstyle == 'Accuracy' then
+        if accuracyRoute and equipNamedSet(accuracyRoute, false) then
+            return;
+        end
+    end
+    if exactRoute and equipNamedSet(exactRoute, false) then
+        return;
+    end
+    local normalizedName = normalize(name);
     if state.Playstyle == 'Accuracy' then
         equipFirstAvailable({ 'WeaponSkillAccuracy', 'Weaponskill' }, false);
-    elseif string.find(name, 'aeolian', 1, true) or string.find(name, 'cyclone', 1, true)
-        or string.find(name, 'energy', 1, true) or string.find(name, 'red lotus', 1, true)
-        or string.find(name, 'seraph', 1, true) or string.find(name, 'sanguine', 1, true)
-        or string.find(name, 'wildfire', 1, true) or string.find(name, 'leaden', 1, true)
-        or string.find(name, 'jinpu', 1, true) or string.find(name, 'koki', 1, true)
-        or string.find(name, 'goten', 1, true) or string.find(name, 'kagero', 1, true) then
+    elseif string.find(normalizedName, 'aeolian', 1, true) or string.find(normalizedName, 'cyclone', 1, true)
+        or string.find(normalizedName, 'energy', 1, true) or string.find(normalizedName, 'red lotus', 1, true)
+        or string.find(normalizedName, 'seraph', 1, true) or string.find(normalizedName, 'sanguine', 1, true)
+        or string.find(normalizedName, 'wildfire', 1, true) or string.find(normalizedName, 'leaden', 1, true)
+        or string.find(normalizedName, 'jinpu', 1, true) or string.find(normalizedName, 'koki', 1, true)
+        or string.find(normalizedName, 'goten', 1, true) or string.find(normalizedName, 'kagero', 1, true) then
         equipFirstAvailable({ 'WSElemental', 'Elemental', 'Weaponskill' }, false);
     else
         equipNamedSet('Weaponskill', false);
@@ -3173,11 +28611,18 @@ profile.OnLoad = function()
         });
     end
 
-    message('OddLua dynamic profile loaded for Oddone_29938. Default combat style: ' .. state.Playstyle .. '. Use /lac fwd style damage|accuracy|weaponskill|drainabsorb.');
+    message('OddLua dynamic profile loaded for Oddone_29938. Default combat style: ' .. state.Playstyle .. '. Use /lac fwd help for commands and one-button setup.');
     message('Use /lac fwd subjob for level-37 subjob capabilities.');
+    oddLuaNumberRow.bindPalette();
+    oddLuaNumberRow.registerOverlay();
+
 end
 
 profile.OnUnload = function()
+    oddLuaNumberRow.unregisterOverlay();
+    oddLuaNumberRow.unbindPalette();
+    unlockSecondarySlotLocks();
+
 end
 
 profile.HandleCommand = function(args)
@@ -3186,21 +28631,33 @@ profile.HandleCommand = function(args)
     end
 
     if not args or not args[1] then
+        printOddLuaHelp();
         return;
     end
 
     local command = normalize(args[1]);
     local value = normalize(args[2]);
 
-    if command == 'style' or command == 'playstyle' then
+    if command == 'help' or command == '?' then
+        printOddLuaHelp();
+        return;
+    elseif command == 'styles' or command == 'stylelist' then
+        printStyleList();
+        return;
+    elseif command == 'styleprev' or command == 'styleback' then
+        oddLuaNumberRow.cyclePlaystyle(-1);
+    elseif command == 'stylenext' or command == 'stylefwd' then
+        oddLuaNumberRow.cyclePlaystyle(1);
+    elseif command == 'style' or command == 'playstyle' then
         if value == '' or value == 'status' then
-            message('Current style: ' .. state.Playstyle .. '. Use style damage|accuracy|weaponskill|drainabsorb.');
+            printStyleList();
             return;
         end
 
         local selected = styleAliases[value];
         if not selected then
-            message('Unknown style: ' .. tostring(args[2]) .. '. Use style damage|accuracy|weaponskill|drainabsorb.');
+            message('Unknown style: ' .. tostring(args[2]) .. '.');
+            printStyleList();
             return;
         end
 
@@ -3213,17 +28670,33 @@ profile.HandleCommand = function(args)
 
         message('Style=' .. state.Playstyle);
         equipDefaultForPlayer(getPlayer(), true);
+    elseif command == 'lockstyle' or command == 'stylelock' then
+        lockstyleCombatSet();
     elseif command == 'warp' then
         useWarpRing();
     elseif command == 'warpclear' then
         clearWarpRing();
+    elseif command == 'utility' then
+        oddLuaNumberRow.equipUtilityIntent(value);
+    elseif command == 'palette' or command == 'numberrow' then
+        if value == 'missing' then
+            message('Not Applicable / Missing Equipment');
+            return;
+        end
+        oddLuaNumberRow.setPaletteEnabled(value);
+    elseif command == 'mechanics' then
+        handleMechanicsCommand(args);
+    elseif command == 'reconcile' then
+        handleReconcileCommand(args);
+    elseif command == 'refreshgear' or command == 'reprocessgear' or command == 'rebuildgear' then
+        startOddLuaGearRefresh(args);
     elseif command == 'status' then
         local subjob, subjobName = currentSubjobProfile();
         local capabilityText = 'none';
         if subjob and subjob.capabilities then
             capabilityText = table.concat(subjob.capabilities, ',');
         end
-        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText);
+        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText .. '; help=/lac fwd help; styles=/lac fwd styles');
     elseif command == 'subjob' or command == 'sj' then
         local subjob, subjobName = currentSubjobProfile();
         if not subjob then
@@ -3240,14 +28713,13 @@ profile.HandleCommand = function(args)
         else
             message('Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. table.concat(subjob.capabilities or {}, ',') .. '; use subjob traits|spells|abilities');
         end
+
+    else
+        message('Unknown command: ' .. tostring(args[1]) .. '. Use /lac fwd help.');
     end
 end
 
 profile.HandleDefault = function()
-    local handledWarpTimer = processWarpRingTimers();
-    if handledWarpTimer and state.WarpRingLocked ~= true then
-        return;
-    end
     equipDefaultForPlayer(getPlayer(), false);
 end
 
@@ -3288,7 +28760,7 @@ profile.HandleMidcast = function()
     elseif skill == 'dark magic' then
         equipDarkMagic(name);
     elseif skill == 'blue magic' then
-        equipBlueMagic();
+        equipBlueMagic(name);
     elseif skill == 'singing' or skill == 'stringed instrument' or skill == 'wind instrument' then
         equipSong(name);
     elseif skill == 'geomancy' then

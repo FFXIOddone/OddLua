@@ -1,0 +1,39 @@
+-- OddLua generated keybinding plan.
+-- Review before pasting or loading; profile Lua does not auto-bind these keys.
+-- Quick start: /lac fwd help
+-- F1: Warp Ring
+/bind F1 /lac fwd warp
+-- F2: switch to quickdraw style
+/bind F2 /lac fwd style quickdraw
+-- F3: switch to rangedaccuracy style
+/bind F3 /lac fwd style rangedaccuracy
+-- F4: switch to rangeddamage style
+/bind F4 /lac fwd style rangeddamage
+-- F5: switch to roll style
+/bind F5 /lac fwd style roll
+-- F6: show available styles
+/bind F6 /lac fwd style
+-- F7: show available styles
+/bind F7 /lac fwd styles
+-- F8: show current style and subjob status
+/bind F8 /lac fwd status
+-- F9: show subjob capabilities
+/bind F9 /lac fwd subjob
+-- F10: show mechanics status
+/bind F10 /lac fwd mechanics status
+-- F11: show subjob abilities
+/bind F11 /lac fwd subjob abilities
+-- F12: show subjob spells
+/bind F12 /lac fwd subjob spells
+-- Ctrl+F1: show subjob traits
+/bind ^F1 /lac fwd subjob traits
+-- Ctrl+F2: list mechanics plans
+/bind ^F2 /lac fwd mechanics list
+-- Ctrl+F3: show skipped mechanics plans
+/bind ^F3 /lac fwd mechanics skipped
+-- Ctrl+F4: show mechanics warning counts
+/bind ^F4 /lac fwd mechanics warnings
+-- Ctrl+F5: clear Warp Ring lock
+/bind ^F5 /lac fwd warpclear
+-- Ctrl+F6: show OddLua help
+/bind ^F6 /lac fwd help

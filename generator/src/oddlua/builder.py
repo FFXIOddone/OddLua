@@ -1,18 +1,37 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 import json
 from pathlib import Path
 from typing import Iterable
 
 from .classifier import ClassifiedItem, classify_item
 from .contracts import JobContract, Playstyle, build_job_contract
-from .gearexport import GearItem, load_character_snapshot, load_gearexport
-from .itemstats import EQUIPMENT_SLOT_MASKS, ItemStatsIndex, load_item_stats, load_item_stats_from_db
+from .gameconstants import WEAPON_FAMILY_BY_SKILL
+from .gearexport import CharacterSnapshot, GearExport, GearItem, load_character_snapshot, load_gearexport
+from .itemstats import (
+    EQUIPMENT_SLOT_MASKS,
+    ItemConditionalMod,
+    ItemStatsIndex,
+    WeaponStats,
+    load_item_stats,
+    load_item_stats_from_db,
+)
+from .manifests.schema import validate_profile_manifest
 from .mechanics import mechanics_manifest_for_style, mechanics_source_manifest, score_mechanics_mods
+from .mechanics_opportunities import mechanics_opportunity_manifest
+from .mechanics_swap_planner import mechanics_swap_plan_manifest
 from .mobstats import TargetProfile, empty_target_manifest, load_target_profile_from_db
+from .planning.command_registry import default_forward_commands
+from .planning.keybinding_planner import plan_keybindings
+from .planning.number_row_palette import plan_number_row_palette
 from .renderer import SEMANTIC_SET_PREFERENCES, SLOT_ORDER, render_profile
+from .rendering.keybinds import render_keybindings_script
 from .subjobs import SubjobProfile, build_subjob_profiles, subjob_manifest
+from .weaponskill_scoring import weights_for_weaponskill
+from .weaponskill_scripts import parse_weaponskill_script
+from .weaponskills import CatseyeWeaponSkill, WeaponSkillEligibilityContext, eligible_weaponskills_for_job
 
 
 COMBAT_SLOT_ORDER = tuple(
@@ -20,6 +39,13 @@ COMBAT_SLOT_ORDER = tuple(
 )
 
 WEAPON_SLOTS = {"Main", "Sub", "Range", "Ammo"}
+JEWELRY_SLOTS = {"Ear1", "Ear2", "Ring1", "Ring2"}
+JEWELRY_SECONDARY_ONLY_MODS = {"MP", "MPP", "MPHEAL", "HPHEAL", "CONSERVE_MP"}
+RESTING_JEWELRY_SECONDARY_ONLY_MODS = {"MP", "MPP", "CONSERVE_MP"}
+WS_ACTION_BLOCKED_SLOTS = {"Main", "Sub", "Range"}
+GENERIC_WEAPONSKILL_ACTION_BLOCKED_SLOTS = {"Main", "Sub", "Range", "Ammo"}
+GENERIC_WEAPONSKILL_FALLBACK_STYLES = {"Weaponskill", "WeaponSkillAccuracy", "WSElemental"}
+SUBJOB_ACTION_SNAPSHOT_STYLES = {"Meditate", "Samba", "Steps", "ThirdEye", "Waltz"}
 COMBAT_WEAPON_FAMILIES = {
     "ammo",
     "axe",
@@ -64,9 +90,59 @@ TWO_HANDED_WEAPON_FAMILIES = {"staff", "great_sword", "great_axe", "great_katana
 OFFHAND_WEAPON_FAMILIES = {"axe", "club", "dagger", "katana", "sword"}
 NON_DUAL_WIELD_SUB_FAMILIES = {"shield", "grip"}
 NATIVE_DUAL_WIELD_JOBS = {"NIN", "DNC"}
-DUAL_WIELD_SUBJOBS = {"NIN", "DNC"}
-MOVEMENT_SEMANTIC_STYLES = ("Movement", "Movement_City", "Movement_Night", "Movement_DuskToDawn")
+DUAL_WIELD_SUBJOBS = {"NIN", "DNC", "THF"}
+MOVEMENT_SEMANTIC_STYLES = ("Movement", "InCity", "Movement_City", "Movement_Night", "Movement_DuskToDawn")
 AUTOMATIC_SEMANTIC_STYLES = tuple(SEMANTIC_SET_PREFERENCES)
+# Catseye wiki documents Octave Club as Kraken-equivalent OA2-8x; the
+# server item_weapon row keeps hit=1, so score it by its live behavior.
+CATSEYE_EFFECTIVE_WEAPON_HITS = {
+    18852: 8,  # Octave Club
+}
+NATIVE_DAKEN_JOBS = {"NIN"}
+DAKEN_SUBJOBS = {"NIN"}
+JOB_SPECIFIC_AUTOMATIC_STYLES = {
+    "SAM": ("Meditate", "ThirdEye"),
+}
+SUBJOB_CAPABILITY_AUTOMATIC_STYLES = {
+    "jump": ("Jump",),
+    "meditate": ("Meditate",),
+    "provoke": ("Enmity",),
+    "quick_draw": ("QuickDraw",),
+    "roll": ("Roll",),
+    "samba": ("Samba",),
+    "sentinel": ("Enmity",),
+    "steps": ("Steps",),
+    "third_eye": ("ThirdEye",),
+    "waltz": ("Waltz",),
+}
+JOB_RESTRICTED_AUTOMATIC_STYLES = {
+    "BlueMagic": {"BLU"},
+    "PhysicalBlueMagic": {"BLU"},
+    "MagicalBlueMagic": {"BLU"},
+    "Song": {"BRD"},
+    "SongDebuff": {"BRD"},
+    "SongBuff": {"BRD"},
+    "Geomancy": {"GEO"},
+    "Summoning": {"SMN"},
+    "BloodPactRage": {"SMN"},
+    "BloodPactWard": {"SMN"},
+    "AvatarPerp": {"SMN"},
+    "Snapshot": {"RNG", "COR"},
+    "RangedPreshot": {"RNG", "COR"},
+    "Ranged": {"RNG", "COR"},
+    "RangedMidshot": {"RNG", "COR"},
+    "RangedAccuracy": {"RNG", "COR"},
+    "RangedAttack": {"RNG", "COR"},
+    "QuickDraw": {"COR"},
+    "Roll": {"COR"},
+    "Waltz": {"DNC"},
+    "Steps": {"DNC"},
+    "Samba": {"DNC"},
+    "Jump": {"DRG"},
+    "PetReady": {"BST", "PUP"},
+    "PetMagic": {"BST", "PUP", "SMN"},
+    "PetTank": {"BST", "PUP", "SMN"},
+}
 DAMAGE_WEAPON_SCORE_STYLES = {
     "Accuracy",
     "Damage",
@@ -89,15 +165,18 @@ NON_DAMAGE_WEAPON_SCORE_STYLES = {
     "FastCast",
     "GeoMagic",
     "IdleRefresh",
+    "InCity",
     "MagicAccuracy",
     "MagicDefense",
     "MagicalBlue",
+    "Meditate",
     "Movement",
     "Movement_City",
     "Movement_DuskToDawn",
     "Movement_Night",
     "Ninjutsu",
     "Nuke",
+    "PhysicalIdle",
     "PetDamage",
     "PetTank",
     "QuickDraw",
@@ -105,6 +184,7 @@ NON_DAMAGE_WEAPON_SCORE_STYLES = {
     "Roll",
     "Song",
     "SummoningMagic",
+    "ThirdEye",
     "Waltz",
 }
 
@@ -131,6 +211,10 @@ SEMANTIC_SCORING_OVERRIDES = {
     "Waltz": "Waltz",
     "Weaponskill": "WeaponSkill",
 }
+JOB_SEMANTIC_SCORING_OVERRIDES = {
+    ("SAM", "Aftercast"): "PhysicalIdle",
+    ("SAM", "Idle"): "PhysicalIdle",
+}
 
 MOVEMENT_LATENT_CONDITIONS: dict[str, tuple[tuple[int, int | None], ...]] = {
     "Movement_City": ((54, None),),  # ZONE_HOME_NATION: used by aketons.
@@ -139,17 +223,66 @@ MOVEMENT_LATENT_CONDITIONS: dict[str, tuple[tuple[int, int | None], ...]] = {
 }
 STACKING_MOVEMENT_MODS = {"MOVE_SPEED_STACKABLE"}
 
+ELEMENTAL_STAFF_BONUS_MODS = {
+    "Fire": "FIRE_STAFF_BONUS",
+    "Ice": "ICE_STAFF_BONUS",
+    "Wind": "WIND_STAFF_BONUS",
+    "Earth": "EARTH_STAFF_BONUS",
+    "Thunder": "THUNDER_STAFF_BONUS",
+    "Lightning": "THUNDER_STAFF_BONUS",
+    "Water": "WATER_STAFF_BONUS",
+    "Light": "LIGHT_STAFF_BONUS",
+    "Dark": "DARK_STAFF_BONUS",
+}
+ELEMENTAL_STAFF_BONUS_WEIGHT = 2_000
+WEAPON_FAMILY_PREFERENCE_BONUS = 100
+JOB_WEAPON_SKILL_CAP_BONUS = 8
+JOB_WEAPON_SKILL_RANK_BONUS = 250
+WEAPON_SKILL_ID_BY_FAMILY = {
+    family: skill_id
+    for skill_id, family in WEAPON_FAMILY_BY_SKILL.items()
+    if family != "instrument"
+}
+RANGE_REQUIRED_DEFAULT_PLAYSTYLES = {"RangedDamage", "RangedAccuracy", "QuickDraw"}
+
 
 @dataclass(frozen=True)
 class WeaponSlotPolicy:
     fixed_item_ids: tuple[int, ...] = tuple()
     preferred_item_ids: tuple[int, ...] = tuple()
 
+
+JOB_DEFAULT_WEAPON_FAMILIES = {
+    "WAR": {"Main": ("great_axe", "axe"), "Sub": ("grip", "axe", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "MNK": {"Main": ("hand_to_hand",), "Sub": tuple(), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "WHM": {"Main": ("staff", "club"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "BLM": {"Main": ("staff", "club"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "RDM": {"Main": ("sword", "dagger", "club", "staff"), "Sub": ("sword", "dagger", "club", "shield", "grip"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "THF": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "PLD": {"Main": ("sword", "club"), "Sub": ("shield",), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "DRK": {"Main": ("scythe", "great_sword", "staff"), "Sub": ("grip",), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "BST": {"Main": ("axe", "club"), "Sub": ("axe", "club", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "BRD": {"Main": ("staff", "club", "dagger", "sword"), "Sub": ("grip", "shield"), "Range": ("instrument",), "Ammo": ("ammo",)},
+    "RNG": {"Main": ("dagger", "axe", "sword"), "Sub": ("dagger", "axe", "shield"), "Range": ("bow", "gun"), "Ammo": ("ammo",)},
+    "SAM": {"Main": ("great_katana", "polearm"), "Sub": ("grip",), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "NIN": {"Main": ("katana", "dagger"), "Sub": ("katana", "dagger"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "DRG": {"Main": ("polearm", "staff"), "Sub": ("grip",), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "SMN": {"Main": ("staff", "club"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "BLU": {"Main": ("sword", "club", "staff"), "Sub": ("sword", "club", "shield", "grip"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "COR": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword"), "Range": ("gun",), "Ammo": ("ammo",)},
+    "PUP": {"Main": ("hand_to_hand",), "Sub": tuple(), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "DNC": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "SCH": {"Main": ("staff", "club"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "GEO": {"Main": ("staff", "club"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+    "RUN": {"Main": ("great_sword", "sword"), "Sub": ("grip", "shield"), "Range": ("throwing",), "Ammo": ("ammo",)},
+}
+
+
 JOB_STYLE_WEAPON_FAMILIES = {
     "WAR": {
-        "Damage": {"Main": ("great_axe", "axe", "sword"), "Sub": ("axe", "sword", "shield")},
-        "Accuracy": {"Main": ("great_axe", "axe", "sword"), "Sub": ("axe", "sword", "shield")},
-        "WeaponSkill": {"Main": ("great_axe", "axe", "sword"), "Sub": ("axe", "sword", "shield")},
+        "Damage": {"Main": ("great_axe", "axe"), "Sub": ("grip", "axe")},
+        "Accuracy": {"Main": ("great_axe", "axe"), "Sub": ("grip", "axe")},
+        "WeaponSkill": {"Main": ("great_axe", "axe"), "Sub": ("grip", "axe")},
         "Survival": {"Main": ("axe", "sword"), "Sub": ("shield",)},
     },
     "MNK": {
@@ -177,10 +310,10 @@ JOB_STYLE_WEAPON_FAMILIES = {
         "Cure": {"Main": ("club", "staff", "sword"), "Sub": ("shield", "grip")},
     },
     "THF": {
-        "Melt": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword")},
+        "Melt": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword", "club")},
         "Dagger": {"Main": ("dagger",), "Sub": ("dagger",)},
-        "Safe": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword")},
-        "Treasure": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword")},
+        "Safe": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword", "club")},
+        "Treasure": {"Main": ("dagger", "sword"), "Sub": ("dagger", "sword", "club")},
     },
     "PLD": {
         "Tank": {"Main": ("sword", "club"), "Sub": ("shield",)},
@@ -189,16 +322,16 @@ JOB_STYLE_WEAPON_FAMILIES = {
         "MagicDefense": {"Main": ("sword", "club"), "Sub": ("shield",)},
     },
     "DRK": {
-        "Damage": {"Main": ("scythe", "great_sword", "sword", "axe"), "Sub": ("shield",)},
-        "Accuracy": {"Main": ("scythe", "great_sword", "sword", "axe"), "Sub": ("shield",)},
-        "WeaponSkill": {"Main": ("scythe", "great_sword", "sword", "axe"), "Sub": ("shield",)},
+        "Damage": {"Main": ("scythe", "great_sword"), "Sub": ("grip",)},
+        "Accuracy": {"Main": ("scythe", "great_sword"), "Sub": ("grip",)},
+        "WeaponSkill": {"Main": ("scythe", "great_sword"), "Sub": ("grip",)},
         "DrainAbsorb": {"Main": ("scythe", "great_sword", "staff"), "Sub": ("grip",)},
     },
     "BST": {
-        "Damage": {"Main": ("axe", "club", "sword"), "Sub": ("axe", "club", "shield")},
-        "Accuracy": {"Main": ("axe", "club", "sword"), "Sub": ("axe", "club", "shield")},
-        "PetDamage": {"Main": ("axe", "club", "sword"), "Sub": ("axe", "club", "shield")},
-        "PetTank": {"Main": ("axe", "club", "sword"), "Sub": ("shield", "axe", "club")},
+        "Damage": {"Main": ("axe", "club"), "Sub": ("axe", "club")},
+        "Accuracy": {"Main": ("axe", "club"), "Sub": ("axe", "club")},
+        "PetDamage": {"Main": ("axe", "club"), "Sub": ("axe", "club")},
+        "PetTank": {"Main": ("axe", "club"), "Sub": ("shield", "axe", "club")},
     },
     "BRD": {
         "Song": {"Main": ("dagger", "sword", "staff", "club"), "Sub": ("shield", "grip"), "Range": ("instrument",)},
@@ -213,22 +346,24 @@ JOB_STYLE_WEAPON_FAMILIES = {
         "Evasion": {"Main": ("dagger", "axe", "sword"), "Sub": ("dagger", "axe", "shield"), "Range": ("bow", "gun"), "Ammo": ("ammo",)},
     },
     "SAM": {
-        "StoreTP": {"Main": ("great_katana", "polearm"), "Sub": tuple()},
-        "Accuracy": {"Main": ("great_katana", "polearm"), "Sub": tuple()},
-        "WeaponSkill": {"Main": ("great_katana", "polearm"), "Sub": tuple()},
-        "Evasion": {"Main": ("great_katana", "polearm"), "Sub": tuple()},
+        "StoreTP": {"Main": ("great_katana", "polearm"), "Sub": ("grip",)},
+        "Accuracy": {"Main": ("great_katana", "polearm"), "Sub": ("grip",)},
+        "WeaponSkill": {"Main": ("great_katana", "polearm"), "Sub": ("grip",)},
+        "Evasion": {"Main": ("great_katana", "polearm"), "Sub": ("grip",)},
+        "Meditate": {"Main": tuple(), "Sub": tuple()},
+        "ThirdEye": {"Main": tuple(), "Sub": tuple()},
     },
     "NIN": {
-        "Damage": {"Main": ("katana", "dagger", "sword"), "Sub": ("katana", "dagger", "sword")},
-        "Accuracy": {"Main": ("katana", "dagger", "sword"), "Sub": ("katana", "dagger", "sword")},
-        "Evasion": {"Main": ("katana", "dagger", "sword"), "Sub": ("katana", "dagger", "sword")},
-        "Ninjutsu": {"Main": ("katana", "dagger", "sword"), "Sub": ("katana", "dagger", "sword")},
+        "Damage": {"Main": ("katana", "dagger"), "Sub": ("katana", "dagger")},
+        "Accuracy": {"Main": ("katana", "dagger"), "Sub": ("katana", "dagger")},
+        "Evasion": {"Main": ("katana", "dagger"), "Sub": ("katana", "dagger")},
+        "Ninjutsu": {"Main": ("katana", "dagger"), "Sub": ("katana", "dagger")},
     },
     "DRG": {
-        "Damage": {"Main": ("polearm", "staff"), "Sub": tuple()},
-        "Accuracy": {"Main": ("polearm", "staff"), "Sub": tuple()},
-        "WeaponSkill": {"Main": ("polearm", "staff"), "Sub": tuple()},
-        "Jump": {"Main": ("polearm",), "Sub": tuple()},
+        "Damage": {"Main": ("polearm", "staff"), "Sub": ("grip",)},
+        "Accuracy": {"Main": ("polearm", "staff"), "Sub": ("grip",)},
+        "WeaponSkill": {"Main": ("polearm", "staff"), "Sub": ("grip",)},
+        "Jump": {"Main": ("polearm",), "Sub": ("grip",)},
     },
     "SMN": {
         "AvatarPerp": {"Main": ("staff", "club"), "Sub": ("grip", "shield")},
@@ -273,21 +408,65 @@ JOB_STYLE_WEAPON_FAMILIES = {
         "IdleRefresh": {"Main": ("staff", "club"), "Sub": ("grip", "shield")},
     },
     "RUN": {
-        "Tank": {"Main": ("great_sword", "sword"), "Sub": ("shield",)},
-        "MagicDefense": {"Main": ("great_sword", "sword"), "Sub": ("shield",)},
-        "Damage": {"Main": ("great_sword", "sword"), "Sub": ("shield",)},
-        "Enmity": {"Main": ("great_sword", "sword"), "Sub": ("shield",)},
+        "Tank": {"Main": ("great_sword", "sword"), "Sub": ("grip", "shield")},
+        "MagicDefense": {"Main": ("great_sword", "sword"), "Sub": ("grip", "shield")},
+        "Damage": {"Main": ("great_sword", "sword"), "Sub": ("grip", "shield")},
+        "Enmity": {"Main": ("great_sword", "sword"), "Sub": ("grip", "shield")},
     },
 }
 
 JOB_STYLE_WEAPON_POLICIES = {
+    ("WAR", "Damage"): {
+        "Main": WeaponSlotPolicy(preferred_item_ids=(20872,)),  # Ixtab
+    },
+    ("WAR", "Accuracy"): {
+        "Main": WeaponSlotPolicy(preferred_item_ids=(20872,)),  # Ixtab
+    },
+    ("WAR", "WeaponSkill"): {
+        "Main": WeaponSlotPolicy(preferred_item_ids=(20872,)),  # Ixtab
+    },
     ("RDM", "Enspell"): {
         "Main": WeaponSlotPolicy(fixed_item_ids=(18904,)),  # Somnia Melodiam / Ephemeron
-        "Sub": WeaponSlotPolicy(preferred_item_ids=(20720, 18852)),  # Egeking, Octave Club
+        # Prefer Octave Club when owned; Egeking remains the fallback target.
+        "Sub": WeaponSlotPolicy(fixed_item_ids=(18852,), preferred_item_ids=(20720,)),
     },
 }
 
 PREFERRED_ITEM_ID_BONUS = 10_000_000
+
+
+def _weapon_family_policy_for_style(job: str, style_name: str) -> dict[str, tuple[str, ...]]:
+    normalized_job = job.upper()
+    selection_style_name = _selection_style_name_for_job(style_name, normalized_job)
+    scoring_style = _scoring_style_name(selection_style_name)
+    policies: list[dict[str, tuple[str, ...]]] = []
+    default_policy = JOB_DEFAULT_WEAPON_FAMILIES.get(normalized_job)
+    if default_policy:
+        policies.append(default_policy)
+    job_policies = JOB_STYLE_WEAPON_FAMILIES.get(normalized_job, {})
+    for candidate_style in (scoring_style, selection_style_name, style_name):
+        policy = job_policies.get(candidate_style)
+        if policy:
+            policies.append(policy)
+    return _merge_weapon_family_policies(*policies)
+
+
+def _weapon_slot_policy_for_style(job: str, style_name: str) -> dict[str, WeaponSlotPolicy]:
+    normalized_job = job.upper()
+    selection_style_name = _selection_style_name_for_job(style_name, normalized_job)
+    scoring_style = _scoring_style_name(selection_style_name)
+    for candidate_style in (style_name, selection_style_name, scoring_style):
+        policy = JOB_STYLE_WEAPON_POLICIES.get((normalized_job, candidate_style))
+        if policy:
+            return policy
+    return {}
+
+
+def _merge_weapon_family_policies(*policies: dict[str, tuple[str, ...]]) -> dict[str, tuple[str, ...]]:
+    merged: dict[str, tuple[str, ...]] = {}
+    for policy in policies:
+        merged.update(policy)
+    return merged
 
 JOB_STYLE_SUBJOB_HINTS = {
     ("WAR", "Damage"): "NIN",
@@ -328,6 +507,7 @@ STYLE_INTENTS = {
     "FastCast": "FastCast",
     "IdleRefresh": "Refresh",
     "Movement": "Movement",
+    "InCity": "Movement",
     "Movement_City": "Movement",
     "Movement_Night": "Movement",
     "Movement_DuskToDawn": "Movement",
@@ -355,6 +535,8 @@ STYLE_INTENTS = {
     "Roll": "Roll",
     "Waltz": "Cure",
     "GeoMagic": "MagicAccuracy",
+    "Meditate": "TP",
+    "ThirdEye": "TP",
 }
 
 LOW_VALUE_COMBAT_ITEM_ID_REASONS = {
@@ -407,6 +589,9 @@ STYLE_MOD_WEIGHTS = {
         "STORETP": 24,
         "HASTE_GEAR": 90,
         "SUBTLE_BLOW": 2,
+        "DOUBLE_ATTACK": 70,
+        "DOUBLE_ATTACK_DMG": 40,
+        "MYTHIC_OCC_ATT_TWICE": 1200,
         "ITEM_ADDEFFECT_DMG": 20,
         "ITEM_ADDEFFECT_CHANCE": 30,
         "ITEM_ADDEFFECT_POWER": 10,
@@ -424,6 +609,9 @@ STYLE_MOD_WEIGHTS = {
         "STORETP": 24,
         "HASTE_GEAR": 90,
         "SUBTLE_BLOW": 2,
+        "DOUBLE_ATTACK": 70,
+        "DOUBLE_ATTACK_DMG": 40,
+        "MYTHIC_OCC_ATT_TWICE": 1200,
         "ITEM_ADDEFFECT_DMG": 20,
         "ITEM_ADDEFFECT_CHANCE": 30,
         "ITEM_ADDEFFECT_POWER": 10,
@@ -447,6 +635,9 @@ STYLE_MOD_WEIGHTS = {
         "DEX": 12,
         "STORETP": 15,
         "HASTE_GEAR": 60,
+        "DOUBLE_ATTACK": 55,
+        "DOUBLE_ATTACK_DMG": 30,
+        "MYTHIC_OCC_ATT_TWICE": 900,
     },
     "Tank": {
         "HP": 5,
@@ -485,6 +676,9 @@ STYLE_MOD_WEIGHTS = {
         "STORETP": 24,
         "HASTE_GEAR": 90,
         "ENMITY": 4,
+        "DOUBLE_ATTACK": 70,
+        "DOUBLE_ATTACK_DMG": 40,
+        "MYTHIC_OCC_ATT_TWICE": 1200,
     },
     "MagicDefense": {
         "HP": 5,
@@ -517,6 +711,7 @@ STYLE_MOD_WEIGHTS = {
         "THUNDER_MAB": 50,
         "WATER_MAB": 50,
         "LIGHT_MAB": 50,
+        "DARK_MAB": 50,
         "MP": 2,
         "MPP": 12,
         "CONSERVE_MP": 8,
@@ -558,6 +753,18 @@ STYLE_MOD_WEIGHTS = {
         "UDMGPHYS": -25,
         "UDMGMAGIC": -25,
     },
+    "PhysicalIdle": {
+        "HP": 5,
+        "HPP": 25,
+        "DEF": 8,
+        "VIT": 12,
+        "EVA": 18,
+        "MDEF": 12,
+        "DMGPHYS": -45,
+        "DMGMAGIC": -35,
+        "UDMGPHYS": -45,
+        "UDMGMAGIC": -35,
+    },
     "Resting": {
         "MPHEAL": 220,
         "HPHEAL": 120,
@@ -584,6 +791,9 @@ STYLE_MOD_WEIGHTS = {
         "ATT": 8,
         "STORETP": 16,
         "HASTE_GEAR": 60,
+        "DOUBLE_ATTACK": 50,
+        "DOUBLE_ATTACK_DMG": 25,
+        "MYTHIC_OCC_ATT_TWICE": 800,
     },
     "WeaponSkill": {
         "STR": 32,
@@ -596,7 +806,11 @@ STYLE_MOD_WEIGHTS = {
         "ACC": 20,
         "WSACC": 30,
         "WSDMG": 70,
+        "TP_BONUS": 2,
         "STORETP": 10,
+        "DOUBLE_ATTACK": 45,
+        "DOUBLE_ATTACK_DMG": 25,
+        "MYTHIC_OCC_ATT_TWICE": 700,
     },
     "Survival": {
         "HP": 5,
@@ -621,6 +835,7 @@ STYLE_MOD_WEIGHTS = {
     },
     "Cure": {
         "CURE_POTENCY": 90,
+        "LIGHT_STAFF_BONUS": 500,
         "CURE_POTENCY_II": 90,
         "CURE_CAST_TIME": -30,
         "MND": 28,
@@ -642,6 +857,9 @@ STYLE_MOD_WEIGHTS = {
         "INT": 16,
         "MND": 12,
         "ENH_MAGIC_DURATION": 20,
+        "DOUBLE_ATTACK": 55,
+        "DOUBLE_ATTACK_DMG": 35,
+        "MYTHIC_OCC_ATT_TWICE": 900,
     },
     "DrainAbsorb": {
         "DARK_MACC": 70,
@@ -687,14 +905,14 @@ STYLE_MOD_WEIGHTS = {
         "STR": 18,
         "AGI": 22,
         "STORETP": 18,
-        "SNAP_SHOT": 60,
+        "SNAPSHOT": 60,
     },
     "RangedAccuracy": {
         "RACC": 55,
         "AGI": 24,
         "RATT": 10,
         "ACC": 8,
-        "SNAP_SHOT": 35,
+        "SNAPSHOT": 35,
     },
     "StoreTP": {
         "STORETP": 60,
@@ -703,6 +921,19 @@ STYLE_MOD_WEIGHTS = {
         "ATT": 14,
         "STR": 14,
         "DEX": 12,
+        "DOUBLE_ATTACK": 60,
+        "DOUBLE_ATTACK_DMG": 35,
+        "MYTHIC_OCC_ATT_TWICE": 1000,
+    },
+    "Meditate": {
+        "MEDITATE_DURATION": 10000,
+        "STORETP": 10,
+        "HASTE_GEAR": 10,
+    },
+    "ThirdEye": {
+        "THIRD_EYE_COUNTER_RATE": 10000,
+        "EVA": 10,
+        "HP": 1,
     },
     "Ninjutsu": {
         "NINJUTSU": 70,
@@ -731,6 +962,7 @@ STYLE_MOD_WEIGHTS = {
         "CONSERVE_MP": 20,
     },
     "BloodPact": {
+        "BP_DELAY": 75,
         "BLOOD_BOON": 30,
         "BP_DAMAGE": 75,
         "PET_MAB": 55,
@@ -798,6 +1030,18 @@ STYLE_MOD_WEIGHTS = {
     },
 }
 
+CONDITIONAL_STYLE_MOD_WEIGHTS = {
+    "Melt": {"CRITHITRATE": 55},
+    "Dagger": {"CRITHITRATE": 55},
+    "Treasure": {"CRITHITRATE": 45},
+    "Damage": {"CRITHITRATE": 55},
+    "WeaponSkill": {"CRITHITRATE": 45},
+    "Enspell": {"CRITHITRATE": 45},
+    "RangedDamage": {"CRITHITRATE": 45},
+    "StoreTP": {"CRITHITRATE": 50},
+    "PhysicalBlue": {"CRITHITRATE": 45},
+}
+
 for _movement_style in MOVEMENT_SEMANTIC_STYLES[1:]:
     STYLE_MOD_WEIGHTS[_movement_style] = STYLE_MOD_WEIGHTS["Movement"]
 
@@ -825,7 +1069,37 @@ def _is_elemental_semantic(style_name: str) -> bool:
 
 
 def _style_mod_weights(style_name: str) -> dict[str, int]:
-    return STYLE_MOD_WEIGHTS.get(_scoring_style_name(style_name), {})
+    weights = STYLE_MOD_WEIGHTS.get(_scoring_style_name(style_name), {})
+    if _scoring_style_name(style_name) != "Nuke":
+        return weights
+
+    staff_bonus_weights = _elemental_staff_bonus_weights(style_name)
+    if not staff_bonus_weights:
+        return weights
+    return {**weights, **staff_bonus_weights}
+
+
+def _conditional_style_mod_weights(style_name: str) -> dict[str, int]:
+    weights = dict(_style_mod_weights(style_name))
+    conditional_weights = CONDITIONAL_STYLE_MOD_WEIGHTS.get(_scoring_style_name(style_name), {})
+    if conditional_weights:
+        weights.update(conditional_weights)
+    return weights
+
+
+def _elemental_staff_bonus_weights(style_name: str) -> dict[str, int]:
+    element = _element_from_semantic_style(style_name)
+    if element:
+        staff_bonus_mod = ELEMENTAL_STAFF_BONUS_MODS.get(element)
+        return {staff_bonus_mod: ELEMENTAL_STAFF_BONUS_WEIGHT} if staff_bonus_mod else {}
+    return {mod_name: ELEMENTAL_STAFF_BONUS_WEIGHT for mod_name in ELEMENTAL_STAFF_BONUS_MODS.values()}
+
+
+def _element_from_semantic_style(style_name: str) -> str | None:
+    for prefix in ("Elemental_", "Weather_", "Day_"):
+        if style_name.startswith(prefix):
+            return style_name[len(prefix):]
+    return None
 
 
 @dataclass(frozen=True)
@@ -842,6 +1116,7 @@ class BuildResult:
     output_dir: Path
     profile_path: Path
     manifest_path: Path
+    keybindings_path: Path
     profile_text: str
     manifest: dict[str, object]
 
@@ -860,8 +1135,8 @@ def build_pack(
 ) -> BuildResult:
     job = job.upper()
 
-    export = load_gearexport(gear_path)
-    character = load_character_snapshot(character_path)
+    export = _load_gearexport_for_build(gear_path)
+    character = _load_character_snapshot_for_build(character_path)
     contract = build_job_contract(job, character)
     character_level = contract.character_level
     item_stats = _load_default_item_stats(server_sql_root, stats_db_path=stats_db_path)
@@ -874,7 +1149,14 @@ def build_pack(
         for item in export.items
     )
 
-    selected = _build_job_sets(classified, contract, item_stats, target_profile)
+    selected = _build_job_sets(
+        classified,
+        contract,
+        item_stats,
+        target_profile,
+        subjob_profiles=subjob_profiles,
+    )
+    default_playstyle = _effective_default_playstyle(contract, selected)
     sets = {
         style: {
             slot: selected_item.item.name
@@ -888,6 +1170,15 @@ def build_pack(
         for selected_item in slot_map.values()
     }
 
+    conditional_equips = _conditional_equips_for_sets(
+        selected,
+        classified,
+        job,
+        character_level,
+        item_stats,
+    )
+    mechanics_swap_planner = mechanics_swap_plan_manifest(selected, item_stats)
+    profile_features = _profile_features(player=player, player_id=player_id, job=job)
     manifest = _build_manifest(
         player=player,
         player_id=player_id,
@@ -902,17 +1193,21 @@ def build_pack(
         item_stats=item_stats,
         target_profile=target_profile,
         target_name=target_name,
+        default_playstyle=default_playstyle,
         subjob_profiles=subjob_profiles,
         default_subjob=default_subjob,
         style_subjobs=style_subjobs,
         sets=sets,
         selected=selected,
+        conditional_equips=conditional_equips,
+        mechanics_swap_planner=mechanics_swap_planner,
         rejected_items=_rejected_manifest(
             classified,
             selected_keys=selected_keys,
             job=job,
             character_level=character_level,
         ),
+        profile_features=profile_features,
     )
 
     output_dir = Path(output_root) / "packs" / f"{player}_{player_id}" / job
@@ -922,7 +1217,7 @@ def build_pack(
         player_id=player_id,
         job=job,
         sets=sets,
-        default_playstyle=contract.default_playstyle,
+        default_playstyle=default_playstyle,
         playstyle_names=tuple(style.name for style in contract.playstyles),
         style_intents={
             style.name: STYLE_INTENTS.get(style.name, "TP")
@@ -930,19 +1225,34 @@ def build_pack(
         },
         subjob_profiles=subjob_profiles,
         default_subjob=default_subjob,
+        profile_features=profile_features,
+        secondary_slot_locks=_secondary_slot_locks_for_sets(selected),
+        dual_wield_sub_sets=_dual_wield_sub_sets_for_sets(selected),
+        conditional_equips=conditional_equips,
+        mechanics_swap_planner=mechanics_swap_planner,
+        number_row_palette=manifest["numberRowPalette"],
     )
     profile_path = output_dir / f"{job}.lua"
     manifest_path = output_dir / "manifest.json"
+    keybindings_path = output_dir / "keybindings.txt"
     profile_path.write_text(profile_text, encoding="utf-8")
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    keybindings_path.write_text(render_keybindings_script(manifest["keyBindings"]), encoding="utf-8")
 
     return BuildResult(
         output_dir=output_dir,
         profile_path=profile_path,
         manifest_path=manifest_path,
+        keybindings_path=keybindings_path,
         profile_text=profile_text,
         manifest=manifest,
     )
+
+
+def _profile_features(*, player: str, player_id: str, job: str) -> tuple[str, ...]:
+    if job == "SAM" and player.lower() == "aahtacos" and str(player_id) == "30102":
+        return ("aahtacos_sam_controls",)
+    return tuple()
 
 
 def _load_default_item_stats(
@@ -952,13 +1262,39 @@ def _load_default_item_stats(
 ) -> ItemStatsIndex | None:
     stats_db = Path(stats_db_path) if stats_db_path is not None else Path(__file__).resolve().parents[2] / "data" / "oddlua_stats.sqlite"
     if stats_db.exists():
-        return load_item_stats_from_db(stats_db)
+        stats_db = stats_db.resolve()
+        return _load_item_stats_from_db_cached(str(stats_db), stats_db.stat().st_mtime_ns)
 
     root = Path(server_sql_root) if server_sql_root is not None else Path(__file__).resolve().parents[3] / "server" / "sql"
     item_mods = root / "item_mods.sql" if root.is_dir() else root
     if not item_mods.exists():
         return None
     return load_item_stats(root)
+
+
+@lru_cache(maxsize=4)
+def _load_item_stats_from_db_cached(path: str, mtime_ns: int) -> ItemStatsIndex:
+    return load_item_stats_from_db(Path(path))
+
+
+def _load_gearexport_for_build(path: Path | str) -> GearExport:
+    source_path = Path(path).resolve()
+    return _load_gearexport_cached(str(source_path), source_path.stat().st_mtime_ns)
+
+
+@lru_cache(maxsize=8)
+def _load_gearexport_cached(path: str, mtime_ns: int) -> GearExport:
+    return load_gearexport(Path(path))
+
+
+def _load_character_snapshot_for_build(path: Path | str) -> CharacterSnapshot:
+    source_path = Path(path).resolve()
+    return _load_character_snapshot_cached(str(source_path), source_path.stat().st_mtime_ns)
+
+
+@lru_cache(maxsize=8)
+def _load_character_snapshot_cached(path: str, mtime_ns: int) -> CharacterSnapshot:
+    return load_character_snapshot(Path(path))
 
 
 def _load_target_profile(item_stats: ItemStatsIndex | None, target_name: str | None) -> TargetProfile | None:
@@ -977,6 +1313,29 @@ def _load_subjob_profiles(job: str, item_stats: ItemStatsIndex | None) -> dict[s
     if item_stats is not None and item_stats.source_path.suffix.lower() in {".sqlite", ".db"}:
         db_path = item_stats.source_path
     return build_subjob_profiles(job, db_path=db_path)
+
+
+def _effective_default_playstyle(
+    contract: JobContract,
+    selected: dict[str, dict[str, object]],
+) -> str:
+    default = contract.default_playstyle
+    if not _requires_range_weapon(default):
+        return default
+    if selected.get(default, {}).get("Range") is not None:
+        return default
+
+    playstyle_names = {style.name for style in contract.playstyles}
+    for fallback in ("Roll", "Accuracy", "Damage", "StoreTP", "Melt"):
+        if fallback == default or fallback not in playstyle_names:
+            continue
+        if selected.get(fallback):
+            return fallback
+    return default
+
+
+def _requires_range_weapon(style_name: str) -> bool:
+    return style_name in RANGE_REQUIRED_DEFAULT_PLAYSTYLES
 
 
 def _current_subjob_abbr(current_job: str) -> str:
@@ -1002,11 +1361,11 @@ def _current_main_job_abbr(current_job: str) -> str:
 
 
 def _default_subjob_for_contract(contract: JobContract, current_job: str) -> str:
+    if _current_main_job_abbr(current_job) == contract.job:
+        return _current_subjob_abbr(current_job)
     style_hint = JOB_STYLE_SUBJOB_HINTS.get((contract.job, contract.default_playstyle))
     if style_hint:
         return style_hint
-    if _current_main_job_abbr(current_job) == contract.job:
-        return _current_subjob_abbr(current_job)
     return ""
 
 
@@ -1023,6 +1382,8 @@ def _build_job_sets(
     contract: JobContract,
     item_stats: ItemStatsIndex | None,
     target_profile: TargetProfile | None,
+    *,
+    subjob_profiles: dict[str, SubjobProfile] | None = None,
 ) -> dict[str, dict[str, SelectedGear]]:
     sets: dict[str, dict[str, SelectedGear]] = {}
     for style in contract.playstyles:
@@ -1057,12 +1418,15 @@ def _build_job_sets(
                 item_stats,
                 target_profile=target_profile,
             )
-    for style_name in AUTOMATIC_SEMANTIC_STYLES:
+    automatic_styles = _automatic_semantic_styles_for_job(contract.job)
+    subjob_styles = _automatic_semantic_styles_for_subjobs(subjob_profiles or {})
+    automatic_styles = tuple(dict.fromkeys((*automatic_styles, *subjob_styles)))
+    for style_name in automatic_styles:
         if style_name not in sets:
             if _scoring_style_name(style_name) == "Craft":
                 sets[style_name] = _build_craft_style(classified, contract.job, contract.character_level)
             else:
-                sets[style_name] = _build_combat_style(
+                style_set = _build_combat_style(
                     style_name,
                     classified,
                     contract.job,
@@ -1070,7 +1434,123 @@ def _build_job_sets(
                     item_stats,
                     target_profile=target_profile,
                 )
+                if style_set or style_name not in SUBJOB_ACTION_SNAPSHOT_STYLES:
+                    sets[style_name] = style_set
+    for ws in _eligible_weaponskills_for_contract(contract, item_stats):
+        script = _script_for_weaponskill(ws, item_stats)
+        for set_name, accuracy in ((ws.set_name, False), (ws.accuracy_set_name, True)):
+            if set_name not in sets:
+                sets[set_name] = _build_weaponskill_style(
+                    ws,
+                    script,
+                    classified,
+                    contract,
+                    item_stats,
+                    accuracy=accuracy,
+                    target_profile=target_profile,
+                )
     return sets
+
+
+def _eligible_weaponskills_for_contract(
+    contract: JobContract,
+    item_stats: ItemStatsIndex | None,
+) -> tuple[CatseyeWeaponSkill, ...]:
+    if item_stats is None:
+        return tuple()
+    context = WeaponSkillEligibilityContext(
+        job=contract.job,
+        character_level=contract.character_level,
+        skill_caps_by_level_rank=item_stats.skill_caps_by_level_rank,
+        skill_ranks_by_skill_job=item_stats.skill_ranks_by_skill_job,
+        learned_unlock_ids=frozenset(),
+    )
+    return eligible_weaponskills_for_job(
+        item_stats.weapon_skills_by_key,
+        context,
+    )
+
+
+def _script_for_weaponskill(
+    ws: CatseyeWeaponSkill,
+    item_stats: ItemStatsIndex | None,
+):
+    if item_stats is None:
+        return None
+    candidate_roots: list[Path] = []
+    if len(item_stats.source_path.parents) >= 3:
+        candidate_roots.append(item_stats.source_path.parents[2] / "server")
+    candidate_roots.append(Path(__file__).resolve().parents[3] / "server")
+    for root in candidate_roots:
+        candidate = root / "scripts" / "actions" / "weaponskills" / f"{ws.key}.lua"
+        if candidate.exists():
+            return parse_weaponskill_script(candidate, use_adoulin_changes=True)
+    return None
+
+
+def _build_weaponskill_style(
+    ws: CatseyeWeaponSkill,
+    script,
+    classified: tuple[tuple[GearItem, ClassifiedItem], ...],
+    contract: JobContract,
+    item_stats: ItemStatsIndex | None,
+    *,
+    accuracy: bool,
+    target_profile: TargetProfile | None,
+) -> dict[str, SelectedGear]:
+    weights = weights_for_weaponskill(ws, script, accuracy=accuracy)
+    style: dict[str, SelectedGear] = {}
+    blocked_keys: set[str] = set()
+    occupied_slots: set[str] = set()
+    reason_prefix = f"Calculated for {'WSAcc' if accuracy else 'WS'} {ws.display_name}"
+
+    for slot in COMBAT_SLOT_ORDER:
+        if slot in WS_ACTION_BLOCKED_SLOTS or slot in occupied_slots:
+            continue
+        selected = _select_slot_with_weights(
+            "WeaponSkill",
+            slot,
+            weights,
+            classified,
+            contract.job,
+            contract.character_level,
+            tuple(),
+            allowed_weapon_families=tuple(),
+            blocked_keys=blocked_keys,
+            item_stats=item_stats,
+            target_profile=target_profile,
+            reason_prefix=reason_prefix,
+        )
+        if selected:
+            style[slot] = selected
+            blocked_keys.add(_item_key(selected.item))
+            occupied_slots.update(_occupied_slots_for_selected(selected))
+    return style
+
+
+def _automatic_semantic_styles_for_job(job: str) -> tuple[str, ...]:
+    normalized = job.upper()
+    styles = [
+        style_name
+        for style_name in AUTOMATIC_SEMANTIC_STYLES
+        if normalized in JOB_RESTRICTED_AUTOMATIC_STYLES.get(style_name, {normalized})
+    ]
+    for style_name in JOB_SPECIFIC_AUTOMATIC_STYLES.get(normalized, tuple()):
+        if style_name not in styles:
+            styles.append(style_name)
+    return tuple(styles)
+
+
+def _automatic_semantic_styles_for_subjobs(
+    subjob_profiles: dict[str, SubjobProfile],
+) -> tuple[str, ...]:
+    styles: list[str] = []
+    for profile in subjob_profiles.values():
+        for capability in profile.capabilities:
+            for style_name in SUBJOB_CAPABILITY_AUTOMATIC_STYLES.get(capability, tuple()):
+                if style_name not in styles:
+                    styles.append(style_name)
+    return tuple(styles)
 
 
 def _build_combat_style(
@@ -1094,31 +1574,27 @@ def _build_combat_style(
 
     style: dict[str, SelectedGear] = {}
     blocked_keys: set[str] = set()
-    scoring_style = _scoring_style_name(style_name)
-    weapon_family_by_slot = (
-        JOB_STYLE_WEAPON_FAMILIES.get(job, {}).get(style_name)
-        or JOB_STYLE_WEAPON_FAMILIES.get(job, {}).get(scoring_style)
-        or {}
-    )
-    weapon_policy_by_slot = (
-        JOB_STYLE_WEAPON_POLICIES.get((job, style_name))
-        or JOB_STYLE_WEAPON_POLICIES.get((job, scoring_style))
-        or {}
-    )
+    occupied_slots: set[str] = set()
+    selection_style_name = _selection_style_name_for_job(style_name, job)
+    weapon_family_by_slot = _weapon_family_policy_for_style(job, style_name)
+    weapon_policy_by_slot = _weapon_slot_policy_for_style(job, style_name)
+    blocked_action_slots = _action_time_blocked_slots_for_style(style_name)
 
     for slot in _slot_order_for_style(weapon_family_by_slot):
+        if slot in blocked_action_slots or slot in occupied_slots:
+            continue
         allowed_families = weapon_family_by_slot.get(slot)
         if slot == "Sub":
             main = style.get("Main")
             allowed_families = _sub_families_for_main(allowed_families, main)
-            allowed_families = _non_damage_sub_families_for_main(style_name, job, main, allowed_families)
+            allowed_families = _non_damage_sub_families_for_main(selection_style_name, job, main, allowed_families)
             allowed_families = _dual_wield_gated_sub_families(
                 allowed_families,
                 job,
-                style_name,
+                selection_style_name,
             )
         selected = _select_slot(
-            style_name,
+            selection_style_name,
             slot,
             classified,
             job,
@@ -1133,13 +1609,28 @@ def _build_combat_style(
         if selected:
             style[slot] = selected
             blocked_keys.add(_item_key(selected.item))
+            occupied_slots.update(_occupied_slots_for_selected(selected))
     return style
+
+
+def _selection_style_name_for_job(style_name: str, job: str) -> str:
+    return JOB_SEMANTIC_SCORING_OVERRIDES.get((job, style_name), style_name)
 
 
 def _slot_order_for_style(weapon_family_by_slot: dict[str, tuple[str, ...]]) -> tuple[str, ...]:
     if "Range" in weapon_family_by_slot or "Ammo" in weapon_family_by_slot:
         return SLOT_ORDER
     return COMBAT_SLOT_ORDER
+
+
+def _action_time_blocked_slots_for_style(style_name: str) -> set[str]:
+    if style_name in SUBJOB_ACTION_SNAPSHOT_STYLES:
+        return WEAPON_SLOTS
+    if style_name in GENERIC_WEAPONSKILL_FALLBACK_STYLES:
+        return GENERIC_WEAPONSKILL_ACTION_BLOCKED_SLOTS
+    if style_name.startswith("WS_") or style_name.startswith("WSAcc_"):
+        return WS_ACTION_BLOCKED_SLOTS | {"Ammo"}
+    return set()
 
 
 def _sub_families_for_main(
@@ -1153,7 +1644,7 @@ def _sub_families_for_main(
         return tuple(family for family in configured if family == "grip")
     if main_family == "hand_to_hand":
         return tuple()
-    return configured
+    return tuple(family for family in configured if family != "grip")
 
 
 def _non_damage_sub_families_for_main(
@@ -1195,6 +1686,16 @@ def _style_has_dual_wield(job: str, style_name: str) -> bool:
     return (
         JOB_STYLE_SUBJOB_HINTS.get((job, style_name)) in DUAL_WIELD_SUBJOBS
         or JOB_STYLE_SUBJOB_HINTS.get((job, scoring_style)) in DUAL_WIELD_SUBJOBS
+    )
+
+
+def _style_has_daken(job: str, style_name: str) -> bool:
+    if job in NATIVE_DAKEN_JOBS:
+        return True
+    scoring_style = _scoring_style_name(style_name)
+    return (
+        JOB_STYLE_SUBJOB_HINTS.get((job, style_name)) in DAKEN_SUBJOBS
+        or JOB_STYLE_SUBJOB_HINTS.get((job, scoring_style)) in DAKEN_SUBJOBS
     )
 
 
@@ -1382,7 +1883,121 @@ def _select_slot(
         fixed_candidates = [selected for selected in candidates if selected.item.id in fixed_item_ids]
         if fixed_candidates:
             candidates = fixed_candidates
-    return max(candidates, key=lambda selected: (selected.score, selected.item.level, selected.item.id))
+    return max(candidates, key=_selected_rank)
+
+
+def _select_slot_with_weights(
+    style_name: str,
+    slot: str,
+    weights: dict[str, int],
+    classified: tuple[tuple[GearItem, ClassifiedItem], ...],
+    job: str,
+    character_level: int,
+    preferred_names: tuple[str, ...],
+    *,
+    allowed_weapon_families: tuple[str, ...] | None = None,
+    blocked_keys: set[str] | None = None,
+    item_stats: ItemStatsIndex | None = None,
+    target_profile: TargetProfile | None = None,
+    reason_prefix: str | None = None,
+) -> SelectedGear | None:
+    candidates = _slot_candidates_with_weights(
+        style_name,
+        slot,
+        weights,
+        classified,
+        job,
+        character_level,
+        preferred_names,
+        allowed_weapon_families=allowed_weapon_families,
+        blocked_keys=blocked_keys,
+        item_stats=item_stats,
+        target_profile=target_profile,
+        reason_prefix=reason_prefix,
+    )
+    if not candidates:
+        return None
+    return max(candidates, key=_selected_rank)
+
+
+def _slot_candidates_with_weights(
+    style_name: str,
+    slot: str,
+    weights: dict[str, int],
+    classified: tuple[tuple[GearItem, ClassifiedItem], ...],
+    job: str,
+    character_level: int,
+    preferred_names: tuple[str, ...],
+    *,
+    allowed_weapon_families: tuple[str, ...] | None = None,
+    blocked_keys: set[str] | None = None,
+    item_stats: ItemStatsIndex | None = None,
+    target_profile: TargetProfile | None = None,
+    reason_prefix: str | None = None,
+) -> list[SelectedGear]:
+    candidates: list[SelectedGear] = []
+    blocked_keys = blocked_keys or set()
+    for item, classification in classified:
+        if _item_key(item) in blocked_keys:
+            continue
+        if not _slot_eligible(item, classification, slot):
+            continue
+        if not _is_eligible_combat_item(item, classification, job, character_level):
+            continue
+        if slot in WEAPON_SLOTS:
+            allowed_families = _allowed_weapon_families_for_slot(
+                style_name,
+                slot,
+                allowed_weapon_families,
+                job,
+            )
+            if allowed_families is None:
+                allowed_families = tuple(sorted(COMBAT_WEAPON_FAMILIES))
+            if classification.weapon_family not in allowed_families:
+                continue
+            if _blocks_throwing_for_slot(style_name, slot, classification, job):
+                continue
+
+        score = _score_item_with_weights(
+            style_name,
+            slot,
+            item,
+            classification,
+            preferred_names,
+            weights,
+            item_stats=item_stats,
+            target_profile=target_profile,
+        )
+        if score <= 0:
+            continue
+        if slot in JEWELRY_SLOTS and not _jewelry_has_primary_score(
+            style_name,
+            item,
+            classification,
+            weights,
+            item_stats,
+        ):
+            continue
+        candidates.append(
+            SelectedGear(
+                slot=slot,
+                item=item,
+                classification=classification,
+                reason=_selection_reason_with_weights(
+                    style_name,
+                    slot,
+                    item,
+                    classification,
+                    preferred_names,
+                    weights,
+                    item_stats=item_stats,
+                    target_profile=target_profile,
+                    reason_prefix=reason_prefix,
+                ),
+                score=score,
+            )
+        )
+    return candidates
 
 
 def _slot_candidates(
@@ -1418,16 +2033,27 @@ def _slot_candidates(
             or not classification.job_eligible(job)
         ):
             continue
-        if _is_movement_style(style_name) and (classification.server_removal_slot_mask or 0):
+        if (
+            _is_movement_style(style_name)
+            and not _allows_multi_slot_movement_overlay(style_name)
+            and (classification.server_removal_slot_mask or 0)
+        ):
             continue
         if required_weapon_family and classification.weapon_family != required_weapon_family:
             continue
-        allowed_families = allowed_weapon_families
+        allowed_families = _allowed_weapon_families_for_slot(
+            style_name,
+            slot,
+            allowed_weapon_families,
+            job,
+        )
         if allowed_families is None and required_weapon_family:
             allowed_families = (required_weapon_family,)
         if allowed_families is None and slot in WEAPON_SLOTS:
             allowed_families = tuple(sorted(COMBAT_WEAPON_FAMILIES))
         if slot in WEAPON_SLOTS and classification.weapon_family not in allowed_families:
+            continue
+        if _blocks_throwing_for_slot(style_name, slot, classification, job):
             continue
 
         score = _score_item(
@@ -1439,8 +2065,19 @@ def _slot_candidates(
             item_stats=item_stats,
             target_profile=target_profile,
             slot_policy=slot_policy,
+            allowed_weapon_families=allowed_families,
+            job=job,
+            character_level=character_level,
         )
         if score <= 0:
+            continue
+        if slot in JEWELRY_SLOTS and not _jewelry_has_primary_score(
+            style_name,
+            item,
+            classification,
+            _style_mod_weights(style_name),
+            item_stats,
+        ):
             continue
         candidates.append(
             SelectedGear(
@@ -1456,6 +2093,9 @@ def _slot_candidates(
                     item_stats=item_stats,
                     target_profile=target_profile,
                     slot_policy=slot_policy,
+                    allowed_weapon_families=allowed_families,
+                    job=job,
+                    character_level=character_level,
                 ),
                 score=score,
             )
@@ -1470,16 +2110,242 @@ def _item_key(item: GearItem) -> str:
     return f"{item.id}|{item.storage}|{container_id}|{index}"
 
 
+def _allowed_weapon_families_for_slot(
+    style_name: str,
+    slot: str,
+    configured: tuple[str, ...] | None,
+    job: str,
+) -> tuple[str, ...] | None:
+    if (
+        slot == "Ammo"
+        and configured is not None
+        and "ammo" in configured
+        and _style_has_daken(job, style_name)
+        and "throwing" not in configured
+    ):
+        return (*configured, "throwing")
+    return configured
+
+
+def _blocks_throwing_for_slot(
+    style_name: str,
+    slot: str,
+    classification: ClassifiedItem,
+    job: str,
+) -> bool:
+    if classification.weapon_family != "throwing":
+        return False
+    if slot != "Ammo":
+        return True
+    return not (_style_has_daken(job, style_name) and classification.is_shuriken)
+
+
 def _occupied_slots_for_selected(selected: SelectedGear) -> tuple[str, ...]:
-    slot_mask = selected.classification.server_slot_mask or 0
+    slot_mask = EQUIPMENT_SLOT_MASKS.get(selected.slot, 0)
     removal_slot_mask = selected.classification.server_removal_slot_mask or 0
     occupied_mask = slot_mask | removal_slot_mask
+    server_slot_mask = selected.classification.server_slot_mask or 0
+    if slot_mask and not (server_slot_mask & slot_mask):
+        occupied_mask |= server_slot_mask
     occupied_slots = tuple(
         slot
         for slot in SLOT_ORDER
         if occupied_mask & EQUIPMENT_SLOT_MASKS.get(slot, 0)
     )
     return occupied_slots or (selected.slot,)
+
+
+def _should_generate_secondary_slot_lock(slot: str, locked_slot: str) -> bool:
+    """Skip lock pairs where the server mask describes an equip relationship."""
+    if slot == "Ammo" and locked_slot == "Range":
+        return False
+    return True
+
+
+def _secondary_slot_locks_for_sets(
+    selected: dict[str, dict[str, SelectedGear]],
+) -> dict[str, dict[str, tuple[str, ...]]]:
+    locks: dict[str, dict[str, tuple[str, ...]]] = {}
+    for set_name, slot_map in selected.items():
+        set_locks: dict[str, tuple[str, ...]] = {}
+        for slot, selected_item in slot_map.items():
+            removal_slot_mask = selected_item.classification.server_removal_slot_mask or 0
+            if removal_slot_mask == 0:
+                continue
+            locked_slots = tuple(
+                locked_slot
+                for locked_slot in SLOT_ORDER
+                if locked_slot != slot
+                and removal_slot_mask & EQUIPMENT_SLOT_MASKS.get(locked_slot, 0)
+                and _should_generate_secondary_slot_lock(slot, locked_slot)
+            )
+            if locked_slots:
+                set_locks[slot] = locked_slots
+        if set_locks:
+            locks[set_name] = set_locks
+    return locks
+
+
+def _dual_wield_sub_sets_for_sets(
+    selected: dict[str, dict[str, SelectedGear]],
+) -> set[str]:
+    return {
+        set_name
+        for set_name, slot_map in selected.items()
+        if (
+            (sub := slot_map.get("Sub")) is not None
+            and sub.classification.weapon_family in OFFHAND_WEAPON_FAMILIES
+        )
+    }
+
+
+def _conditional_equips_for_sets(
+    selected: dict[str, dict[str, SelectedGear]],
+    classified: tuple[tuple[GearItem, ClassifiedItem], ...],
+    job: str,
+    character_level: int,
+    item_stats: ItemStatsIndex | None,
+) -> dict[str, tuple[dict[str, object], ...]]:
+    if item_stats is None or not classified:
+        return {}
+
+    conditional_equips: dict[str, tuple[dict[str, object], ...]] = {}
+    for set_name, slot_map in selected.items():
+        entries_by_condition: dict[
+            tuple[str, str],
+            dict[str, tuple[int, str]],
+        ] = {}
+        for slot in SLOT_ORDER:
+            base_score = slot_map[slot].score if slot in slot_map else 0
+            candidate = _best_conditional_candidate_for_slot(
+                set_name,
+                slot,
+                classified,
+                job,
+                character_level,
+                base_score,
+                item_stats,
+            )
+            if candidate is None:
+                continue
+
+            condition_type, condition_name, score, item_name = candidate
+            slots = entries_by_condition.setdefault((condition_type, condition_name), {})
+            existing = slots.get(slot)
+            if existing is None or score > existing[0]:
+                slots[slot] = (score, item_name)
+
+        entries: list[dict[str, object]] = []
+        for (condition_type, condition_name), slots in sorted(entries_by_condition.items()):
+            entries.append(
+                {
+                    "condition": _conditional_condition_manifest(condition_type, condition_name),
+                    "slots": {
+                        slot: item_name
+                        for slot, (_score, item_name) in sorted(
+                            slots.items(),
+                            key=lambda value: SLOT_ORDER.index(value[0]),
+                        )
+                    },
+                }
+            )
+        if entries:
+            conditional_equips[set_name] = tuple(entries)
+    return conditional_equips
+
+
+def _best_conditional_candidate_for_slot(
+    style_name: str,
+    slot: str,
+    classified: tuple[tuple[GearItem, ClassifiedItem], ...],
+    job: str,
+    character_level: int,
+    base_score: int,
+    item_stats: ItemStatsIndex,
+) -> tuple[str, str, int, str] | None:
+    best: tuple[str, str, int, str] | None = None
+    best_rank: tuple[int, int, int] | None = None
+    for item, classification in classified:
+        if not _slot_eligible(item, classification, slot):
+            continue
+        if not _is_eligible_combat_item(item, classification, job, character_level):
+            continue
+        conditional_scores = _conditional_mod_scores_by_condition(style_name, item, item_stats)
+        if not conditional_scores:
+            continue
+        unconditional_score = _score_item(
+            style_name,
+            slot,
+            item,
+            classification,
+            tuple(),
+            item_stats=item_stats,
+        )
+        for (condition_type, condition_name), conditional_score in conditional_scores.items():
+            score = unconditional_score + conditional_score
+            if score <= base_score:
+                continue
+            candidate = (condition_type, condition_name, score, item.name)
+            rank = (score, _authoritative_item_level(item, classification), item.id)
+            if best_rank is None or rank > best_rank:
+                best = candidate
+                best_rank = rank
+    return best
+
+
+def _conditional_mod_scores_by_condition(
+    style_name: str,
+    item: GearItem,
+    item_stats: ItemStatsIndex,
+) -> dict[tuple[str, str], int]:
+    weights = _conditional_style_mod_weights(style_name)
+    if not weights:
+        return {}
+    scores: dict[tuple[str, str], int] = {}
+    for conditional_mod in item_stats.conditional_mods_for_item_id(item.id):
+        score = _conditional_mod_score(conditional_mod, weights)
+        if score <= 0:
+            continue
+        condition = (
+            conditional_mod.condition_type,
+            conditional_mod.condition_name,
+        )
+        scores[condition] = scores.get(condition, 0) + score
+    return scores
+
+
+def _conditional_mod_score(
+    conditional_mod: ItemConditionalMod,
+    weights: dict[str, int],
+) -> int:
+    weight = weights.get(conditional_mod.name, 0)
+    if weight == 0 or conditional_mod.value == 0:
+        return 0
+    return conditional_mod.value * weight
+
+
+def _conditional_condition_manifest(condition_type: str, condition_name: str) -> dict[str, object]:
+    condition: dict[str, object] = {
+        "type": condition_type,
+        "name": condition_name,
+    }
+    if condition_type == "status":
+        condition["buffs"] = (condition_name,)
+    elif condition_type in {"level_lt", "level_gte", "mpp_lt", "mp_gt"}:
+        try:
+            condition["threshold"] = int(condition_name)
+        except ValueError:
+            pass
+    elif condition_type == "zone_region" and condition_name == "tu_lia":
+        condition["areas"] = (
+            "Hall of the Gods",
+            "La'Loff Amphitheater",
+            "Ru'Aun Gardens",
+            "The Celestial Nexus",
+            "The Shrine of Ru'Avitau",
+            "Ve'Lugannon Palace",
+        )
+    return condition
 
 
 def _movement_set_rank(
@@ -1523,7 +2389,7 @@ def _movement_weighted_mods(
 ) -> tuple[tuple[str, int], ...]:
     weights = _style_mod_weights(style_name)
     weighted: list[tuple[str, int]] = []
-    for mod_name, value in selected.classification.server_mods:
+    for mod_name, value in _player_mods_for(selected.classification):
         weight = weights.get(mod_name, 0)
         if weight and value:
             weighted.append((mod_name, value * weight))
@@ -1578,6 +2444,20 @@ def _slot_eligible(item: GearItem, classification: ClassifiedItem, slot: str) ->
     return False
 
 
+def _authoritative_item_level(item: GearItem, classification: ClassifiedItem) -> int:
+    if classification.server_level is not None:
+        return classification.server_level
+    return item.level
+
+
+def _selected_rank(selected: SelectedGear) -> tuple[int, int, int]:
+    return (
+        selected.score,
+        _authoritative_item_level(selected.item, selected.classification),
+        selected.item.id,
+    )
+
+
 def _score_item(
     style_name: str,
     slot: str,
@@ -1588,20 +2468,53 @@ def _score_item(
     item_stats: ItemStatsIndex | None = None,
     target_profile: TargetProfile | None = None,
     slot_policy: WeaponSlotPolicy | None = None,
+    allowed_weapon_families: tuple[str, ...] | None = None,
+    job: str | None = None,
+    character_level: int | None = None,
 ) -> int:
     if style_name == "Craft":
-        score = item.level * 8
+        score = _authoritative_item_level(item, classification) * 8
         for role in classification.roles:
             score += STYLE_ROLE_WEIGHTS.get(style_name, {}).get(role, 0)
         return score
 
-    score = _mod_score(style_name, classification)
-    score += _latent_mod_score(style_name, item, item_stats)
+    mod_score = _mod_score(style_name, classification)
+    latent_score = _latent_mod_score(style_name, item, item_stats)
+    score = mod_score + latent_score
 
     if slot in WEAPON_SLOTS:
-        if _uses_weapon_damage_score(style_name):
+        uses_slot_weapon_damage = _uses_weapon_damage_score_for_slot(style_name, slot, classification, job)
+        if slot == "Ammo" and not uses_slot_weapon_damage and score <= 0:
+            return 0
+        score += _weapon_family_preference_bonus(classification, allowed_weapon_families)
+        if uses_slot_weapon_damage:
             score += _weapon_score(item, classification, item_stats, target_profile)
+            score += _job_weapon_skill_bonus(classification, item_stats, job, character_level)
             score += _weapon_policy_bonus(item, slot_policy)
+    return score
+
+
+def _score_item_with_weights(
+    style_name: str,
+    slot: str,
+    item: GearItem,
+    classification: ClassifiedItem,
+    preferred_names: tuple[str, ...],
+    weights: dict[str, int],
+    *,
+    item_stats: ItemStatsIndex | None = None,
+    target_profile: TargetProfile | None = None,
+) -> int:
+    del preferred_names
+    score = score_mechanics_mods(
+        _scoring_style_name(style_name),
+        classification.server_mods,
+        classification.pet_server_mods,
+        weights,
+    ).score
+    score += _latent_mod_score_with_weights(style_name, item, item_stats, weights)
+    if slot in WEAPON_SLOTS and _uses_weapon_damage_score_for_slot(style_name, slot, classification, None):
+        score += _weapon_score(item, classification, item_stats, target_profile)
     return score
 
 
@@ -1611,8 +2524,28 @@ def _uses_weapon_damage_score(style_name: str) -> bool:
     return _scoring_style_name(style_name) in DAMAGE_WEAPON_SCORE_STYLES
 
 
+def _uses_weapon_damage_score_for_slot(
+    style_name: str,
+    slot: str,
+    classification: ClassifiedItem,
+    job: str | None,
+) -> bool:
+    if not _uses_weapon_damage_score(style_name):
+        return False
+    if slot != "Ammo":
+        return True
+    scoring_style = _scoring_style_name(style_name)
+    if scoring_style in {"RangedDamage", "RangedAccuracy"}:
+        return True
+    return job is not None and _style_has_daken(job, style_name) and classification.is_shuriken
+
+
 def _is_movement_style(style_name: str) -> bool:
     return style_name in MOVEMENT_SEMANTIC_STYLES or _scoring_style_name(style_name) == "Movement"
+
+
+def _allows_multi_slot_movement_overlay(style_name: str) -> bool:
+    return style_name == "InCity"
 
 
 def _selection_reason(
@@ -1625,22 +2558,59 @@ def _selection_reason(
     item_stats: ItemStatsIndex | None = None,
     target_profile: TargetProfile | None = None,
     slot_policy: WeaponSlotPolicy | None = None,
+    allowed_weapon_families: tuple[str, ...] | None = None,
+    job: str | None = None,
+    character_level: int | None = None,
 ) -> str:
     if style_name == "Safe":
-        return f"Calculated for Safe from {_score_evidence(style_name, slot, item, classification, item_stats, target_profile, slot_policy)}."
+        return f"Calculated for Safe from {_score_evidence(style_name, slot, item, classification, item_stats, target_profile, slot_policy, allowed_weapon_families, job=job, character_level=character_level)}."
     if style_name == "Craft":
         return "Selected only for non-engaged Craft mode; combat playstyles hard-exclude crafting utility gear."
-    return f"Calculated for {style_name} from {_score_evidence(style_name, slot, item, classification, item_stats, target_profile, slot_policy)}."
+    return f"Calculated for {style_name} from {_score_evidence(style_name, slot, item, classification, item_stats, target_profile, slot_policy, allowed_weapon_families, job=job, character_level=character_level)}."
+
+
+def _selection_reason_with_weights(
+    style_name: str,
+    slot: str,
+    item: GearItem,
+    classification: ClassifiedItem,
+    preferred_names: tuple[str, ...],
+    weights: dict[str, int],
+    *,
+    item_stats: ItemStatsIndex | None = None,
+    target_profile: TargetProfile | None = None,
+    reason_prefix: str | None = None,
+) -> str:
+    del preferred_names
+    prefix = reason_prefix or f"Calculated for {style_name}"
+    evidence = _score_evidence_with_weights(
+        style_name,
+        slot,
+        item,
+        classification,
+        weights,
+        item_stats=item_stats,
+        target_profile=target_profile,
+    )
+    return f"{prefix} from {evidence}."
 
 
 def _mod_score(style_name: str, classification: ClassifiedItem) -> int:
     weights = _style_mod_weights(style_name)
     return score_mechanics_mods(
         _scoring_style_name(style_name),
-        classification.server_mods,
-        classification.pet_server_mods,
+        _player_mods_for(classification),
+        _pet_mods_for(classification),
         weights,
     ).score
+
+
+def _player_mods_for(classification: ClassifiedItem) -> tuple[tuple[str, int], ...]:
+    return classification.server_mods + classification.augment_mods
+
+
+def _pet_mods_for(classification: ClassifiedItem) -> tuple[tuple[str, int], ...]:
+    return classification.pet_server_mods + classification.pet_augment_mods
 
 
 def _latent_mod_score(
@@ -1664,6 +2634,24 @@ def _latent_mod_score(
     return score
 
 
+def _latent_mod_score_with_weights(
+    style_name: str,
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+    weights: dict[str, int],
+) -> int:
+    if item_stats is None or not weights:
+        return 0
+    score = 0
+    for latent in item_stats.latents_for_item_id(item.id):
+        if not _latent_applies_to_style(style_name, latent.condition_id, latent.condition_value):
+            continue
+        weight = weights.get(latent.name, 0)
+        if weight:
+            score += latent.value * weight
+    return score
+
+
 def _latent_applies_to_style(style_name: str, condition_id: int, condition_value: int) -> bool:
     for expected_condition_id, expected_condition_value in MOVEMENT_LATENT_CONDITIONS.get(style_name, tuple()):
         if condition_id != expected_condition_id:
@@ -1673,6 +2661,53 @@ def _latent_applies_to_style(style_name: str, condition_id: int, condition_value
     return False
 
 
+def _jewelry_has_primary_score(
+    style_name: str,
+    item: GearItem,
+    classification: ClassifiedItem,
+    weights: dict[str, int],
+    item_stats: ItemStatsIndex | None,
+) -> bool:
+    positive_mod_names = _positive_weighted_mod_names(classification.server_mods, weights)
+    positive_mod_names.update(_positive_weighted_mod_names(classification.pet_server_mods, weights))
+    positive_mod_names.update(_positive_weighted_latent_mod_names(style_name, item, item_stats, weights))
+    if _scoring_style_name(style_name) == "Resting":
+        secondary_only_mods = RESTING_JEWELRY_SECONDARY_ONLY_MODS
+    else:
+        secondary_only_mods = JEWELRY_SECONDARY_ONLY_MODS
+    return bool(positive_mod_names - secondary_only_mods)
+
+
+def _positive_weighted_mod_names(
+    mods: tuple[tuple[str, int], ...],
+    weights: dict[str, int],
+) -> set[str]:
+    positive_mod_names: set[str] = set()
+    for name, value in mods:
+        weight = weights.get(name, 0)
+        if weight and value * weight > 0:
+            positive_mod_names.add(name)
+    return positive_mod_names
+
+
+def _positive_weighted_latent_mod_names(
+    style_name: str,
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+    weights: dict[str, int],
+) -> set[str]:
+    if item_stats is None or not weights:
+        return set()
+    positive_mod_names: set[str] = set()
+    for latent in item_stats.latents_for_item_id(item.id):
+        if not _latent_applies_to_style(style_name, latent.condition_id, latent.condition_value):
+            continue
+        weight = weights.get(latent.name, 0)
+        if weight and latent.value * weight > 0:
+            positive_mod_names.add(latent.name)
+    return positive_mod_names
+
+
 def _weapon_score(
     item: GearItem,
     classification: ClassifiedItem,
@@ -1680,14 +2715,36 @@ def _weapon_score(
     target_profile: TargetProfile | None,
 ) -> int:
     if item_stats is None:
-        base_score = item.level * 100
+        base_score = _authoritative_item_level(item, classification) * 100
         return base_score + _target_weapon_bonus(classification, base_score, target_profile)
     weapon_stats = item_stats.weapon_stats_for_item_id(item.id)
     if weapon_stats is None:
-        base_score = item.level * 100
+        base_score = _authoritative_item_level(item, classification) * 100
         return base_score + _target_weapon_bonus(classification, base_score, target_profile)
-    base_score = weapon_stats.dps_score
+    effective_hits = _effective_weapon_hits(item, weapon_stats, item_stats)
+    base_score = (
+        int(weapon_stats.damage * effective_hits * 100_000 / weapon_stats.delay)
+        if weapon_stats.delay > 0
+        else 0
+    )
     return base_score + _target_weapon_bonus(classification, base_score, target_profile)
+
+
+def _effective_weapon_hits(
+    item: GearItem,
+    weapon_stats: WeaponStats,
+    item_stats: ItemStatsIndex | None = None,
+) -> int:
+    effective_hits = max(weapon_stats.hit, CATSEYE_EFFECTIVE_WEAPON_HITS.get(item.id, 1), 1)
+    if item_stats is None:
+        return effective_hits
+
+    for mod in item_stats.mods_for_item_id(item.id):
+        if mod.name == "MAX_SWINGS" and mod.value > effective_hits:
+            effective_hits = mod.value
+        elif mod.name == "MYTHIC_OCC_ATT_TWICE" and mod.value > 0:
+            effective_hits = max(effective_hits, 2)
+    return effective_hits
 
 
 def _target_weapon_bonus(
@@ -1702,6 +2759,65 @@ def _target_weapon_bonus(
         return 0
     sdt = target_profile.physical_sdt.get(damage_type, 0)
     return int(base_score * sdt / 10_000)
+
+
+def _weapon_family_preference_bonus(
+    classification: ClassifiedItem,
+    allowed_weapon_families: tuple[str, ...] | None,
+) -> int:
+    if not allowed_weapon_families:
+        return 0
+    try:
+        rank = allowed_weapon_families.index(classification.weapon_family)
+    except ValueError:
+        return 0
+    return (len(allowed_weapon_families) - rank) * WEAPON_FAMILY_PREFERENCE_BONUS
+
+
+def _job_weapon_skill_bonus(
+    classification: ClassifiedItem,
+    item_stats: ItemStatsIndex | None,
+    job: str | None,
+    character_level: int | None,
+) -> int:
+    rank, cap = _job_weapon_skill_rank_cap(classification, item_stats, job, character_level)
+    if rank is None or cap is None:
+        return 0
+    return (cap * JOB_WEAPON_SKILL_CAP_BONUS) + (max(0, 16 - rank) * JOB_WEAPON_SKILL_RANK_BONUS)
+
+
+def _job_weapon_skill_rank_cap(
+    classification: ClassifiedItem,
+    item_stats: ItemStatsIndex | None,
+    job: str | None,
+    character_level: int | None,
+) -> tuple[int | None, int | None]:
+    if item_stats is None or job is None or character_level is None:
+        return None, None
+    skill_id = WEAPON_SKILL_ID_BY_FAMILY.get(classification.weapon_family)
+    if skill_id is None:
+        return None, None
+    rank = item_stats.skill_ranks_by_skill_job.get((skill_id, job.upper()))
+    if rank is None:
+        return None, None
+    cap = _skill_cap_for_rank(item_stats, character_level, rank)
+    if cap <= 0:
+        return rank, None
+    return rank, cap
+
+
+def _skill_cap_for_rank(item_stats: ItemStatsIndex, character_level: int, rank: int) -> int:
+    direct = item_stats.skill_caps_by_level_rank.get((character_level, rank))
+    if direct is not None:
+        return direct
+    eligible_levels = [
+        level
+        for level, candidate_rank in item_stats.skill_caps_by_level_rank
+        if candidate_rank == rank and level <= character_level
+    ]
+    if not eligible_levels:
+        return 0
+    return item_stats.skill_caps_by_level_rank[(max(eligible_levels), rank)]
 
 
 def _weapon_policy_bonus(
@@ -1722,6 +2838,10 @@ def _score_evidence(
     item_stats: ItemStatsIndex | None,
     target_profile: TargetProfile | None = None,
     slot_policy: WeaponSlotPolicy | None = None,
+    allowed_weapon_families: tuple[str, ...] | None = None,
+    *,
+    job: str | None = None,
+    character_level: int | None = None,
 ) -> str:
     weights = _style_mod_weights(style_name)
     mechanics_score = score_mechanics_mods(
@@ -1730,11 +2850,21 @@ def _score_evidence(
         classification.pet_server_mods,
         weights,
     )
+    augment_score = score_mechanics_mods(
+        _scoring_style_name(style_name),
+        classification.augment_mods,
+        classification.pet_augment_mods,
+        weights,
+    )
     parts: list[str] = []
-    if slot in WEAPON_SLOTS and _uses_weapon_damage_score(style_name):
+    if slot in WEAPON_SLOTS and _uses_weapon_damage_score_for_slot(style_name, slot, classification, job):
         weapon_stats = item_stats.weapon_stats_for_item_id(item.id) if item_stats else None
         if weapon_stats is not None:
-            parts.append(f"weapon damage {weapon_stats.damage}, delay {weapon_stats.delay}")
+            effective_hits = _effective_weapon_hits(item, weapon_stats, item_stats)
+            evidence = f"weapon damage {weapon_stats.damage}, delay {weapon_stats.delay}"
+            if effective_hits > max(weapon_stats.hit, 1):
+                evidence += f", Catseye effective hits {effective_hits}"
+            parts.append(evidence)
         if slot_policy is not None:
             if item.id in slot_policy.fixed_item_ids:
                 parts.append(f"fixed weapon policy item_id {item.id}")
@@ -1746,11 +2876,66 @@ def _score_evidence(
                 sdt = target_profile.physical_sdt.get(damage_type, 0)
                 if sdt:
                     parts.append(f"target {target_profile.name} {damage_type} SDT {sdt:+d}")
+        if allowed_weapon_families is not None and classification.weapon_family in allowed_weapon_families:
+            parts.append(f"weapon family preference {classification.weapon_family}")
+        rank, cap = _job_weapon_skill_rank_cap(classification, item_stats, job, character_level)
+        if rank is not None and cap is not None:
+            parts.append(f"job skill rank {rank} cap {cap}")
     if mechanics_score.weighted_mods:
         parts.append("weighted mods " + ", ".join(mechanics_score.weighted_mods))
     if mechanics_score.pet_weighted_mods:
         parts.append("pet weighted mods " + ", ".join(mechanics_score.pet_weighted_mods))
+    if augment_score.weighted_mods:
+        parts.append("augment weighted mods " + ", ".join(augment_score.weighted_mods))
+    if augment_score.pet_weighted_mods:
+        parts.append("pet augment weighted mods " + ", ".join(augment_score.pet_weighted_mods))
     latent_parts = _latent_score_evidence(style_name, item, item_stats)
+    if latent_parts:
+        parts.append("conditional latents " + ", ".join(latent_parts))
+    surfaces = mechanics_score.surfaces or augment_score.surfaces
+    if surfaces:
+        parts.append("mechanics surfaces " + ", ".join(surfaces))
+    if not parts:
+        parts.append("eligible gear tie-breakers; no weighted combat mods")
+    return "; ".join(parts)
+
+
+def _score_evidence_with_weights(
+    style_name: str,
+    slot: str,
+    item: GearItem,
+    classification: ClassifiedItem,
+    weights: dict[str, int],
+    *,
+    item_stats: ItemStatsIndex | None,
+    target_profile: TargetProfile | None = None,
+) -> str:
+    mechanics_score = score_mechanics_mods(
+        _scoring_style_name(style_name),
+        classification.server_mods,
+        classification.pet_server_mods,
+        weights,
+    )
+    parts: list[str] = []
+    if slot in WEAPON_SLOTS and _uses_weapon_damage_score(style_name):
+        weapon_stats = item_stats.weapon_stats_for_item_id(item.id) if item_stats else None
+        if weapon_stats is not None:
+            effective_hits = _effective_weapon_hits(item, weapon_stats, item_stats)
+            evidence = f"weapon damage {weapon_stats.damage}, delay {weapon_stats.delay}"
+            if effective_hits > max(weapon_stats.hit, 1):
+                evidence += f", Catseye effective hits {effective_hits}"
+            parts.append(evidence)
+        if target_profile is not None:
+            damage_type = DAMAGE_TYPE_BY_WEAPON_FAMILY.get(classification.weapon_family)
+            if damage_type:
+                sdt = target_profile.physical_sdt.get(damage_type, 0)
+                if sdt:
+                    parts.append(f"target {target_profile.name} {damage_type} SDT {sdt:+d}")
+    if mechanics_score.weighted_mods:
+        parts.append("weighted mods " + ", ".join(mechanics_score.weighted_mods))
+    if mechanics_score.pet_weighted_mods:
+        parts.append("pet weighted mods " + ", ".join(mechanics_score.pet_weighted_mods))
+    latent_parts = _latent_score_evidence_with_weights(style_name, item, item_stats, weights)
     if latent_parts:
         parts.append("conditional latents " + ", ".join(latent_parts))
     if mechanics_score.surfaces:
@@ -1783,6 +2968,26 @@ def _latent_score_evidence(
     return evidence
 
 
+def _latent_score_evidence_with_weights(
+    style_name: str,
+    item: GearItem,
+    item_stats: ItemStatsIndex | None,
+    weights: dict[str, int],
+) -> list[str]:
+    if item_stats is None or not weights:
+        return []
+    evidence: list[str] = []
+    for latent in item_stats.latents_for_item_id(item.id):
+        if not _latent_applies_to_style(style_name, latent.condition_id, latent.condition_value):
+            continue
+        if latent.name not in weights:
+            continue
+        evidence.append(
+            f"{latent.name}{latent.value:+d} condition {latent.condition_id}:{latent.condition_value}"
+        )
+    return evidence
+
+
 def _build_manifest(
     *,
     player: str,
@@ -1798,20 +3003,36 @@ def _build_manifest(
     item_stats: ItemStatsIndex | None,
     target_profile: TargetProfile | None,
     target_name: str | None,
+    default_playstyle: str,
     subjob_profiles: dict[str, SubjobProfile],
     default_subjob: str,
     style_subjobs: dict[str, str],
     sets: dict[str, dict[str, str]],
     selected: dict[str, dict[str, SelectedGear]],
+    conditional_equips: dict[str, tuple[dict[str, object], ...]],
+    mechanics_swap_planner: dict[str, object],
     rejected_items: dict[str, object],
+    profile_features: tuple[str, ...] = tuple(),
 ) -> dict[str, object]:
-    return {
+    commands = default_forward_commands(
+        playstyles=tuple(style.name for style in contract.playstyles),
+        profile_features=profile_features,
+    )
+    keybinding_plan = plan_keybindings(commands)
+    number_row_palette = plan_number_row_palette(
+        job=job,
+        playstyles=tuple(style.name for style in contract.playstyles),
+        available_sets=tuple(sets),
+        profile_features=profile_features,
+    )
+    manifest = {
         "player": player,
         "playerId": player_id,
         "job": job,
         "level": contract.character_level,
         "levelSource": contract.level_source,
-        "defaultPlaystyle": contract.default_playstyle,
+        "defaultPlaystyle": default_playstyle,
+        "contractDefaultPlaystyle": contract.default_playstyle,
         "playstyles": [style.name for style in contract.playstyles],
         "contract": contract.manifest_metadata(),
         "sets": sets,
@@ -1822,14 +3043,22 @@ def _build_manifest(
             }
             for style_name, slot_map in selected.items()
         },
+        "conditionalEquips": conditional_equips,
         "rejectedItems": rejected_items,
         "serverItemStats": _server_item_stats_manifest(item_stats),
         "mechanicsDecisionModel": _mechanics_decision_manifest(contract, item_stats),
+        "mechanicsSwapPlanner": mechanics_swap_planner,
+        "commandRegistry": {
+            "commands": [command.to_manifest() for command in commands],
+        },
+        "keyBindings": keybinding_plan.to_manifest(),
+        "numberRowPalette": number_row_palette.to_manifest(),
         "subjobModel": {
             "defaultSubjob": default_subjob,
             "styleSubjobs": style_subjobs,
             "subjobLevel": 37,
             "profiles": subjob_manifest(subjob_profiles),
+            "dualWieldSubSets": sorted(_dual_wield_sub_sets_for_sets(selected)),
         },
         "targetProfile": target_profile.manifest_metadata() if target_profile else empty_target_manifest(target_name),
         "catseyeSnapshot": _snapshot_manifest(
@@ -1841,6 +3070,8 @@ def _build_manifest(
             character_raw=character_raw,
         ),
     }
+    validate_profile_manifest(manifest)
+    return manifest
 
 
 def _server_item_stats_manifest(item_stats: ItemStatsIndex | None) -> dict[str, object]:
@@ -1875,6 +3106,7 @@ def _mechanics_decision_manifest(contract: JobContract, item_stats: ItemStatsInd
     return {
         "source": "docs/CATSEYE_COMBAT_MAGIC_MECHANICS.md",
         "mechanicsSources": mechanics_source_manifest(item_stats.mechanics_counts if item_stats else {}),
+        "mechanicsOpportunities": mechanics_opportunity_manifest(item_stats),
         "playstyles": {
             style.name: mechanics_manifest_for_style(style.name)
             for style in contract.playstyles
@@ -1960,8 +3192,12 @@ def _rejection_reason(
 
 
 def _job_allowed_weapon_families(job: str) -> set[str]:
+    normalized_job = job.upper()
     families: set[str] = set()
-    for style_rules in JOB_STYLE_WEAPON_FAMILIES.get(job, {}).values():
+    default_rules = JOB_DEFAULT_WEAPON_FAMILIES.get(normalized_job, {})
+    for slot_families in default_rules.values():
+        families.update(slot_families)
+    for style_rules in JOB_STYLE_WEAPON_FAMILIES.get(normalized_job, {}).values():
         for slot_families in style_rules.values():
             families.update(slot_families)
     return families or set(COMBAT_WEAPON_FAMILIES)

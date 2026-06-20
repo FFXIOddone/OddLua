@@ -17,7 +17,7 @@ DEFAULT_OUTPUT_PATH = ODDLUA_ROOT / "data" / "oddlua_stats.sqlite"
 
 sys.path.insert(0, str(ODDLUA_ROOT / "src"))
 
-from oddlua.statsdb import build_stats_db  # noqa: E402
+from oddlua.app.build_stats_db import build_stats_db  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -56,9 +56,12 @@ def main() -> int:
         f"{result.item_latent_count} item latents, "
         f"{result.catseye_equipment_override_count} Catseye equipment overrides, "
         f"{result.catseye_equipment_stat_override_count} Catseye equipment stat overrides, "
+        f"{result.catseye_equipment_effect_tag_count} Catseye equipment effect tags, "
         f"{result.client_item_count} client item resources, "
         f"{result.client_equipment_update_count} client equipment updates, "
         f"{result.client_weapon_update_count} client weapon updates, "
+        f"{result.skill_cap_count} skill cap rows, "
+        f"{result.skill_rank_count} skill rank rows, "
         f"{result.mob_resistance_count} mob resist profiles, "
         f"{result.mob_pool_count} mob pools, "
         f"{result.mob_group_count} mob groups."

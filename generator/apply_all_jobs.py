@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -21,10 +22,14 @@ DEFAULT_LUASHITACAST_ROOT = Path(
 DEFAULT_OUTPUT_ROOT = ODDLUA_ROOT / "dist"
 DEFAULT_BACKUP_ROOT = ODDLUA_ROOT / "backups" / "luashitacast"
 DEFAULT_REPORT_ROOT = ODDLUA_ROOT / "reports" / "apply"
+DEFAULT_RUNTIME_ROOT = ODDLUA_ROOT / "runtime"
+COMMON_RUNTIME_ASSETS = (
+    Path("luashitacast/common/conditionals.lua"),
+)
 
 sys.path.insert(0, str(ODDLUA_ROOT / "src"))
 
-from oddlua.builder import build_pack  # noqa: E402
+from oddlua.app.build_pack import build_pack  # noqa: E402
 from oddlua.contracts import SUPPORTED_JOBS  # noqa: E402
 from oddlua.gearexport import load_character_snapshot  # noqa: E402
 
@@ -108,7 +113,19 @@ def apply_all_jobs(
             "installedTargets": 0,
             "wouldInstallTargets": 0,
             "backedUpTargets": 0,
+            "installedCommonAssets": 0,
+            "wouldInstallCommonAssets": 0,
+            "backedUpCommonAssets": 0,
+            "mechanicsPlannerLoadedJobs": 0,
+            "mechanicsPlannerTransitions": 0,
+            "mechanicsPlannerSkippedTransitions": 0,
+            "mechanicsPlannerWarnings": 0,
+            "mechanicsPlannerActions": 0,
+            "mechanicsPlannerVersions": {},
+            "mechanicsPlannerWarningTypes": {},
+            "mechanicsPlannerSkippedReasons": {},
         },
+        "commonRuntimeAssets": [],
     }
     summary = report["summary"]
     assert isinstance(summary, dict)
@@ -131,10 +148,72 @@ def apply_all_jobs(
         summary["installedTargets"] += character_report["summary"]["installedTargets"]
         summary["wouldInstallTargets"] += character_report["summary"]["wouldInstallTargets"]
         summary["backedUpTargets"] += character_report["summary"]["backedUpTargets"]
+        summary["mechanicsPlannerLoadedJobs"] += character_report["summary"]["mechanicsPlannerLoadedJobs"]
+        summary["mechanicsPlannerTransitions"] += character_report["summary"]["mechanicsPlannerTransitions"]
+        summary["mechanicsPlannerSkippedTransitions"] += character_report["summary"]["mechanicsPlannerSkippedTransitions"]
+        summary["mechanicsPlannerWarnings"] += character_report["summary"]["mechanicsPlannerWarnings"]
+        summary["mechanicsPlannerActions"] += character_report["summary"]["mechanicsPlannerActions"]
+        _merge_summary_count_map(
+            summary,
+            "mechanicsPlannerVersions",
+            character_report["summary"].get("mechanicsPlannerVersions"),
+        )
+        _merge_summary_count_map(
+            summary,
+            "mechanicsPlannerWarningTypes",
+            character_report["summary"].get("mechanicsPlannerWarningTypes"),
+        )
+        _merge_summary_count_map(
+            summary,
+            "mechanicsPlannerSkippedReasons",
+            character_report["summary"].get("mechanicsPlannerSkippedReasons"),
+        )
+
+    common_reports = _apply_common_runtime_assets(
+        luashitacast_root=luashitacast_root,
+        backup_batch_root=backup_batch_root,
+        dry_run=dry_run,
+    )
+    report["commonRuntimeAssets"] = common_reports
+    if dry_run:
+        summary["wouldInstallCommonAssets"] += len(common_reports)
+    else:
+        summary["installedCommonAssets"] += len(common_reports)
+        summary["backedUpCommonAssets"] += sum(1 for item in common_reports if item.get("backupPath"))
 
     report_root.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     return report
+
+
+def _apply_common_runtime_assets(
+    *,
+    luashitacast_root: Path | str,
+    backup_batch_root: Path | str,
+    runtime_root: Path | str = DEFAULT_RUNTIME_ROOT,
+    dry_run: bool,
+) -> list[dict[str, object]]:
+    luashitacast_root = Path(luashitacast_root)
+    backup_batch_root = Path(backup_batch_root)
+    runtime_root = Path(runtime_root)
+
+    reports: list[dict[str, object]] = []
+    for source_relative_path in COMMON_RUNTIME_ASSETS:
+        source_path = runtime_root / source_relative_path
+        if not source_path.exists():
+            raise FileNotFoundError(f"OddLua runtime asset not found: {source_path}")
+
+        target_relative_path = source_relative_path.relative_to("luashitacast")
+        reports.append(
+            _apply_target(
+                source_path=source_path,
+                target_path=luashitacast_root / target_relative_path,
+                luashitacast_root=luashitacast_root,
+                backup_batch_root=backup_batch_root,
+                dry_run=dry_run,
+            )
+        )
+    return reports
 
 
 def _apply_character(
@@ -162,6 +241,14 @@ def _apply_character(
             "installedTargets": 0,
             "wouldInstallTargets": 0,
             "backedUpTargets": 0,
+            "mechanicsPlannerLoadedJobs": 0,
+            "mechanicsPlannerTransitions": 0,
+            "mechanicsPlannerSkippedTransitions": 0,
+            "mechanicsPlannerWarnings": 0,
+            "mechanicsPlannerActions": 0,
+            "mechanicsPlannerVersions": {},
+            "mechanicsPlannerWarningTypes": {},
+            "mechanicsPlannerSkippedReasons": {},
         },
     }
     summary = character_report["summary"]
@@ -212,6 +299,8 @@ def _apply_character(
                 if target_report["backupPath"]:
                     summary["backedUpTargets"] += 1
 
+        mechanics_planner = _mechanics_planner_report(result.manifest)
+        _add_mechanics_planner_summary(summary, mechanics_planner)
         character_report["jobs"].append(  # type: ignore[union-attr]
             {
                 "job": job,
@@ -219,13 +308,124 @@ def _apply_character(
                 "action": "would_install" if dry_run else "installed",
                 "profilePath": str(result.profile_path),
                 "manifestPath": str(result.manifest_path),
+                "keybindingsPath": str(result.keybindings_path),
                 "defaultPlaystyle": result.manifest["defaultPlaystyle"],
                 "playstyles": result.manifest["playstyles"],
+                "mechanicsPlanner": mechanics_planner,
                 "targets": target_reports,
             }
         )
 
     return character_report
+
+
+def _add_mechanics_planner_summary(summary: dict[str, object], planner_report: dict[str, object]) -> None:
+    if planner_report.get("loaded") is not True:
+        return
+    summary["mechanicsPlannerLoadedJobs"] = int(summary.get("mechanicsPlannerLoadedJobs", 0)) + 1
+    summary["mechanicsPlannerTransitions"] = int(summary.get("mechanicsPlannerTransitions", 0)) + int(
+        planner_report.get("transitionCount", 0)
+    )
+    summary["mechanicsPlannerSkippedTransitions"] = int(
+        summary.get("mechanicsPlannerSkippedTransitions", 0)
+    ) + int(planner_report.get("skippedTransitionCount", 0))
+    summary["mechanicsPlannerWarnings"] = int(summary.get("mechanicsPlannerWarnings", 0)) + int(
+        planner_report.get("warningCount", 0)
+    )
+    summary["mechanicsPlannerActions"] = int(summary.get("mechanicsPlannerActions", 0)) + int(
+        planner_report.get("actionCount", 0)
+    )
+    _merge_summary_count_map(
+        summary,
+        "mechanicsPlannerVersions",
+        {str(_int_value(planner_report.get("plannerVersion"))): 1},
+    )
+    _merge_summary_count_map(summary, "mechanicsPlannerWarningTypes", planner_report.get("warningTypes"))
+    _merge_summary_count_map(summary, "mechanicsPlannerSkippedReasons", planner_report.get("skippedReasons"))
+
+
+def _merge_summary_count_map(summary: dict[str, object], key: str, values: object) -> None:
+    target = summary.get(key)
+    if not isinstance(target, dict):
+        target = {}
+        summary[key] = target
+    if not isinstance(values, dict):
+        return
+    for name, count in values.items():
+        target[str(name)] = int(target.get(str(name), 0)) + int(count)
+
+
+def _mechanics_planner_report(manifest: dict[str, object]) -> dict[str, object]:
+    planner = manifest.get("mechanicsSwapPlanner")
+    if not isinstance(planner, dict):
+        return {
+            "loaded": False,
+            "plannerVersion": 0,
+            "baselineSet": "",
+            "transitionCount": 0,
+            "skippedTransitionCount": 0,
+            "actionCount": 0,
+            "warningCount": 0,
+            "poolBridgeActionCount": 0,
+            "negativeTickActionCount": 0,
+            "warningTypes": {},
+            "skippedReasons": {},
+        }
+
+    transitions = planner.get("transitions")
+    if not isinstance(transitions, dict):
+        transitions = {}
+    skipped_transitions = planner.get("skippedTransitions")
+    if not isinstance(skipped_transitions, dict):
+        skipped_transitions = {}
+
+    action_count = 0
+    warning_count = 0
+    warning_types: Counter[str] = Counter()
+    pool_bridge_action_count = 0
+    negative_tick_action_count = 0
+    skipped_reasons = Counter(str(reason) for reason in skipped_transitions.values())
+    for transition in transitions.values():
+        if not isinstance(transition, dict):
+            continue
+        warnings = transition.get("warnings")
+        if isinstance(warnings, list):
+            warning_count += len(warnings)
+            for warning in warnings:
+                warning_types[str(warning)] += 1
+        actions = transition.get("actions")
+        if not isinstance(actions, list):
+            continue
+        action_count += len(actions)
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            key = str(action.get("key", ""))
+            if key == "pool_bridge_transition":
+                pool_bridge_action_count += 1
+            elif key == "negative_tick_avoidance":
+                negative_tick_action_count += 1
+
+    return {
+        "loaded": planner.get("loaded") is True,
+        "plannerVersion": _int_value(planner.get("plannerVersion")),
+        "baselineSet": str(planner.get("baselineSet", "")),
+        "transitionCount": len(transitions),
+        "skippedTransitionCount": len(skipped_transitions),
+        "actionCount": action_count,
+        "warningCount": warning_count,
+        "poolBridgeActionCount": pool_bridge_action_count,
+        "negativeTickActionCount": negative_tick_action_count,
+        "warningTypes": dict(warning_types),
+        "skippedReasons": dict(skipped_reasons),
+    }
+
+
+def _int_value(value: object) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _apply_target(
@@ -350,7 +550,35 @@ def main() -> int:
             backups=summary["backedUpTargets"],
         )
     )
+    print(_format_mechanics_summary(summary))
     return 0
+
+
+def _format_mechanics_summary(summary: dict[str, object]) -> str:
+    version_text = _format_count_map(summary.get("mechanicsPlannerVersions"))
+    warning_text = _format_count_map(summary.get("mechanicsPlannerWarningTypes"))
+    skipped_text = _format_count_map(summary.get("mechanicsPlannerSkippedReasons"))
+    return (
+        "Mechanics planner: loaded jobs {loaded}; transitions {transitions}; skipped {skipped}; "
+        "warnings {warnings}; versions {versions}; warning types {warning_types}; skipped reasons {skipped_reasons}"
+    ).format(
+        loaded=summary.get("mechanicsPlannerLoadedJobs", 0),
+        transitions=summary.get("mechanicsPlannerTransitions", 0),
+        skipped=summary.get("mechanicsPlannerSkippedTransitions", 0),
+        warnings=summary.get("mechanicsPlannerWarnings", 0),
+        versions=version_text,
+        warning_types=warning_text,
+        skipped_reasons=skipped_text,
+    )
+
+
+def _format_count_map(value: object) -> str:
+    if not isinstance(value, dict) or not value:
+        return "none"
+    return ", ".join(
+        f"{name}={value[name]}"
+        for name in sorted(value)
+    )
 
 
 if __name__ == "__main__":

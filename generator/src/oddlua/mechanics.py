@@ -20,6 +20,7 @@ STYLE_SURFACES = {
     "MagicAccuracy": ("enfeeble", "magic_accuracy", "duration", "target_resistance"),
     "FastCast": ("cast_cycle", "recast", "interrupt_reliability"),
     "IdleRefresh": ("sustain", "refresh", "survival"),
+    "PhysicalIdle": ("survival", "mitigation", "downtime"),
     "Resting": ("sustain", "hmp", "recovery"),
     "Movement": ("movement_speed", "idle_utility", "travel"),
     "Movement_City": ("movement_speed", "city_latent", "travel"),

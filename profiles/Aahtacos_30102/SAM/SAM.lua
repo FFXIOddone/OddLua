@@ -2,21 +2,38 @@ local profile = {};
 
 local state = {
     Playstyle = 'StoreTP',
+    NumberRowPaletteEnabled = true,
     WarpRingLocked = false,
-    WarpUsePending = false,
-    WarpClearPending = false,
-    WarpUseAt = nil,
-    WarpClearAt = nil,
+    SecondarySlotLocks = {},
+    SecondarySlotLockContextSetNames = nil,
+    MechanicsProbes = false,
+    MechanicsExecution = false,
+    ReconcileEnabled = true,
+    ReconcileSnapshotSeq = 0,
+    ReconcilePendingSnapshot = nil,
+    ReconcileScanScheduled = false,
+    ReconcileScanToken = 0,
+    ReconcileLastRecordedSignature = nil,
+    ReconcileLast = nil,
+    ReconcileLogDirectoryReady = false,
+    ReconcileLastWriteError = nil,
+    StableEquipForcePending = false,
+    OddLuaRefreshPending = false,
+    OddLuaRefreshLastStatus = 'none',
+    AutoThirdEye = false,
+    AutoWarBuffs = false,
+    AutoCombat = false,
 };
 
 local sets = {
     Playstyle_StoreTP = {
         Main = 'Amanomurakumo',
+        Sub = 'Tigris Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Hachiman Domaru',
         Hands = 'Dusk Gloves',
         Ring1 = 'Rajas Ring',
         Ring2 = 'Sniper\'s Ring',
@@ -28,15 +45,16 @@ local sets = {
 
     Playstyle_Accuracy = {
         Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Haubergeon +1',
         Hands = 'Dusk Gloves',
         Ring1 = 'Sniper\'s Ring',
         Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
+        Back = 'Aesir Mantle',
         Waist = 'Sao. Koshi-Ate',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
@@ -44,10 +62,11 @@ local sets = {
 
     Playstyle_WeaponSkill = {
         Main = 'Amanomurakumo',
-        Head = 'Genbu\'s Kabuto',
+        Sub = 'Mythril Grip',
+        Head = 'Wyvern Helm',
         Neck = 'Justice Torque',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
@@ -60,11 +79,12 @@ local sets = {
 
     Playstyle_Evasion = {
         Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
         Ear1 = 'Platinum Earring',
         Ear2 = 'Platinum Earring',
-        Body = 'Kirin\'s Osode',
+        Body = 'Amir Korazin',
         Hands = 'Dusk Gloves',
         Ring1 = 'Hard Leather Ring',
         Ring2 = 'Water Ring',
@@ -76,11 +96,12 @@ local sets = {
 
     StoreTP = {
         Main = 'Amanomurakumo',
+        Sub = 'Tigris Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Hachiman Domaru',
         Hands = 'Dusk Gloves',
         Ring1 = 'Rajas Ring',
         Ring2 = 'Sniper\'s Ring',
@@ -92,15 +113,16 @@ local sets = {
 
     Accuracy = {
         Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Haubergeon +1',
         Hands = 'Dusk Gloves',
         Ring1 = 'Sniper\'s Ring',
         Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
+        Back = 'Aesir Mantle',
         Waist = 'Sao. Koshi-Ate',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
@@ -108,10 +130,11 @@ local sets = {
 
     WeaponSkill = {
         Main = 'Amanomurakumo',
-        Head = 'Genbu\'s Kabuto',
+        Sub = 'Mythril Grip',
+        Head = 'Wyvern Helm',
         Neck = 'Justice Torque',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
@@ -124,11 +147,12 @@ local sets = {
 
     Evasion = {
         Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
         Ear1 = 'Platinum Earring',
         Ear2 = 'Platinum Earring',
-        Body = 'Kirin\'s Osode',
+        Body = 'Amir Korazin',
         Hands = 'Dusk Gloves',
         Ring1 = 'Hard Leather Ring',
         Ring2 = 'Water Ring',
@@ -140,27 +164,34 @@ local sets = {
 
     Idle = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Darksteel Cap',
+        Neck = 'Coral Gorget',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
-        Body = 'Kirin\'s Osode',
+        Body = 'Sao. Domaru +1',
         Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Mana Ring',
+        Ring1 = 'Water Ring',
+        Ring2 = 'Lightning Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Toxon Belt',
         Legs = 'Darksteel Subligar',
         Feet = 'Dst. Leggings',
     },
 
     Resting = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Legs = 'Dusk Trousers',
         Feet = 'Dusk Ledelsens',
+    },
+
+    InCity = {
+        Body = 'Kupo Suit',
     },
 
     Movement = {
@@ -241,20 +272,24 @@ local sets = {
 
     Aftercast = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Darksteel Cap',
+        Neck = 'Coral Gorget',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
-        Body = 'Kirin\'s Osode',
+        Body = 'Sao. Domaru +1',
         Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Mana Ring',
+        Ring1 = 'Water Ring',
+        Ring2 = 'Lightning Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Toxon Belt',
         Legs = 'Darksteel Subligar',
         Feet = 'Dst. Leggings',
     },
 
     PDT = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Darksteel Cap',
         Neck = 'Coral Gorget',
         Ear1 = 'Merman\'s Earring',
@@ -271,9 +306,9 @@ local sets = {
 
     MDT = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
-        Head = 'Genbu\'s Kabuto',
-        Neck = 'Chain Choker',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Neck = 'Aesir Torque',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
         Body = 'Kirin\'s Osode',
@@ -282,8 +317,8 @@ local sets = {
         Ring2 = 'Sun Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Toxon Belt',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Suzaku\'s Sune-Ate',
+        Legs = 'Dusk Trousers',
+        Feet = 'Myochin Sune-Ate',
     },
 
     Crafting = {
@@ -307,11 +342,11 @@ local sets = {
 
     TP = {
         Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
+        Sub = 'Tigris Grip',
         Head = 'Walahra Turban',
         Neck = 'Spike Necklace',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Haubergeon +1',
         Hands = 'Dusk Gloves',
         Ring1 = 'Rajas Ring',
@@ -324,7 +359,7 @@ local sets = {
 
     Hybrid = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Darksteel Cap',
         Neck = 'Coral Gorget',
         Ear1 = 'Merman\'s Earring',
@@ -341,123 +376,133 @@ local sets = {
 
     TPAccuracy = {
         Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Haubergeon +1',
         Hands = 'Dusk Gloves',
         Ring1 = 'Sniper\'s Ring',
         Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
+        Back = 'Aesir Mantle',
         Waist = 'Sao. Koshi-Ate',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Precast = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     FastCast = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Midcast = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Cure = {
-        Head = 'Myochin Kabuto',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Healing = {
-        Head = 'Myochin Kabuto',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Enhancing = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     EnhancingDuration = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Stoneskin = {
-        Head = 'Myochin Kabuto',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Refresh = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Darksteel Cap',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
         Body = 'Kirin\'s Osode',
         Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Mana Ring',
         Legs = 'Darksteel Subligar',
         Feet = 'Dst. Leggings',
     },
 
     Regen = {
-        Head = 'Myochin Kabuto',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     SneakInvisible = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Barspell = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
-        Head = 'Genbu\'s Kabuto',
-        Neck = 'Chain Choker',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Neck = 'Aesir Torque',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
         Body = 'Kirin\'s Osode',
@@ -466,15 +511,15 @@ local sets = {
         Ring2 = 'Sun Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Toxon Belt',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Suzaku\'s Sune-Ate',
+        Legs = 'Dusk Trousers',
+        Feet = 'Myochin Sune-Ate',
     },
 
     Phalanx = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
-        Head = 'Genbu\'s Kabuto',
-        Neck = 'Chain Choker',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Neck = 'Aesir Torque',
         Ear1 = 'Merman\'s Earring',
         Ear2 = 'Coral Earring',
         Body = 'Kirin\'s Osode',
@@ -483,104 +528,116 @@ local sets = {
         Ring2 = 'Sun Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Toxon Belt',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Suzaku\'s Sune-Ate',
+        Legs = 'Dusk Trousers',
+        Feet = 'Myochin Sune-Ate',
     },
 
     Aquaveil = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Haste = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     Enfeebling = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Sleep = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Bind = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Gravity = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Silence = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Slow = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Paralyze = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Blind = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Dispel = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Dia = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
@@ -595,7 +652,7 @@ local sets = {
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
-        Ring2 = 'Mana Ring',
+        Ring2 = 'Sniper\'s Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Fierce Belt',
         Legs = 'Dusk Trousers',
@@ -603,24 +660,27 @@ local sets = {
     },
 
     Divine = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
     },
 
     Elemental = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
     },
 
     Nuke = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
     },
 
@@ -634,7 +694,7 @@ local sets = {
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
-        Ring2 = 'Mana Ring',
+        Ring2 = 'Sniper\'s Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Fierce Belt',
         Legs = 'Dusk Trousers',
@@ -651,7 +711,7 @@ local sets = {
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
-        Ring2 = 'Mana Ring',
+        Ring2 = 'Sniper\'s Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Fierce Belt',
         Legs = 'Dusk Trousers',
@@ -668,7 +728,7 @@ local sets = {
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
-        Ring2 = 'Mana Ring',
+        Ring2 = 'Sniper\'s Ring',
         Back = 'Cerberus Mantle',
         Waist = 'Fierce Belt',
         Legs = 'Dusk Trousers',
@@ -676,112 +736,17 @@ local sets = {
     },
 
     Stun = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Myochin Kabuto',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
         Feet = 'Suzaku\'s Sune-Ate',
-    },
-
-    BlueMagic = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Walahra Turban',
-        Neck = 'Spike Necklace',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Dusk Gloves',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Dusk Ledelsens',
-    },
-
-    PhysicalBlueMagic = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Walahra Turban',
-        Neck = 'Spike Necklace',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Dusk Gloves',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Dusk Ledelsens',
-    },
-
-    MagicalBlueMagic = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Song = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Opal Ring',
-        Ring2 = 'Mana Ring',
-        Waist = 'Corsette',
-    },
-
-    SongDebuff = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Opal Ring',
-        Ring2 = 'Mana Ring',
-        Waist = 'Corsette',
-    },
-
-    SongBuff = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Opal Ring',
-        Ring2 = 'Mana Ring',
-        Waist = 'Corsette',
-    },
-
-    Geomancy = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-        Feet = 'Suzaku\'s Sune-Ate',
-    },
-
-    Summoning = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-    },
-
-    BloodPactRage = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-    },
-
-    BloodPactWard = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-    },
-
-    AvatarPerp = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
     },
 
     Ninjutsu = {
-        Main = 'Seiryu\'s Sword',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Ear1 = 'Platinum Earring',
         Ear2 = 'Platinum Earring',
@@ -793,16 +758,18 @@ local sets = {
     },
 
     Utsusemi = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
         Hands = 'Dusk Gloves',
-        Ring1 = 'Mana Ring',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
     },
 
     NinjutsuEnfeeble = {
-        Main = 'Seiryu\'s Sword',
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Ear1 = 'Platinum Earring',
         Ear2 = 'Platinum Earring',
@@ -813,123 +780,11 @@ local sets = {
         Feet = 'Dusk Ledelsens',
     },
 
-    Snapshot = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Sniper\'s Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
-    RangedPreshot = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Sniper\'s Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
-    Ranged = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Sniper\'s Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
-    RangedMidshot = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Sniper\'s Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
-    RangedAccuracy = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Sniper\'s Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
-    RangedAttack = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Saotome Kabuto',
-        Neck = 'Justice Torque',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Smilodon Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-        Feet = 'Hmn. Sune-Ate',
-    },
-
-    QuickDraw = {
-        Main = 'Garuda\'s Dagger',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Wing Earring',
-        Ear2 = 'Wing Earring',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Dusk Trousers',
-    },
-
     Weaponskill = {
-        Main = 'Amanomurakumo',
-        Head = 'Genbu\'s Kabuto',
+        Head = 'Wyvern Helm',
         Neck = 'Justice Torque',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
@@ -941,11 +796,10 @@ local sets = {
     },
 
     WeaponSkillAccuracy = {
-        Main = 'Amanomurakumo',
-        Head = 'Genbu\'s Kabuto',
+        Head = 'Wyvern Helm',
         Neck = 'Justice Torque',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Kirin\'s Osode',
         Hands = 'Ochimusha Kote',
         Ring1 = 'Venture Ring',
@@ -959,13 +813,12 @@ local sets = {
     WSElemental = {
         Head = 'Walahra Turban',
         Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
         Waist = 'Ryl.Kgt. Belt',
     },
 
     JobAbility = {
         Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
         Ear1 = 'Eris\' Earring',
@@ -981,7 +834,7 @@ local sets = {
 
     Enmity = {
         Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
+        Sub = 'Mythril Grip',
         Head = 'Walahra Turban',
         Neck = 'Coral Gorget',
         Ear1 = 'Eris\' Earring',
@@ -995,9 +848,243 @@ local sets = {
         Feet = 'Dusk Ledelsens',
     },
 
+    Elemental_Fire = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Fire = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Fire = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Ice = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Ice = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Ice = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Wind = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Wind = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Wind = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Earth = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Earth = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Earth = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Thunder = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Thunder = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Thunder = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Lightning = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Lightning = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Lightning = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Water = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Water = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Water = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Light = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Light = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Light = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Elemental_Dark = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Weather_Dark = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Day_Dark = {
+        Main = 'Amanomurakumo',
+        Sub = 'Mythril Grip',
+        Head = 'Walahra Turban',
+        Body = 'Kirin\'s Osode',
+        Waist = 'Ryl.Kgt. Belt',
+    },
+
+    Meditate = {
+        Head = 'Myochin Kabuto',
+        Ear1 = 'Brutal Earring',
+        Body = 'Hachiman Domaru',
+        Hands = 'Saotome Kote',
+        Ring1 = 'Rajas Ring',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Dusk Ledelsens',
+    },
+
+    ThirdEye = {
+        Head = 'Walahra Turban',
+        Ear1 = 'Platinum Earring',
+        Ear2 = 'Platinum Earring',
+        Body = 'Amir Korazin',
+        Hands = 'Seiryu\'s Kote',
+        Legs = 'Saotome Haidate',
+        Feet = 'Dusk Ledelsens',
+    },
+
     Waltz = {
-        Main = 'Seiryu\'s Sword',
-        Sub = 'Tigris Grip',
         Head = 'Genbu\'s Kabuto',
         Ear1 = 'Platinum Earring',
         Ear2 = 'Platinum Earring',
@@ -1009,29 +1096,11 @@ local sets = {
         Feet = 'Dusk Ledelsens',
     },
 
-    Steps = {
-        Main = 'Amanomurakumo',
-        Head = 'Walahra Turban',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Dusk Gloves',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Dusk Ledelsens',
-    },
-
     Samba = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
         Head = 'Walahra Turban',
         Neck = 'Spike Necklace',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
         Body = 'Haubergeon +1',
         Hands = 'Dusk Gloves',
         Ring1 = 'Rajas Ring',
@@ -1040,277 +1109,1286 @@ local sets = {
         Waist = 'Sao. Koshi-Ate',
         Legs = 'Byakko\'s Haidate',
         Feet = 'Dusk Ledelsens',
+    },
+
+    Steps = {
+        Head = 'Walahra Turban',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Brutal Earring',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Dusk Gloves',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Aesir Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Dusk Ledelsens',
+    },
+
+    WS_Wasp_Sting = {
+        Head = 'Wyvern Helm',
+        Neck = 'Halting Stole',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Rajas Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Wasp_Sting = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Halting Stole',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Gust_Slash = {
+        Head = 'Super Ribbon',
+        Neck = 'Halting Stole',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Rajas Ring',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Gust_Slash = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Halting Stole',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Exactitude Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Shadowstitch = {
+        Head = 'Wyvern Helm',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Opal Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Corsette',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Shadowstitch = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Corsette',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Energy_Steal = {
+        Head = 'Wyvern Helm',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Energy_Steal = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Fast_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Spike Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Rajas Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Fast_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Spike Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Burning_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Ring1 = 'Sun Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Ryl.Kgt. Belt',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Burning_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Flat_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Flat_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Shining_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Ring1 = 'Sun Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Ryl.Kgt. Belt',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WSAcc_Shining_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WS_Circle_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Circle_Blade = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Spirits_Within = {
+        Head = 'Wyvern Helm',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Spirits_Within = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Thunder_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Ring1 = 'Sun Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Ryl.Kgt. Belt',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Thunder_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Leg_Sweep = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Leg_Sweep = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Penta_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Spike Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Rajas Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Penta_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Spike Necklace',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Byakko\'s Haidate',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Vorpal_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Seiryu\'s Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Vorpal_Thrust = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Seiryu\'s Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Tachi_Hobaku = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Hobaku = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Tachi_Goten = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Goten = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Tachi_Kagero = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Bushinomimi',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Kagero = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Bushinomimi',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Tachi_Jinpu = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Jinpu = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Tachi_Koki = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WSAcc_Tachi_Koki = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WS_Tachi_Yukikaze = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Yukikaze = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Tachi_Gekko = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Tachi_Gekko = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Seraph_Strike = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Ring1 = 'Sun Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Ryl.Kgt. Belt',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WSAcc_Seraph_Strike = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Hachiryu Kote',
+        Ring1 = 'Sniper\'s Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Smilodon Mantle',
+        Waist = 'Sao. Koshi-Ate',
+        Legs = 'Tsukikazu Haidate',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WS_Brainshaker = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Brainshaker = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Starlight = {
+        Head = 'Wyvern Helm',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Starlight = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Moonlight = {
+        Head = 'Wyvern Helm',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_Moonlight = {
+        Head = 'Saotome Kabuto',
+        Neck = 'Coral Gorget',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WS_Skullbreaker = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WSAcc_Skullbreaker = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Bushinomimi',
+        Ear2 = 'Aesir Ear Pendant',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_True_Strike = {
+        Head = 'Wyvern Helm',
+        Neck = 'Ire Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Bushinomimi',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Saotome Sune-Ate',
+    },
+
+    WSAcc_True_Strike = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Bushinomimi',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Hmn. Sune-Ate',
+    },
+
+    WS_Judgment = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Kirin\'s Osode',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sun Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    WSAcc_Judgment = {
+        Head = 'Wyvern Helm',
+        Neck = 'Justice Torque',
+        Ear1 = 'Aesir Ear Pendant',
+        Ear2 = 'Merman\'s Earring',
+        Body = 'Haubergeon +1',
+        Hands = 'Ochimusha Kote',
+        Ring1 = 'Venture Ring',
+        Ring2 = 'Sniper\'s Ring',
+        Back = 'Cerberus Mantle',
+        Waist = 'Fierce Belt',
+        Legs = 'Dusk Trousers',
+        Feet = 'Suzaku\'s Sune-Ate',
+    },
+
+    BlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    PhysicalBlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    MagicalBlueMagic = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Song = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SongDebuff = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SongBuff = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Geomancy = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Summoning = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    BloodPactRage = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    BloodPactWard = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    AvatarPerp = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Snapshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedPreshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    Ranged = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedMidshot = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedAccuracy = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    RangedAttack = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    QuickDraw = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Jump = {
-        Main = 'Amanomurakumo',
-        Sub = 'Seiryu\'s Sword',
-        Head = 'Walahra Turban',
-        Neck = 'Spike Necklace',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Dusk Gloves',
-        Ring1 = 'Rajas Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Sao. Koshi-Ate',
-        Legs = 'Byakko\'s Haidate',
-        Feet = 'Dusk Ledelsens',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     PetReady = {
-        Main = 'Amanomurakumo',
-        Sub = 'Tigris Grip',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Ochimusha Kote',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Fierce Belt',
-        Legs = 'Dusk Trousers',
-        Feet = 'Saotome Sune-Ate',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     PetMagic = {
-        Main = 'Amanomurakumo',
-        Sub = 'Tigris Grip',
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Ear1 = 'Aesir Ear Pendant',
-        Ear2 = 'Merman\'s Earring',
-        Body = 'Haubergeon +1',
-        Hands = 'Ochimusha Kote',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Fierce Belt',
-        Legs = 'Dusk Trousers',
-        Feet = 'Saotome Sune-Ate',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     PetTank = {
-        Main = 'Tachi of Trials',
-        Sub = 'Tigris Grip',
-        Head = 'Genbu\'s Kabuto',
-        Neck = 'Coral Gorget',
-        Body = 'Sao. Domaru +1',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Water Ring',
-        Ring2 = 'Lightning Ring',
-        Back = 'Cerberus Mantle',
-        Waist = 'Toxon Belt',
-        Legs = 'Dusk Trousers',
-        Feet = 'Dusk Ledelsens',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Roll = {
-        Head = 'Saotome Kabuto',
-        Neck = 'Coral Gorget',
-        Body = 'Kirin\'s Osode',
-        Hands = 'Seiryu\'s Kote',
-        Ring1 = 'Sniper\'s Ring',
-        Ring2 = 'Sniper\'s Ring',
-        Waist = 'Corsette',
-        Legs = 'Dusk Trousers',
-    },
-
-    Elemental_Fire = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Fire = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Fire = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Ice = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Ice = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Ice = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Wind = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Wind = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Wind = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Earth = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Earth = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Earth = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Thunder = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Thunder = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Thunder = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Lightning = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Lightning = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Lightning = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Water = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Water = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Water = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Light = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Light = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Light = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Elemental_Dark = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Weather_Dark = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
-    },
-
-    Day_Dark = {
-        Head = 'Walahra Turban',
-        Body = 'Kirin\'s Osode',
-        Ring1 = 'Mana Ring',
-        Waist = 'Ryl.Kgt. Belt',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 };
 
 profile.Sets = sets;
 profile.Packer = {};
+profile.GetThreatEntities = nil;
 
 local subjobs = {
     WAR = {
@@ -1347,6 +2425,7 @@ local subjobs = {
             'shadows',
             'ninjutsu',
             'subtle_blow',
+            'daken',
         },
         abilities = {
         },
@@ -1452,6 +2531,7 @@ local subjobs = {
             'treasure_hunter',
             'evasion',
             'flee',
+            'dual_wield',
         },
         abilities = {
             { name = 'steal', level = 5, recast = 300, recastId = 60, ce = 1, ve = 300 },
@@ -1510,6 +2590,7 @@ local setIntents = {
     Evasion = 'Evasion',
     Idle = 'Idle',
     Resting = 'Idle',
+    InCity = 'Movement',
     Movement = 'Movement',
     Movement_City = 'Movement',
     Movement_Night = 'Movement',
@@ -1554,40 +2635,14 @@ local setIntents = {
     DrainAspir = 'DarkMagic',
     Absorb = 'DarkMagic',
     Stun = 'DarkMagic',
-    BlueMagic = 'BlueMagic',
-    PhysicalBlueMagic = 'BlueMagic',
-    MagicalBlueMagic = 'Nuke',
-    Song = 'Song',
-    SongDebuff = 'Song',
-    SongBuff = 'Song',
-    Geomancy = 'MagicAccuracy',
-    Summoning = 'MagicAccuracy',
-    BloodPactRage = 'PetDamage',
-    BloodPactWard = 'PetTank',
-    AvatarPerp = 'Refresh',
     Ninjutsu = 'Ninjutsu',
     Utsusemi = 'FastCast',
     NinjutsuEnfeeble = 'Ninjutsu',
-    Snapshot = 'RangedPreshot',
-    RangedPreshot = 'RangedPreshot',
-    Ranged = 'RangedAccuracy',
-    RangedMidshot = 'RangedAccuracy',
-    RangedAccuracy = 'RangedAccuracy',
-    RangedAttack = 'RangedAttack',
-    QuickDraw = 'QuickDraw',
     Weaponskill = 'Weaponskill',
     WeaponSkillAccuracy = 'Weaponskill',
     WSElemental = 'Weaponskill',
     JobAbility = 'TP',
     Enmity = 'Enmity',
-    Waltz = 'Cure',
-    Steps = 'Accuracy',
-    Samba = 'TP',
-    Jump = 'Weaponskill',
-    PetReady = 'PetDamage',
-    PetMagic = 'PetDamage',
-    PetTank = 'PetTank',
-    Roll = 'Roll',
     Elemental_Fire = 'Nuke',
     Weather_Fire = 'Nuke',
     Day_Fire = 'Nuke',
@@ -1615,6 +2670,90 @@ local setIntents = {
     Elemental_Dark = 'Nuke',
     Weather_Dark = 'Nuke',
     Day_Dark = 'Nuke',
+    Meditate = 'JobAbility',
+    ThirdEye = 'JobAbility',
+    Waltz = 'Cure',
+    Samba = 'TP',
+    Steps = 'Accuracy',
+    WS_Wasp_Sting = 'TP',
+    WSAcc_Wasp_Sting = 'TP',
+    WS_Gust_Slash = 'TP',
+    WSAcc_Gust_Slash = 'TP',
+    WS_Shadowstitch = 'TP',
+    WSAcc_Shadowstitch = 'TP',
+    WS_Energy_Steal = 'TP',
+    WSAcc_Energy_Steal = 'TP',
+    WS_Fast_Blade = 'TP',
+    WSAcc_Fast_Blade = 'TP',
+    WS_Burning_Blade = 'TP',
+    WSAcc_Burning_Blade = 'TP',
+    WS_Flat_Blade = 'TP',
+    WSAcc_Flat_Blade = 'TP',
+    WS_Shining_Blade = 'TP',
+    WSAcc_Shining_Blade = 'TP',
+    WS_Circle_Blade = 'TP',
+    WSAcc_Circle_Blade = 'TP',
+    WS_Spirits_Within = 'TP',
+    WSAcc_Spirits_Within = 'TP',
+    WS_Thunder_Thrust = 'TP',
+    WSAcc_Thunder_Thrust = 'TP',
+    WS_Leg_Sweep = 'TP',
+    WSAcc_Leg_Sweep = 'TP',
+    WS_Penta_Thrust = 'TP',
+    WSAcc_Penta_Thrust = 'TP',
+    WS_Vorpal_Thrust = 'TP',
+    WSAcc_Vorpal_Thrust = 'TP',
+    WS_Tachi_Hobaku = 'TP',
+    WSAcc_Tachi_Hobaku = 'TP',
+    WS_Tachi_Goten = 'TP',
+    WSAcc_Tachi_Goten = 'TP',
+    WS_Tachi_Kagero = 'TP',
+    WSAcc_Tachi_Kagero = 'TP',
+    WS_Tachi_Jinpu = 'TP',
+    WSAcc_Tachi_Jinpu = 'TP',
+    WS_Tachi_Koki = 'TP',
+    WSAcc_Tachi_Koki = 'TP',
+    WS_Tachi_Yukikaze = 'TP',
+    WSAcc_Tachi_Yukikaze = 'TP',
+    WS_Tachi_Gekko = 'TP',
+    WSAcc_Tachi_Gekko = 'TP',
+    WS_Seraph_Strike = 'TP',
+    WSAcc_Seraph_Strike = 'TP',
+    WS_Brainshaker = 'TP',
+    WSAcc_Brainshaker = 'TP',
+    WS_Starlight = 'TP',
+    WSAcc_Starlight = 'TP',
+    WS_Moonlight = 'TP',
+    WSAcc_Moonlight = 'TP',
+    WS_Skullbreaker = 'TP',
+    WSAcc_Skullbreaker = 'TP',
+    WS_True_Strike = 'TP',
+    WSAcc_True_Strike = 'TP',
+    WS_Judgment = 'TP',
+    WSAcc_Judgment = 'TP',
+    BlueMagic = 'BlueMagic',
+    PhysicalBlueMagic = 'BlueMagic',
+    MagicalBlueMagic = 'Nuke',
+    Song = 'Song',
+    SongDebuff = 'Song',
+    SongBuff = 'Song',
+    Geomancy = 'MagicAccuracy',
+    Summoning = 'MagicAccuracy',
+    BloodPactRage = 'PetDamage',
+    BloodPactWard = 'PetTank',
+    AvatarPerp = 'Refresh',
+    Snapshot = 'RangedPreshot',
+    RangedPreshot = 'RangedPreshot',
+    Ranged = 'RangedAccuracy',
+    RangedMidshot = 'RangedAccuracy',
+    RangedAccuracy = 'RangedAccuracy',
+    RangedAttack = 'RangedAttack',
+    QuickDraw = 'QuickDraw',
+    Jump = 'Weaponskill',
+    PetReady = 'PetDamage',
+    PetMagic = 'PetDamage',
+    PetTank = 'PetTank',
+    Roll = 'Roll',
 };
 
 local styleAliases = {
@@ -1623,6 +2762,13925 @@ local styleAliases = {
     weaponskill = 'WeaponSkill',
     evasion = 'Evasion',
 };
+
+local playstyleNames = {
+    'StoreTP',
+    'Accuracy',
+    'WeaponSkill',
+    'Evasion',
+};
+
+local numberRowBindings = {
+    { key = '1', label = 'Style-', literal = '/lac fwd styleprev', kind = 'action', toggle = '' },
+    { key = '2', label = 'Style+', literal = '/lac fwd stylenext', kind = 'action', toggle = '' },
+    { key = '3', label = 'Styles', literal = '/lac fwd styles', kind = 'action', toggle = '' },
+    { key = '4', label = 'Warp', literal = '/lac fwd warp', kind = 'action', toggle = '' },
+    { key = '5', label = 'Lockstyle', literal = '/lac fwd lockstyle', kind = 'action', toggle = '' },
+    { key = '6', label = 'Status', literal = '/lac fwd status', kind = 'action', toggle = '' },
+    { key = '7', label = 'Craft', literal = '/lac fwd utility craft', kind = 'utility', toggle = '' },
+    { key = '8', label = 'Move', literal = '/lac fwd utility movement', kind = 'utility', toggle = '' },
+    { key = '9', label = 'AutoEye', literal = '/lac fwd autoeye', kind = 'toggle', toggle = 'AutoThirdEye' },
+    { key = '0', label = 'AutoWAR', literal = '/lac fwd autowar', kind = 'toggle', toggle = 'AutoWarBuffs' },
+    { key = '-', label = 'Meditate', literal = '/ja "Meditate" <me>', kind = 'job', toggle = '' },
+    { key = '=', label = 'ThirdEye', literal = '/ja "Third Eye" <me>', kind = 'job', toggle = '' },
+};
+
+local DEFAULT_PLAYSTYLE = 'StoreTP';
+local STYLE_COMMANDS_TEXT = 'storetp|accuracy|weaponskill|evasion';
+local oddLuaRefresh = {
+    launcher = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\Run-OddLuaGameRefresh.cmd',
+    statusPath = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\reports\\game-refresh\\latest-status.json',
+    delaySeconds = 12,
+    resourceDelaySeconds = 18,
+    pollSeconds = 5,
+    maxPolls = 48,
+};
+
+local setSecondarySlotLocks = {
+    InCity = {
+        Body = { 'Legs' },
+    },
+};
+
+local nativeDualWieldMainJobs = {
+    DNC = true,
+    NIN = true,
+};
+
+local setRequiresDualWieldSub = {};
+
+local conditionalEquips = {
+    Playstyle_StoreTP = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Playstyle_Accuracy = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Playstyle_WeaponSkill = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Playstyle_Evasion = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    StoreTP = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Accuracy = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    WeaponSkill = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Evasion = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    TP = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    TPAccuracy = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Bio = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    DarkMagic = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    DrainAspir = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Absorb = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Weaponskill = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    WeaponSkillAccuracy = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Samba = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+    Steps = {
+        {
+            condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } },
+            slots = { Neck = 'Halting Stole' },
+        },
+    },
+};
+
+local mechanicsSwapPlanner = {
+    ['loaded'] = true,
+    ['plannerVersion'] = 2,
+    ['baselineSet'] = 'Aftercast',
+    ['supportedOpportunities'] = { 'hp_bridge_swap', 'mp_bridge_swap', 'negative_tick_avoidance' },
+    ['transitions'] = {},
+    ['skippedTransitions'] = {},
+};
+mechanicsSwapPlanner.transitions['StoreTP'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'StoreTP',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14437,
+            ['item'] = 'Hachiman Domaru',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Accuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Accuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11546,
+            ['item'] = 'Aesir Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WeaponSkill'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WeaponSkill',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Evasion'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Evasion',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13546,
+            ['item'] = 'Hard Leather Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'pool delta HPP+15, MPP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Idle'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Idle',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 12452,
+            ['item'] = 'Darksteel Cap',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14511,
+            ['item'] = 'Sao. Domaru +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13564,
+            ['item'] = 'Lightning Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 84,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Resting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Resting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 160,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['InCity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'InCity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 25726,
+            ['item'] = 'Kupo Suit',
+            ['reason'] = 'pool delta HP-34',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['PDT'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'PDT',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 12452,
+            ['item'] = 'Darksteel Cap',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14511,
+            ['item'] = 'Sao. Domaru +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13564,
+            ['item'] = 'Lightning Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 84,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['MDT'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'MDT',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 14100,
+            ['item'] = 'Myochin Sune-Ate',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11589,
+            ['item'] = 'Aesir Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 155,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['TP'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'TP',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Hybrid'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Hybrid',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 12452,
+            ['item'] = 'Darksteel Cap',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14511,
+            ['item'] = 'Sao. Domaru +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13564,
+            ['item'] = 'Lightning Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 84,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['TPAccuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'TPAccuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11546,
+            ['item'] = 'Aesir Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Precast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Precast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['FastCast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'FastCast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Midcast'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Midcast',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Cure'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Cure',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Healing'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Healing',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enhancing'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enhancing',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['EnhancingDuration'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'EnhancingDuration',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Stoneskin'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Stoneskin',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Refresh'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Refresh',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Head',
+            ['itemId'] = 12452,
+            ['item'] = 'Darksteel Cap',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12839,
+            ['item'] = 'Darksteel Subligar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12964,
+            ['item'] = 'Dst. Leggings',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Regen'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Regen',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['SneakInvisible'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'SneakInvisible',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Barspell'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Barspell',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 14100,
+            ['item'] = 'Myochin Sune-Ate',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11589,
+            ['item'] = 'Aesir Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 155,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Phalanx'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Phalanx',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 14100,
+            ['item'] = 'Myochin Sune-Ate',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11589,
+            ['item'] = 'Aesir Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13312,
+            ['item'] = 'Coral Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 155,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Aquaveil'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Aquaveil',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Haste'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Haste',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enfeebling'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enfeebling',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Sleep'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Sleep',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Bind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Bind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Gravity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Gravity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Silence'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Silence',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Slow'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Slow',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Paralyze'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Paralyze',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Blind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Blind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Dispel'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Dispel',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Dia'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Dia',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Bio'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Bio',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 108,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Divine'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Divine',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Nuke'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Nuke',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DarkMagic'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DarkMagic',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 108,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DrainAspir'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DrainAspir',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 108,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Absorb'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Absorb',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 21428,
+            ['item'] = 'Tigris Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 108,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Stun'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Stun',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 10,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Ninjutsu'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Ninjutsu',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Utsusemi'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Utsusemi',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['NinjutsuEnfeeble'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'NinjutsuEnfeeble',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weaponskill'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weaponskill',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WeaponSkillAccuracy'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WeaponSkillAccuracy',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSElemental'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSElemental',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['JobAbility'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'JobAbility',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 17815,
+            ['item'] = 'Tachi of Trials',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14511,
+            ['item'] = 'Sao. Domaru +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13417,
+            ['item'] = 'Eris\' Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13564,
+            ['item'] = 'Lightning Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 129,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Enmity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Enmity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 14511,
+            ['item'] = 'Sao. Domaru +1',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15951,
+            ['item'] = 'Toxon Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13417,
+            ['item'] = 'Eris\' Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13565,
+            ['item'] = 'Water Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13564,
+            ['item'] = 'Lightning Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 129,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = -15,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Fire'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Fire',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Ice'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Ice',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Wind'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Wind',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Earth'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Earth',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Thunder'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Thunder',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Lightning'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Lightning',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Water'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Water',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Light'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Light',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Elemental_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Elemental_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Weather_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Weather_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Day_Dark'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Day_Dark',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 18318,
+            ['item'] = 'Amanomurakumo',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 19013,
+            ['item'] = 'Mythril Grip',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 80,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Meditate'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Meditate',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13868,
+            ['item'] = 'Myochin Kabuto',
+            ['reason'] = 'pool delta HP+10',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14437,
+            ['item'] = 'Hachiman Domaru',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15113,
+            ['item'] = 'Saotome Kote',
+            ['reason'] = 'pool delta HP-40',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 45,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['ThirdEye'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'ThirdEye',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15128,
+            ['item'] = 'Saotome Haidate',
+            ['reason'] = 'pool delta HP+18',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14525,
+            ['item'] = 'Amir Korazin',
+            ['reason'] = 'pool delta HP-34',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 143,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Waltz'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Waltz',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 12434,
+            ['item'] = 'Genbu\'s Kabuto',
+            ['reason'] = 'pool delta HP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13443,
+            ['item'] = 'Opal Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13271,
+            ['item'] = 'Corsette',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13316,
+            ['item'] = 'Platinum Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 160,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Samba'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Samba',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Steps'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Steps',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15270,
+            ['item'] = 'Walahra Turban',
+            ['reason'] = 'pool delta HP+50, MP+50',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12957,
+            ['item'] = 'Dusk Ledelsens',
+            ['reason'] = 'pool delta HP+25',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14813,
+            ['item'] = 'Brutal Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11546,
+            ['item'] = 'Aesir Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12701,
+            ['item'] = 'Dusk Gloves',
+            ['reason'] = 'pool delta HP-30',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 95,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 50,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Wasp_Sting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Wasp_Sting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16306,
+            ['item'] = 'Halting Stole',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Wasp_Sting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Wasp_Sting',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16306,
+            ['item'] = 'Halting Stole',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 43,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Gust_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Gust_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15151,
+            ['item'] = 'Super Ribbon',
+            ['reason'] = 'pool delta HP+5, MP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16306,
+            ['item'] = 'Halting Stole',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 28,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 35,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Gust_Slash'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Gust_Slash',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16306,
+            ['item'] = 'Halting Stole',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 11530,
+            ['item'] = 'Exactitude Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 43,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shadowstitch'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shadowstitch',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13443,
+            ['item'] = 'Opal Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13271,
+            ['item'] = 'Corsette',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shadowstitch'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shadowstitch',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13271,
+            ['item'] = 'Corsette',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Energy_Steal'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Energy_Steal',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Energy_Steal'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Energy_Steal',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Fast_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Fast_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Fast_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Fast_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Burning_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Burning_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Burning_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Burning_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Flat_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Flat_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Flat_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Flat_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Shining_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Shining_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Shining_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Shining_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Circle_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Circle_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Circle_Blade'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Circle_Blade',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Spirits_Within'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Spirits_Within',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Spirits_Within'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Spirits_Within',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Thunder_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Thunder_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Thunder_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Thunder_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Leg_Sweep'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Leg_Sweep',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Leg_Sweep'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Leg_Sweep',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Penta_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Penta_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15543,
+            ['item'] = 'Rajas Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Penta_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Penta_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12818,
+            ['item'] = 'Byakko\'s Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13061,
+            ['item'] = 'Spike Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Vorpal_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Vorpal_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 138,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Vorpal_Thrust'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Vorpal_Thrust',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 12690,
+            ['item'] = 'Seiryu\'s Kote',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 115,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Hobaku'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Hobaku',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Hobaku'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Hobaku',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Goten'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Goten',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Goten'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Goten',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Kagero'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Kagero',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Kagero'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Kagero',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Jinpu'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Jinpu',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Jinpu'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Jinpu',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Koki'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Koki',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Koki'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Koki',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Yukikaze'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Yukikaze',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Yukikaze'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Yukikaze',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Tachi_Gekko'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Tachi_Gekko',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Tachi_Gekko'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Tachi_Gekko',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Seraph_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Seraph_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13220,
+            ['item'] = 'Ryl.Kgt. Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Seraph_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Seraph_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 15635,
+            ['item'] = 'Tsukikazu Haidate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15879,
+            ['item'] = 'Sao. Koshi-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16231,
+            ['item'] = 'Smilodon Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15015,
+            ['item'] = 'Hachiryu Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Brainshaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Brainshaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Brainshaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Brainshaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Starlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Starlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Starlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Starlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Moonlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Moonlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Moonlight'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Moonlight',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 15083,
+            ['item'] = 'Saotome Kabuto',
+            ['reason'] = 'pool delta HP+20',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13108,
+            ['item'] = 'Coral Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 78,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Skullbreaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Skullbreaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Skullbreaker'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Skullbreaker',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_True_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_True_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15143,
+            ['item'] = 'Saotome Sune-Ate',
+            ['reason'] = 'pool delta HP+23',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 11581,
+            ['item'] = 'Ire Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 88,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_True_Strike'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_True_Strike',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15330,
+            ['item'] = 'Hmn. Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 14743,
+            ['item'] = 'Bushinomimi',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WS_Judgment'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WS_Judgment',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13485,
+            ['item'] = 'Sun Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Body',
+            ['itemId'] = 12562,
+            ['item'] = 'Kirin\'s Osode',
+            ['reason'] = 'pool delta HP-34, MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 30,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WSAcc_Judgment'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WSAcc_Judgment',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Head',
+            ['itemId'] = 13920,
+            ['item'] = 'Wyvern Helm',
+            ['reason'] = 'pool delta HP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12879,
+            ['item'] = 'Dusk Trousers',
+            ['reason'] = 'pool delta HP+35',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 10870,
+            ['item'] = 'Venture Ring',
+            ['reason'] = 'pool delta MPP+15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13280,
+            ['item'] = 'Sniper\'s Ring',
+            ['reason'] = 'pool delta HPP+15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 12946,
+            ['item'] = 'Suzaku\'s Sune-Ate',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 15508,
+            ['item'] = 'Justice Torque',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 15954,
+            ['item'] = 'Fierce Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 16057,
+            ['item'] = 'Aesir Ear Pendant',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13406,
+            ['item'] = 'Merman\'s Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 16212,
+            ['item'] = 'Cerberus Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 13735,
+            ['item'] = 'Haubergeon +1',
+            ['reason'] = 'pool delta HP-34',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14986,
+            ['item'] = 'Ochimusha Kote',
+            ['reason'] = 'pool delta HP-50',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'hp_percent_or_conversion_requires_runtime_probe' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 84,
+            ['targetFlat'] = 65,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 0,
+            ['targetFlat'] = 0,
+            ['sourcePercent'] = -15,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.skippedTransitions['Movement'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_City'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_Night'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Movement_DuskToDawn'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Crafting'] = 'utility_set';
+
+local blueMagicRoutes = {
+    ['1000 needles'] = 'MagicalBlueMagic',
+    ['actinic burst'] = 'Enfeebling',
+    ['amorphic spikes'] = 'PhysicalBlueMagic',
+    ['amplification'] = 'Enhancing',
+    ['animating wail'] = 'Enhancing',
+    ['asuran claws'] = 'PhysicalBlueMagic',
+    ['auroral drape'] = 'Enfeebling',
+    ['awful eye'] = 'Enfeebling',
+    ['bad breath'] = 'MagicalBlueMagic',
+    ['battery charge'] = 'Enhancing',
+    ['battle dance'] = 'PhysicalBlueMagic',
+    ['blank gaze'] = 'Enfeebling',
+    ['blastbomb'] = 'MagicalBlueMagic',
+    ['blitzstrahl'] = 'MagicalBlueMagic',
+    ['blood drain'] = 'MagicalBlueMagic',
+    ['blood saber'] = 'MagicalBlueMagic',
+    ['bludgeon'] = 'PhysicalBlueMagic',
+    ['body slam'] = 'PhysicalBlueMagic',
+    ['bomb toss'] = 'MagicalBlueMagic',
+    ['cannonball'] = 'PhysicalBlueMagic',
+    ['chaotic eye'] = 'Enfeebling',
+    ['charged whisker'] = 'MagicalBlueMagic',
+    ['cimicine discharge'] = 'Enfeebling',
+    ['claw cyclone'] = 'PhysicalBlueMagic',
+    ['cocoon'] = 'Enhancing',
+    ['cold wave'] = 'Enfeebling',
+    ['corrosive ooze'] = 'MagicalBlueMagic',
+    ['cursed sphere'] = 'MagicalBlueMagic',
+    ['death ray'] = 'MagicalBlueMagic',
+    ['death scissors'] = 'PhysicalBlueMagic',
+    ['delta thrust'] = 'PhysicalBlueMagic',
+    ['diamondhide'] = 'Enhancing',
+    ['digest'] = 'MagicalBlueMagic',
+    ['dimensional death'] = 'PhysicalBlueMagic',
+    ['disseverment'] = 'PhysicalBlueMagic',
+    ['dream flower'] = 'Enfeebling',
+    ['empty thrash'] = 'PhysicalBlueMagic',
+    ['enervation'] = 'Enfeebling',
+    ['exuviation'] = 'Cure',
+    ['eyes on me'] = 'MagicalBlueMagic',
+    ['feather barrier'] = 'Enhancing',
+    ['feather storm'] = 'PhysicalBlueMagic',
+    ['feather tickle'] = 'Enfeebling',
+    ['filamented hold'] = 'Enfeebling',
+    ['firespit'] = 'MagicalBlueMagic',
+    ['flying hip press'] = 'MagicalBlueMagic',
+    ['foot kick'] = 'PhysicalBlueMagic',
+    ['frenetic rip'] = 'PhysicalBlueMagic',
+    ['frightful roar'] = 'Enfeebling',
+    ['frost breath'] = 'MagicalBlueMagic',
+    ['frypan'] = 'PhysicalBlueMagic',
+    ['geist wall'] = 'Enfeebling',
+    ['goblin rush'] = 'PhysicalBlueMagic',
+    ['grand slam'] = 'PhysicalBlueMagic',
+    ['head butt'] = 'PhysicalBlueMagic',
+    ['healing breeze'] = 'Cure',
+    ['heat breath'] = 'MagicalBlueMagic',
+    ['heavy strike'] = 'PhysicalBlueMagic',
+    ['hecatomb wave'] = 'MagicalBlueMagic',
+    ['helldive'] = 'PhysicalBlueMagic',
+    ['hydro shot'] = 'PhysicalBlueMagic',
+    ['hysteric barrage'] = 'PhysicalBlueMagic',
+    ['ice break'] = 'MagicalBlueMagic',
+    ['infrasonics'] = 'Enfeebling',
+    ['jet stream'] = 'PhysicalBlueMagic',
+    ['jettatura'] = 'Enfeebling',
+    ['light of penance'] = 'Enfeebling',
+    ['lowing'] = 'Enfeebling',
+    ['maelstrom'] = 'MagicalBlueMagic',
+    ['magic fruit'] = 'Cure',
+    ['magic hammer'] = 'MagicalBlueMagic',
+    ['magnetite cloud'] = 'MagicalBlueMagic',
+    ['mandibular bite'] = 'PhysicalBlueMagic',
+    ['memento mori'] = 'Enhancing',
+    ['metallic body'] = 'Enhancing',
+    ['mind blast'] = 'MagicalBlueMagic',
+    ['mp drainkiss'] = 'MagicalBlueMagic',
+    ['mysterious light'] = 'MagicalBlueMagic',
+    ['occultation'] = 'Enhancing',
+    ['pinecone bomb'] = 'PhysicalBlueMagic',
+    ['plasma charge'] = 'Enhancing',
+    ['plenilune embrace'] = 'Cure',
+    ['poison breath'] = 'MagicalBlueMagic',
+    ['pollen'] = 'Cure',
+    ['power attack'] = 'PhysicalBlueMagic',
+    ['quad continuum'] = 'PhysicalBlueMagic',
+    ['quadrastrike'] = 'PhysicalBlueMagic',
+    ['queasyshroom'] = 'PhysicalBlueMagic',
+    ['radiant breath'] = 'MagicalBlueMagic',
+    ['ram charge'] = 'PhysicalBlueMagic',
+    ['reactor cool'] = 'Enhancing',
+    ['refueling'] = 'Enhancing',
+    ['regeneration'] = 'Enhancing',
+    ['regurgitation'] = 'MagicalBlueMagic',
+    ['rending deluge'] = 'MagicalBlueMagic',
+    ['saline coat'] = 'Enhancing',
+    ['sandspin'] = 'MagicalBlueMagic',
+    ['sandspray'] = 'Enfeebling',
+    ['screwdriver'] = 'PhysicalBlueMagic',
+    ['seedspray'] = 'PhysicalBlueMagic',
+    ['self-destruct'] = 'MagicalBlueMagic',
+    ['sheep song'] = 'Enfeebling',
+    ['sickle slash'] = 'PhysicalBlueMagic',
+    ['smite of rage'] = 'PhysicalBlueMagic',
+    ['soporific'] = 'Enfeebling',
+    ['sound blast'] = 'Enfeebling',
+    ['spinal cleave'] = 'PhysicalBlueMagic',
+    ['spiral spin'] = 'PhysicalBlueMagic',
+    ['sprout smack'] = 'PhysicalBlueMagic',
+    ['stinking gas'] = 'Enfeebling',
+    ['sub-zero smash'] = 'PhysicalBlueMagic',
+    ['sudden lunge'] = 'PhysicalBlueMagic',
+    ['tail slap'] = 'PhysicalBlueMagic',
+    ['temporal shift'] = 'Enfeebling',
+    ['terror touch'] = 'PhysicalBlueMagic',
+    ['thermal pulse'] = 'MagicalBlueMagic',
+    ['triumphant roar'] = 'Enhancing',
+    ['uppercut'] = 'PhysicalBlueMagic',
+    ['venom shell'] = 'Enfeebling',
+    ['vertical cleave'] = 'PhysicalBlueMagic',
+    ['voracious trunk'] = 'Enfeebling',
+    ['warm-up'] = 'Enhancing',
+    ['whirl of rage'] = 'PhysicalBlueMagic',
+    ['white wind'] = 'Cure',
+    ['wild carrot'] = 'Cure',
+    ['wild oats'] = 'PhysicalBlueMagic',
+    ['wind breath'] = 'MagicalBlueMagic',
+    ['yawn'] = 'Enfeebling',
+    ['zephyr mantle'] = 'Enhancing',
+};
+
+local weaponSkillRoutes = {
+    ['brainshaker'] = 'WS_Brainshaker',
+    ['burning_blade'] = 'WS_Burning_Blade',
+    ['circle_blade'] = 'WS_Circle_Blade',
+    ['energy_steal'] = 'WS_Energy_Steal',
+    ['fast_blade'] = 'WS_Fast_Blade',
+    ['flat_blade'] = 'WS_Flat_Blade',
+    ['gust_slash'] = 'WS_Gust_Slash',
+    ['judgment'] = 'WS_Judgment',
+    ['leg_sweep'] = 'WS_Leg_Sweep',
+    ['moonlight'] = 'WS_Moonlight',
+    ['penta_thrust'] = 'WS_Penta_Thrust',
+    ['seraph_strike'] = 'WS_Seraph_Strike',
+    ['shadowstitch'] = 'WS_Shadowstitch',
+    ['shining_blade'] = 'WS_Shining_Blade',
+    ['skullbreaker'] = 'WS_Skullbreaker',
+    ['spirits_within'] = 'WS_Spirits_Within',
+    ['starlight'] = 'WS_Starlight',
+    ['tachi_gekko'] = 'WS_Tachi_Gekko',
+    ['tachi_goten'] = 'WS_Tachi_Goten',
+    ['tachi_hobaku'] = 'WS_Tachi_Hobaku',
+    ['tachi_jinpu'] = 'WS_Tachi_Jinpu',
+    ['tachi_kagero'] = 'WS_Tachi_Kagero',
+    ['tachi_koki'] = 'WS_Tachi_Koki',
+    ['tachi_yukikaze'] = 'WS_Tachi_Yukikaze',
+    ['thunder_thrust'] = 'WS_Thunder_Thrust',
+    ['true_strike'] = 'WS_True_Strike',
+    ['vorpal_thrust'] = 'WS_Vorpal_Thrust',
+    ['wasp_sting'] = 'WS_Wasp_Sting',
+};
+
+local weaponSkillAccuracyRoutes = {
+    ['brainshaker'] = 'WSAcc_Brainshaker',
+    ['burning_blade'] = 'WSAcc_Burning_Blade',
+    ['circle_blade'] = 'WSAcc_Circle_Blade',
+    ['energy_steal'] = 'WSAcc_Energy_Steal',
+    ['fast_blade'] = 'WSAcc_Fast_Blade',
+    ['flat_blade'] = 'WSAcc_Flat_Blade',
+    ['gust_slash'] = 'WSAcc_Gust_Slash',
+    ['judgment'] = 'WSAcc_Judgment',
+    ['leg_sweep'] = 'WSAcc_Leg_Sweep',
+    ['moonlight'] = 'WSAcc_Moonlight',
+    ['penta_thrust'] = 'WSAcc_Penta_Thrust',
+    ['seraph_strike'] = 'WSAcc_Seraph_Strike',
+    ['shadowstitch'] = 'WSAcc_Shadowstitch',
+    ['shining_blade'] = 'WSAcc_Shining_Blade',
+    ['skullbreaker'] = 'WSAcc_Skullbreaker',
+    ['spirits_within'] = 'WSAcc_Spirits_Within',
+    ['starlight'] = 'WSAcc_Starlight',
+    ['tachi_gekko'] = 'WSAcc_Tachi_Gekko',
+    ['tachi_goten'] = 'WSAcc_Tachi_Goten',
+    ['tachi_hobaku'] = 'WSAcc_Tachi_Hobaku',
+    ['tachi_jinpu'] = 'WSAcc_Tachi_Jinpu',
+    ['tachi_kagero'] = 'WSAcc_Tachi_Kagero',
+    ['tachi_koki'] = 'WSAcc_Tachi_Koki',
+    ['tachi_yukikaze'] = 'WSAcc_Tachi_Yukikaze',
+    ['thunder_thrust'] = 'WSAcc_Thunder_Thrust',
+    ['true_strike'] = 'WSAcc_True_Strike',
+    ['vorpal_thrust'] = 'WSAcc_Vorpal_Thrust',
+    ['wasp_sting'] = 'WSAcc_Wasp_Sting',
+};
+
+local THIRD_EYE_COMMAND = '/ja "Third Eye" <me>';
+local AUTO_THIRD_EYE_UNKNOWN_RETRY_SECONDS = 30;
+local AUTO_THIRD_EYE_READY_RETRY_SECONDS = 3;
+local AUTO_THIRD_EYE_RECAST_POLL_SECONDS = 1;
+local AUTO_WAR_BUFF_UNKNOWN_RETRY_SECONDS = 30;
+local AUTO_WAR_BUFF_READY_RETRY_SECONDS = 3;
+local lastAutoThirdEyeAt = -9999;
+local lastAutoWarBuffAt = {
+    Berserk = -9999,
+    Warcry = -9999,
+};
+local lastThirdEyeRecastCheckAt = -9999;
+local lastThirdEyeOnCooldown = nil;
+
+local samBinds = {
+    { key = '^1', binding = '/bind ^1 /ws "Tachi: Gekko" <t>', unbind = '/unbind ^1' },
+    { key = '^2', binding = '/bind ^2 /ws "Tachi: Yukikaze" <t>', unbind = '/unbind ^2' },
+    { key = '^3', binding = '/bind ^3 /ws "Tachi: Shoha" <t>', unbind = '/unbind ^3' },
+    { key = '^4', binding = '/bind ^4 /ws "Tachi: Kaiten" <t>', unbind = '/unbind ^4' },
+    { key = '^5', binding = '/bind ^5 /lac fwd sekkagekko', unbind = '/unbind ^5' },
+    { key = '^6', binding = '/bind ^6 /lac fwd konzenshoha', unbind = '/unbind ^6' },
+    { key = '!1', binding = '/bind !1 /ja "Hasso" <me>', unbind = '/unbind !1' },
+    { key = '!2', binding = '/bind !2 /lac fwd seiganeye', unbind = '/unbind !2' },
+    { key = '!3', binding = '/bind !3 /ja "Meditate" <me>', unbind = '/unbind !3' },
+    { key = '!4', binding = '/bind !4 /lac fwd warbuffs', unbind = '/unbind !4' },
+    { key = '!5', binding = '/bind !5 /ja "Provoke" <t>', unbind = '/unbind !5' },
+    { key = '!6', binding = '/bind !6 /ja "Third Eye" <me>', unbind = '/unbind !6' },
+    { key = '!7', binding = '/bind !7 /lac fwd autoeye', unbind = '/unbind !7' },
+    { key = '!8', binding = '/bind !8 /lac fwd autowar', unbind = '/unbind !8' },
+    { key = '!9', binding = '/bind !9 /lac fwd autocombat', unbind = '/unbind !9' },
+};
+
+local warBuffCommands = {
+    { ability = 'Berserk', buff = 'Berserk', command = '/ja "Berserk" <me>', delay = 1 },
+    { ability = 'Warcry', buff = 'Warcry', command = '/ja "Warcry" <me>', delay = 3 },
+};
+
+local OVERT_DEFENSE_TARGET_COUNT = 3;
+local OVERT_DEFENSE_TP_UNLOCK = 700;
+local OVERT_DEFENSE_HP_FORCE_HPP = 60;
 
 local dangerousStatusBuffs = {
     bind = true,
@@ -1635,6 +16693,14 @@ local dangerousStatusBuffs = {
 };
 
 local dangerousStatusIds = { 2, 7, 10, 11, 15, 18, 19, 28 };
+
+local mountedStatusBuffs = {
+    chocobo = true,
+    mount = true,
+    mounted = true,
+};
+
+local mountedStatusIds = { 252 };
 
 local cityZoneIds = {
     [26] = true,  -- Tavnazian Safehold
@@ -1734,6 +16800,16 @@ if gFunc and gFunc.LoadFile then
     end
 end
 
+local conditionals = nil;
+if gFunc and gFunc.LoadFile then
+    local ok, loaded = pcall(function()
+        return gFunc.LoadFile('common/conditionals.lua');
+    end);
+    if ok then
+        conditionals = loaded;
+    end
+end
+
 local function message(text)
     text = '[Aahtacos SAM] ' .. tostring(text or '');
     if gFunc and gFunc.Message then
@@ -1782,11 +16858,881 @@ local function normalize(value)
     return string.lower(tostring(value or ''));
 end
 
+local function styleListText()
+    local parts = {};
+    for _, styleName in ipairs(playstyleNames) do
+        local token = normalize(styleName);
+        local label = token;
+        if styleName == state.Playstyle and styleName == DEFAULT_PLAYSTYLE then
+            label = label .. ' (current, default)';
+        elseif styleName == state.Playstyle then
+            label = label .. ' (current)';
+        elseif styleName == DEFAULT_PLAYSTYLE then
+            label = label .. ' (default)';
+        end
+        parts[#parts + 1] = label;
+    end
+    if #parts == 0 then
+        return STYLE_COMMANDS_TEXT;
+    end
+    return table.concat(parts, ' | ');
+end
+
+local function printStyleList()
+    message('Styles: ' .. styleListText() .. '. Use /lac fwd style <name>.');
+end
+
+local function printOddLuaHelp()
+    message('Quick start: /lac fwd help | styles | status | lockstyle | warp | subjob | mechanics help | reconcile status | refreshgear.');
+    message('Current style=' .. tostring(state.Playstyle) .. '; default=' .. tostring(DEFAULT_PLAYSTYLE) .. '.');
+    printStyleList();
+    message('Lockstyle: /lac fwd lockstyle equips the TP set first, then /lockstyle on.');
+    message('Reconciliation: /lac fwd reconcile on|off|status|last.');
+    message('Gear refresh: /lac fwd refreshgear queues /gearexport full, rebuilds OddLua, applies profiles, then reloads on success.');
+    message('One-button macros: review/load keybindings.txt; F-keys run /lac fwd commands.');
+end
+
+local function oddLuaStatusField(text, field)
+    if type(text) ~= 'string' then
+        return nil;
+    end
+    local pattern = '"' .. field .. '"%s*:%s*"([^"]*)"';
+    return string.match(text, pattern);
+end
+
+local function readOddLuaRefreshStatus()
+    if not io or not io.open then
+        return nil, 'io.open unavailable';
+    end
+
+    local file = io.open(oddLuaRefresh.statusPath, 'rb');
+    if not file then
+        return nil, 'status not ready';
+    end
+
+    local text = file:read('*a') or '';
+    file:close();
+    local status = normalize(oddLuaStatusField(text, 'state') or oddLuaStatusField(text, 'status') or '');
+    local detail = oddLuaStatusField(text, 'message') or '';
+    if status == '' then
+        return nil, 'status missing';
+    end
+    return status, detail;
+end
+
+local function pollOddLuaRefreshStatus(attempt)
+    attempt = tonumber(attempt or 1) or 1;
+    local status, detail = readOddLuaRefreshStatus();
+    if status == 'success' then
+        state.OddLuaRefreshPending = false;
+        state.OddLuaRefreshLastStatus = 'success';
+        message('OddLua gear refresh complete. Reloading LuAshitacast profile.');
+        queueTypedCommand('/lac reload', 1);
+        return;
+    elseif status == 'failed' or status == 'error' then
+        state.OddLuaRefreshPending = false;
+        state.OddLuaRefreshLastStatus = 'failed';
+        message('OddLua gear refresh failed: ' .. tostring(detail or '') .. '; status=' .. oddLuaRefresh.statusPath);
+        return;
+    end
+
+    state.OddLuaRefreshLastStatus = status or 'running';
+    if attempt >= oddLuaRefresh.maxPolls then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh still running or status unavailable after polling; check ' .. oddLuaRefresh.statusPath);
+        return;
+    end
+
+    if not scheduleTask(oddLuaRefresh.pollSeconds, function()
+        pollOddLuaRefreshStatus(attempt + 1);
+    end) then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh poll scheduling failed; check ' .. oddLuaRefresh.statusPath);
+    end
+end
+
+local function launchOddLuaGearRefresh()
+    if not ashita or not ashita.misc or not ashita.misc.execute then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed: ashita.misc.execute unavailable. Run the refresh script manually.');
+        return false;
+    end
+
+    local ok, err = pcall(function()
+        ashita.misc.execute(oddLuaRefresh.launcher, '');
+    end);
+    if not ok then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed to launch: ' .. tostring(err));
+        return false;
+    end
+
+    message('OddLua refresh launched. Polling status; log root is reports/game-refresh.');
+    pollOddLuaRefreshStatus(1);
+    return true;
+end
+
+local function startOddLuaGearRefresh(args)
+    local option = normalize(args and args[2]);
+    if option == 'status' then
+        local status, detail = readOddLuaRefreshStatus();
+        message('OddLua refresh status=' .. tostring(status or state.OddLuaRefreshLastStatus or 'unknown') .. '; detail=' .. tostring(detail or '') .. '; pending=' .. tostring(state.OddLuaRefreshPending == true));
+        return;
+    end
+
+    if state.OddLuaRefreshPending == true then
+        message('OddLua gear refresh is already pending; use /lac fwd refreshgear status.');
+        return;
+    end
+
+    local includeResources = option == 'resources' or option == 'full';
+    if not queueTypedCommand('/gearexport full', 1) then
+        message('OddLua gear refresh failed: could not queue /gearexport full.');
+        return;
+    end
+
+    state.OddLuaRefreshPending = true;
+    state.OddLuaRefreshLastStatus = 'queued';
+    if includeResources then
+        if not scheduleTask(2, function()
+            queueTypedCommand('/gearexport resources', 1);
+        end) then
+            queueTypedCommand('/gearexport resources', 1);
+        end
+    end
+
+    local delay = oddLuaRefresh.delaySeconds;
+    if includeResources then
+        delay = oddLuaRefresh.resourceDelaySeconds;
+    end
+    message('Queued /gearexport full. OddLua rebuild/apply will launch in ' .. tostring(delay) .. ' seconds.');
+    if not scheduleTask(delay, launchOddLuaGearRefresh) then
+        state.OddLuaRefreshPending = false;
+        message('OddLua gear refresh failed: scheduler unavailable after gearexport. Run ' .. oddLuaRefresh.launcher .. ' manually.');
+    end
+end
+
+
+local reconciliationConfig = {
+    schema = 'oddlua.reconcile.v1',
+    player = 'Aahtacos',
+    playerId = '30102',
+    job = 'SAM',
+    logPath = 'logs/oddlua-reconcile-Aahtacos_30102-SAM.jsonl',
+    slotOrder = {
+    'Main',
+    'Sub',
+    'Range',
+    'Ammo',
+    'Head',
+    'Neck',
+    'Ear1',
+    'Ear2',
+    'Body',
+    'Hands',
+    'Ring1',
+    'Ring2',
+    'Back',
+    'Waist',
+    'Legs',
+    'Feet',
+    },
+};
+
+local function reconciliationJsonEscape(value)
+    value = tostring(value or '');
+    value = string.gsub(value, '\\', '\\\\');
+    value = string.gsub(value, '"', '\\"');
+    value = string.gsub(value, '\r', '\\r');
+    value = string.gsub(value, '\n', '\\n');
+    value = string.gsub(value, '\t', '\\t');
+    return '"' .. value .. '"';
+end
+
+local function reconciliationJsonBool(value)
+    if value == true then
+        return 'true';
+    end
+    return 'false';
+end
+
+local function ensureReconciliationLogDirectory()
+    if state.ReconcileLogDirectoryReady == true then
+        return true;
+    end
+
+    if ashita and ashita.fs and ashita.fs.exists and ashita.fs.exists('logs') then
+        state.ReconcileLogDirectoryReady = true;
+        return true;
+    end
+
+    if ashita and ashita.fs then
+        if ashita.fs.create_directory then
+            pcall(ashita.fs.create_directory, 'logs');
+        elseif ashita.fs.create_dir then
+            pcall(ashita.fs.create_dir, 'logs');
+        end
+    end
+
+    state.ReconcileLogDirectoryReady = true;
+    return true;
+end
+
+local function reconciliationExpectedName(value)
+    if type(value) == 'string' then
+        return value;
+    elseif type(value) == 'table' then
+        return value.Name or value.name or value[1];
+    end
+    return nil;
+end
+
+local function reconciliationExpectedMap(set)
+    local expected = {};
+    if type(set) ~= 'table' then
+        return expected;
+    end
+
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local name = reconciliationExpectedName(set[slot]);
+        if name ~= nil then
+            expected[slot] = tostring(name);
+        end
+    end
+    return expected;
+end
+
+local function reconciliationObservedName(entry)
+    if type(entry) == 'string' then
+        return entry;
+    elseif type(entry) == 'table' then
+        if entry.Name ~= nil then
+            return entry.Name;
+        end
+        if type(entry.Resource) == 'table' and type(entry.Resource.Name) == 'table' then
+            return entry.Resource.Name[1];
+        end
+        if type(entry.Item) == 'table' and entry.Item.Name ~= nil then
+            return entry.Item.Name;
+        end
+    end
+    return nil;
+end
+
+local function observeReconciliationEquipment()
+    if not gData or not gData.GetEquipment then
+        return nil, 'gData.GetEquipment unavailable';
+    end
+
+    local ok, equipment = pcall(gData.GetEquipment);
+    if not ok then
+        return nil, 'gData.GetEquipment failed';
+    end
+    if type(equipment) ~= 'table' then
+        return nil, 'gData.GetEquipment returned non-table';
+    end
+
+    local observed = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local name = reconciliationObservedName(equipment[slot]);
+        if name ~= nil and tostring(name) ~= '' then
+            observed[slot] = tostring(name);
+        end
+    end
+    return observed, nil;
+end
+
+local function reconciliationNamesMatch(expected, observed)
+    local expectedText = normalize(expected);
+    local observedText = normalize(observed);
+    if expectedText == 'remove' then
+        return observedText == '';
+    end
+    return expectedText == observedText;
+end
+
+local function compareReconciliationSnapshot(setName, expected, observed)
+    local mismatches = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        local expectedName = expected[slot];
+        if expectedName ~= nil then
+            local observedName = observed[slot] or '';
+            if not reconciliationNamesMatch(expectedName, observedName) then
+                mismatches[#mismatches + 1] = {
+                    slot = slot,
+                    expected = tostring(expectedName),
+                    observed = tostring(observedName),
+                };
+            end
+        end
+    end
+
+    local status = 'match';
+    if #mismatches > 0 then
+        status = 'mismatch';
+    end
+    return {
+        set = setName,
+        status = status,
+        mismatches = mismatches,
+    };
+end
+
+local function encodeReconciliationMap(map)
+    local parts = {};
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        if map and map[slot] ~= nil then
+            parts[#parts + 1] = reconciliationJsonEscape(slot) .. ':' .. reconciliationJsonEscape(map[slot]);
+        end
+    end
+    return '{' .. table.concat(parts, ',') .. '}';
+end
+
+local function encodeReconciliationMismatches(mismatches)
+    local parts = {};
+    for _, mismatch in ipairs(mismatches or {}) do
+        parts[#parts + 1] = '{'
+            .. '"slot":' .. reconciliationJsonEscape(mismatch.slot)
+            .. ',"expected":' .. reconciliationJsonEscape(mismatch.expected)
+            .. ',"observed":' .. reconciliationJsonEscape(mismatch.observed)
+            .. '}';
+    end
+    return '[' .. table.concat(parts, ',') .. ']';
+end
+
+local function encodeReconciliationSnapshot(snapshot)
+    local parts = {};
+    parts[#parts + 1] = '"schema":' .. reconciliationJsonEscape(reconciliationConfig.schema);
+    parts[#parts + 1] = '"player":' .. reconciliationJsonEscape(reconciliationConfig.player);
+    parts[#parts + 1] = '"playerId":' .. reconciliationJsonEscape(reconciliationConfig.playerId);
+    parts[#parts + 1] = '"job":' .. reconciliationJsonEscape(reconciliationConfig.job);
+    parts[#parts + 1] = '"sequence":' .. tostring(snapshot.sequence or 0);
+    parts[#parts + 1] = '"timestamp":' .. tostring(snapshot.timestamp or 0);
+    parts[#parts + 1] = '"set":' .. reconciliationJsonEscape(snapshot.set);
+    parts[#parts + 1] = '"status":' .. reconciliationJsonEscape(snapshot.status);
+    parts[#parts + 1] = '"force":' .. reconciliationJsonBool(snapshot.force == true);
+    parts[#parts + 1] = '"repair":' .. reconciliationJsonBool(snapshot.repair == true);
+    parts[#parts + 1] = '"repairQueued":' .. reconciliationJsonBool(snapshot.repairQueued == true);
+    parts[#parts + 1] = '"playstyle":' .. reconciliationJsonEscape(snapshot.playstyle);
+    parts[#parts + 1] = '"intent":' .. reconciliationJsonEscape(snapshot.intent);
+    parts[#parts + 1] = '"expected":' .. encodeReconciliationMap(snapshot.expected);
+    parts[#parts + 1] = '"observed":' .. encodeReconciliationMap(snapshot.observed);
+    parts[#parts + 1] = '"mismatches":' .. encodeReconciliationMismatches(snapshot.mismatches);
+    if snapshot.reason ~= nil then
+        parts[#parts + 1] = '"reason":' .. reconciliationJsonEscape(snapshot.reason);
+    end
+    return '{' .. table.concat(parts, ',') .. '}';
+end
+
+local function writeReconciliationSnapshot(snapshot)
+    if not io or not io.open then
+        return false, 'io.open unavailable';
+    end
+
+    ensureReconciliationLogDirectory();
+    local file, err = io.open(reconciliationConfig.logPath, 'ab');
+    if not file then
+        state.ReconcileLastWriteError = tostring(err or 'unknown write error');
+        return false, state.ReconcileLastWriteError;
+    end
+
+    file:write(encodeReconciliationSnapshot(snapshot), '\n');
+    file:close();
+    state.ReconcileLastWriteError = nil;
+    return true, nil;
+end
+
+local function reconciliationMismatchSlots(mismatches)
+    local parts = {};
+    for _, mismatch in ipairs(mismatches or {}) do
+        parts[#parts + 1] = tostring(mismatch.slot);
+    end
+    if #parts == 0 then
+        return 'none';
+    end
+    return table.concat(parts, ',');
+end
+
+local function reconciliationExpectedSignature(setName, expected)
+    local parts = { tostring(setName or '') };
+    for _, slot in ipairs(reconciliationConfig.slotOrder) do
+        if expected and expected[slot] ~= nil then
+            parts[#parts + 1] = tostring(slot) .. '=' .. tostring(expected[slot]);
+        end
+    end
+    return table.concat(parts, '|');
+end
+
+local function reconciliationDelayForSet(setName)
+    local intent = normalize(setIntents[setName] or '');
+    if intent == 'idle' or intent == 'movement' or intent == 'tp' then
+        return 0.35;
+    end
+    return 0.08;
+end
+
+local function reconciliationCanRepairIntent(intent)
+    local intentText = normalize(intent or '');
+    return intentText == 'tp' or intentText == 'idle' or intentText == 'movement';
+end
+
+local repairReconciliationMismatch;
+
+local function cancelPendingReconciliationSnapshot()
+    state.ReconcilePendingSnapshot = nil;
+    state.ReconcileScanScheduled = false;
+    state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+end
+
+local function recordPendingReconciliationSnapshot(token)
+    if token ~= nil and token ~= state.ReconcileScanToken then
+        return;
+    end
+    if state.ReconcileEnabled ~= true then
+        state.ReconcileScanScheduled = false;
+        state.ReconcilePendingSnapshot = nil;
+        return;
+    end
+
+    local pending = state.ReconcilePendingSnapshot;
+    state.ReconcileScanScheduled = false;
+    state.ReconcilePendingSnapshot = nil;
+    if type(pending) ~= 'table' then
+        return;
+    end
+
+    local observed, reason = observeReconciliationEquipment();
+    local snapshot;
+    if observed == nil then
+        snapshot = {
+            set = pending.set,
+            status = 'unknown_observation',
+            reason = reason or 'unknown observation failure',
+            mismatches = {},
+            expected = pending.expected,
+            observed = {},
+        };
+    else
+        snapshot = compareReconciliationSnapshot(pending.set, pending.expected, observed);
+        snapshot.expected = pending.expected;
+        snapshot.observed = observed;
+    end
+
+    snapshot.sequence = pending.sequence;
+    snapshot.timestamp = nowSeconds();
+    snapshot.force = pending.force == true;
+    snapshot.repair = pending.repair == true;
+    snapshot.repairQueued = false;
+    snapshot.playstyle = pending.playstyle;
+    snapshot.intent = pending.intent;
+    if snapshot.status == 'mismatch' and repairReconciliationMismatch then
+        snapshot.repairQueued = repairReconciliationMismatch(pending);
+    end
+    state.ReconcileLast = snapshot;
+    state.ReconcileLastRecordedSignature = pending.signature;
+    writeReconciliationSnapshot(snapshot);
+
+    if snapshot.status == 'mismatch' and snapshot.repairQueued ~= true then
+        local repairText = '';
+        if snapshot.repair == true then
+            repairText = '; repair=failed';
+        end
+        message('Reconcile mismatch set=' .. tostring(pending.set) .. '; slots=' .. reconciliationMismatchSlots(snapshot.mismatches) .. repairText .. '; log=' .. reconciliationConfig.logPath);
+    end
+end
+
+local function scheduleReconciliationSnapshot(setName, expectedSet, force, repair)
+    if state.ReconcileEnabled ~= true then
+        return;
+    end
+
+    local expected = reconciliationExpectedMap(expectedSet);
+    local signature = reconciliationExpectedSignature(setName, expected);
+    if repair ~= true and signature == state.ReconcileLastRecordedSignature then
+        if state.ReconcilePendingSnapshot and state.ReconcilePendingSnapshot.repair == true and state.ReconcilePendingSnapshot.signature == signature then
+            return;
+        end
+        cancelPendingReconciliationSnapshot();
+        return;
+    end
+
+    state.ReconcileSnapshotSeq = (state.ReconcileSnapshotSeq or 0) + 1;
+    state.ReconcilePendingSnapshot = {
+        sequence = state.ReconcileSnapshotSeq,
+        set = setName,
+        expected = expected,
+        force = force == true,
+        repair = repair == true,
+        playstyle = state.Playstyle,
+        intent = setIntents[setName] or '',
+        signature = signature,
+    };
+
+    if state.ReconcileScanScheduled == true then
+        return;
+    end
+
+    state.ReconcileScanScheduled = true;
+    state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+    local token = state.ReconcileScanToken;
+    if not scheduleTask(reconciliationDelayForSet(setName), function()
+        recordPendingReconciliationSnapshot(token);
+    end) then
+        recordPendingReconciliationSnapshot(token);
+    end
+end
+
+repairReconciliationMismatch = function(pending)
+    if type(pending) ~= 'table' then
+        return false;
+    end
+    if pending.repair == true or not reconciliationCanRepairIntent(pending.intent) then
+        return false;
+    end
+    if type(pending.expected) ~= 'table' or next(pending.expected) == nil then
+        return false;
+    end
+
+    local repaired = false;
+    if scale and scale.ForceEquipSet then
+        local ok = pcall(function()
+            scale.ForceEquipSet(pending.set, pending.expected, pending.intent);
+        end);
+        repaired = ok == true;
+    elseif gFunc and gFunc.ForceEquipSet then
+        local ok = pcall(function()
+            gFunc.ForceEquipSet(pending.expected);
+        end);
+        repaired = ok == true;
+    elseif gFunc and gFunc.EquipSet then
+        local ok = pcall(function()
+            gFunc.EquipSet(pending.expected);
+        end);
+        repaired = ok == true;
+    end
+
+    if repaired == true then
+        scheduleReconciliationSnapshot(pending.set, pending.expected, true, true);
+    end
+    return repaired;
+end
+
+local function handleReconcileCommand(args)
+    local command = normalize(args and args[2]);
+    if command == 'on' then
+        state.ReconcileEnabled = true;
+        message('Reconciliation snapshots enabled; log=' .. reconciliationConfig.logPath);
+    elseif command == 'off' then
+        state.ReconcileEnabled = false;
+        message('Reconciliation snapshots disabled.');
+    elseif command == 'status' or command == '' then
+        local lastStatus = 'none';
+        if state.ReconcileLast and state.ReconcileLast.status then
+            lastStatus = tostring(state.ReconcileLast.status);
+        end
+        message('Reconcile enabled=' .. tostring(state.ReconcileEnabled == true) .. '; last=' .. lastStatus .. '; log=' .. reconciliationConfig.logPath .. '; use reconcile on|off|status|last.');
+    elseif command == 'last' then
+        if not state.ReconcileLast then
+            message('Reconcile last: none yet; log=' .. reconciliationConfig.logPath);
+            return;
+        end
+        message('Reconcile last set=' .. tostring(state.ReconcileLast.set) .. '; status=' .. tostring(state.ReconcileLast.status) .. '; mismatches=' .. reconciliationMismatchSlots(state.ReconcileLast.mismatches) .. '; log=' .. reconciliationConfig.logPath);
+    else
+        message('Unknown reconcile command. Use reconcile on|off|status|last.');
+    end
+end
+
+
+local function weaponSkillRouteKey(name)
+    local text = normalize(name);
+    text = string.gsub(text, ':', '_');
+    text = string.gsub(text, '-', '_');
+    text = string.gsub(text, '%s+', '_');
+    text = string.gsub(text, '[^%w_]', '');
+    text = string.gsub(text, '_+', '_');
+    return text;
+end
+
 local function getPlayer()
     if gData and gData.GetPlayer then
         return gData.GetPlayer();
     end
     return nil;
+end
+
+local function mechanicsPlanForSet(setName)
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        return nil;
+    end
+    local transitions = mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return nil;
+    end
+    return transitions[setName];
+end
+
+local function mechanicsSkipReasonForSet(setName)
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        return nil;
+    end
+    local skippedTransitions = mechanicsSwapPlanner.skippedTransitions;
+    if type(skippedTransitions) ~= 'table' then
+        return nil;
+    end
+    return skippedTransitions[setName];
+end
+
+local function mechanicsWarningText(plan)
+    local warnings = plan and plan.warnings;
+    if type(warnings) ~= 'table' or #warnings == 0 then
+        return 'none';
+    end
+    return table.concat(warnings, ',');
+end
+
+local function mechanicsActionText(action)
+    if type(action) ~= 'table' then
+        return 'unknown action';
+    end
+    return tostring(action.phase or 'phase') .. ' ' .. tostring(action.slot or '?') .. '=' .. tostring(action.item or '?') .. ' (' .. tostring(action.reason or '') .. ')';
+end
+
+local function tableCount(value)
+    if type(value) ~= 'table' then
+        return 0;
+    end
+    local count = 0;
+    for _, _ in pairs(value) do
+        count = count + 1;
+    end
+    return count;
+end
+
+local function sortedMechanicsKeys(value)
+    local names = {};
+    if type(value) ~= 'table' then
+        return names;
+    end
+    for name, _ in pairs(value) do
+        table.insert(names, tostring(name));
+    end
+    table.sort(names);
+    return names;
+end
+
+local function mechanicsPlanActionWarningCounts()
+    local transitions = mechanicsSwapPlanner and mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return 0, 0;
+    end
+    local actionCount = 0;
+    local warningCount = 0;
+    for _, plan in pairs(transitions) do
+        if type(plan) == 'table' then
+            if type(plan.actions) == 'table' then
+                actionCount = actionCount + #plan.actions;
+            end
+            if type(plan.warnings) == 'table' then
+                warningCount = warningCount + #plan.warnings;
+            end
+        end
+    end
+    return actionCount, warningCount;
+end
+
+local function mechanicsListText(names)
+    if type(names) ~= 'table' or #names == 0 then
+        return 'none';
+    end
+    if #names <= 12 then
+        return table.concat(names, ',');
+    end
+    local visible = {};
+    for index = 1, 12 do
+        table.insert(visible, names[index]);
+    end
+    return table.concat(visible, ',') .. ' +' .. tostring(#names - 12) .. ' more';
+end
+
+local function printMechanicsList()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local plannedNames = sortedMechanicsKeys(mechanicsSwapPlanner.transitions);
+    local skippedNames = sortedMechanicsKeys(mechanicsSwapPlanner.skippedTransitions);
+    message('Mechanics planned sets (' .. tostring(#plannedNames) .. '): ' .. mechanicsListText(plannedNames));
+    message('Mechanics skipped sets (' .. tostring(#skippedNames) .. '): ' .. mechanicsListText(skippedNames));
+    return true;
+end
+
+local function mechanicsWarningTypeCounts()
+    local counts = {};
+    local transitions = mechanicsSwapPlanner and mechanicsSwapPlanner.transitions;
+    if type(transitions) ~= 'table' then
+        return counts;
+    end
+    for _, plan in pairs(transitions) do
+        local warnings = type(plan) == 'table' and plan.warnings or nil;
+        if type(warnings) == 'table' then
+            for _, warning in ipairs(warnings) do
+                local key = tostring(warning);
+                counts[key] = (counts[key] or 0) + 1;
+            end
+        end
+    end
+    return counts;
+end
+
+local function printMechanicsWarnings()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local counts = mechanicsWarningTypeCounts();
+    local names = sortedMechanicsKeys(counts);
+    if #names == 0 then
+        message('Mechanics warning types: none.');
+        return true;
+    end
+    for _, warning in ipairs(names) do
+        message('Mechanics warning type ' .. tostring(warning) .. ': ' .. tostring(counts[warning]));
+    end
+    return true;
+end
+
+local function mechanicsSkippedReasonCounts()
+    local counts = {};
+    local skippedTransitions = mechanicsSwapPlanner and mechanicsSwapPlanner.skippedTransitions;
+    if type(skippedTransitions) ~= 'table' then
+        return counts;
+    end
+    for _, reason in pairs(skippedTransitions) do
+        local key = tostring(reason);
+        counts[key] = (counts[key] or 0) + 1;
+    end
+    return counts;
+end
+
+local function printMechanicsSkipped()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        message('Mechanics planner is not loaded.');
+        return false;
+    end
+    local counts = mechanicsSkippedReasonCounts();
+    local names = sortedMechanicsKeys(counts);
+    if #names == 0 then
+        message('Mechanics skipped reasons: none.');
+        return true;
+    end
+    for _, reason in ipairs(names) do
+        message('Mechanics skipped reason ' .. tostring(reason) .. ': ' .. tostring(counts[reason]));
+    end
+    return true;
+end
+
+local function mechanicsTargetSet(args)
+    local setName = args and args[3];
+    if setName and sets[setName] then
+        return setName;
+    end
+    local alias = styleAliases[normalize(setName)];
+    if alias and sets['Playstyle_' .. alias] then
+        return 'Playstyle_' .. alias;
+    end
+    if alias and sets[alias] then
+        return alias;
+    end
+    if setName and sets['Playstyle_' .. tostring(setName)] then
+        return 'Playstyle_' .. tostring(setName);
+    end
+    return setName or '';
+end
+
+local function printMechanicsPlan(setName)
+    local plan = mechanicsPlanForSet(setName);
+    if not plan then
+        local skipReason = mechanicsSkipReasonForSet(setName);
+        if skipReason then
+            message('Mechanics transition skipped for ' .. tostring(setName) .. ': ' .. tostring(skipReason) .. '.');
+            return false;
+        end
+        message('No mechanics transition plan for ' .. tostring(setName) .. '.');
+        return false;
+    end
+    local actions = plan.actions or {};
+    message('Mechanics plan ' .. tostring(setName) .. ': actions=' .. tostring(#actions) .. '; warnings=' .. mechanicsWarningText(plan));
+    for index, action in ipairs(actions) do
+        message('Mechanics action ' .. tostring(index) .. ': ' .. mechanicsActionText(action));
+    end
+    return true;
+end
+
+local function playerMechanicsText(player)
+    if type(player) ~= 'table' then
+        return 'player unavailable';
+    end
+    local hp = player.HP or player.hp or player.CurrentHP or player.currentHP or '?';
+    local maxHp = player.MaxHP or player.maxHP or player.HPMax or player.hpmax or '?';
+    local mp = player.MP or player.mp or player.CurrentMP or player.currentMP or '?';
+    local maxMp = player.MaxMP or player.maxMP or player.MPMax or player.mpmax or '?';
+    return 'HP=' .. tostring(hp) .. '/' .. tostring(maxHp) .. '; MP=' .. tostring(mp) .. '/' .. tostring(maxMp);
+end
+
+local function probeMechanicsPlan(setName)
+    if state.MechanicsProbes ~= true then
+        message('Mechanics probes disabled. Use mechanics probes on.');
+        return false;
+    end
+    message('Mechanics probe ' .. tostring(setName) .. ': ' .. playerMechanicsText(getPlayer()));
+    return printMechanicsPlan(setName);
+end
+
+local function mechanicsStatus()
+    local loaded = mechanicsSwapPlanner and mechanicsSwapPlanner.loaded == true;
+    local baseline = mechanicsSwapPlanner and mechanicsSwapPlanner.baselineSet or '';
+    local plannerVersion = mechanicsSwapPlanner and mechanicsSwapPlanner.plannerVersion or 0;
+    local transitionCount = tableCount(mechanicsSwapPlanner and mechanicsSwapPlanner.transitions);
+    local skippedCount = tableCount(mechanicsSwapPlanner and mechanicsSwapPlanner.skippedTransitions);
+    local actionCount, warningCount = mechanicsPlanActionWarningCounts();
+    message('Mechanics planner loaded=' .. tostring(loaded) .. '; baseline=' .. tostring(baseline) .. '; version=' .. tostring(plannerVersion) .. '; transitions=' .. tostring(transitionCount) .. '; skipped=' .. tostring(skippedCount) .. '; actions=' .. tostring(actionCount) .. '; warnings=' .. tostring(warningCount) .. '; probes=' .. tostring(state.MechanicsProbes == true) .. '; execution=' .. tostring(state.MechanicsExecution == true));
+    message('Mechanics execution is disabled for this profile slice; use probes to validate timing before promotion.');
+end
+
+local function handleMechanicsCommand(args)
+    local subcommand = normalize(args and args[2]);
+    if subcommand == '' or subcommand == 'status' then
+        mechanicsStatus();
+        return;
+    elseif subcommand == 'help' then
+        message('mechanics status | mechanics list | mechanics warnings | mechanics skipped | mechanics probes on|off | mechanics plan <set> | mechanics probe <set>');
+        return;
+    elseif subcommand == 'list' then
+        printMechanicsList();
+        return;
+    elseif subcommand == 'warnings' then
+        printMechanicsWarnings();
+        return;
+    elseif subcommand == 'skipped' then
+        printMechanicsSkipped();
+        return;
+    elseif subcommand == 'probes' then
+        local value = normalize(args and args[3]);
+        if value == 'on' then
+            state.MechanicsProbes = true;
+        elseif value == 'off' then
+            state.MechanicsProbes = false;
+        end
+        message('Mechanics probes: ' .. (state.MechanicsProbes and 'on' or 'off') .. '.');
+        return;
+    elseif subcommand == 'plan' then
+        printMechanicsPlan(mechanicsTargetSet(args));
+        return;
+    elseif subcommand == 'probe' then
+        probeMechanicsPlan(mechanicsTargetSet(args));
+        return;
+    end
+    message('Unknown mechanics command. Use mechanics help.');
 end
 
 local function getAction()
@@ -1893,14 +17839,21 @@ local function getBuffCount(name)
     return 0;
 end
 
+local function hasBuff(name)
+    if name == nil or tostring(name) == '' then
+        return false;
+    end
+    return getBuffCount(name) > 0;
+end
+
 local function hasDangerousStatus()
     for name in pairs(dangerousStatusBuffs) do
-        if getBuffCount(name) > 0 then
+        if hasBuff(name) then
             return true;
         end
     end
     for _, id in ipairs(dangerousStatusIds) do
-        if getBuffCount(id) > 0 then
+        if hasBuff(id) then
             return true;
         end
     end
@@ -1943,6 +17896,29 @@ end
 
 profile.HasSubjobCapability = hasSubjobCapability;
 
+local function mainJobHasNativeDualWield()
+    return nativeDualWieldMainJobs['SAM'] == true;
+end
+
+local function setWithSubjobLegalOffhand(setName, set)
+    if type(set) ~= 'table' then
+        return set;
+    end
+    if setRequiresDualWieldSub[setName] ~= true then
+        return set;
+    end
+    if mainJobHasNativeDualWield() or hasSubjobCapability('dual_wield') then
+        return set;
+    end
+
+    local adjusted = {};
+    for slot, item in pairs(set) do
+        adjusted[slot] = item;
+    end
+    adjusted.Sub = 'remove';
+    return adjusted;
+end
+
 local function summarizeSubjobEntries(entries, label)
     local parts = {};
     for _, entry in ipairs(entries or {}) do
@@ -1977,6 +17953,46 @@ local function isResting(player)
     return status == 'resting' or status == 'healing' or status == '33' or status == '34';
 end
 
+local function isMounted(player)
+    if player then
+        if truthy(player.Mounted or player.mounted or player.IsMounted or player.isMounted or player.OnMount or player.onMount) then
+            return true;
+        end
+
+        local status = normalize(player.Status or player.status or player.StatusName or player.statusName);
+        if status == 'mounted' or status == 'mount' or status == 'chocobo' or status == '252' then
+            return true;
+        end
+    end
+
+    for name, _ in pairs(mountedStatusBuffs) do
+        if hasBuff(name) then
+            return true;
+        end
+    end
+    for _, id in ipairs(mountedStatusIds) do
+        if hasBuff(id) then
+            return true;
+        end
+    end
+    return false;
+end
+
+local function isOnFoot(player)
+    return not isMounted(player);
+end
+
+local function canEquipMovement(player, environment)
+    if isCity(environment) then
+        return true;
+    end
+    return not isEngaged(player) and isOnFoot(player);
+end
+
+local function shouldEquipInCityMovement(player, environment)
+    return isCity(environment);
+end
+
 local function playerHpp(player)
     if not player then
         return nil;
@@ -1995,9 +18011,185 @@ local function playerHpp(player)
     return nil;
 end
 
+local function playerTp(player)
+    if not player then
+        return 0;
+    end
+    return tonumber(player.TP or player.tp or player.TacticalPoints or player.tacticalPoints or 0) or 0;
+end
+
 local function isEmergencyHp(player)
     local hpp = playerHpp(player);
     return hpp ~= nil and hpp <= 35;
+end
+
+local function samPrintHelp()
+    message('Ctrl+1 Gekko, Ctrl+2 Yukikaze, Ctrl+3 Shoha, Ctrl+4 Kaiten, Ctrl+5 Sekkanoki+Gekko, Ctrl+6 Konzen+Shoha.');
+    message('Alt+1 Hasso, Alt+2 Seigan+Third Eye, Alt+3 Meditate, Alt+4 Berserk+Warcry, Alt+5 Provoke, Alt+6 Third Eye.');
+    message('Alt+7 Auto Third Eye, Alt+8 Auto WAR buffs, Alt+9 Auto combat master.');
+    message('Commands: style/status/subjob/warp/help/sekkagekko/konzenshoha/seiganeye/warbuffs/autoeye/autowar/autocombat/scale status.');
+end
+
+local function setBooleanMode(key, value)
+    local valueText = normalize(value);
+    if valueText == 'on' or valueText == 'enable' or valueText == 'enabled' then
+        state[key] = true;
+    elseif valueText == 'off' or valueText == 'disable' or valueText == 'disabled' then
+        state[key] = false;
+    else
+        state[key] = not state[key];
+    end
+    return state[key];
+end
+
+local function hasBuff(name)
+    return getBuffCount(name) > 0;
+end
+
+local function abilityNameMatches(resource, abilityName)
+    if type(resource) ~= 'table' then
+        return false;
+    end
+
+    local expected = normalize(abilityName);
+    local names = resource.Name;
+    if type(names) == 'table' then
+        for _, name in pairs(names) do
+            if normalize(name) == expected then
+                return true;
+            end
+        end
+    elseif normalize(names) == expected then
+        return true;
+    end
+
+    return false;
+end
+
+local function isAbilityOnCooldown(abilityName)
+    if not AshitaCore or not AshitaCore.GetMemoryManager or not AshitaCore.GetResourceManager then
+        return nil;
+    end
+
+    local okRecast, recast = pcall(function()
+        return AshitaCore:GetMemoryManager():GetRecast();
+    end);
+    local okResources, resources = pcall(function()
+        return AshitaCore:GetResourceManager();
+    end);
+    if not okRecast or not recast or not okResources or not resources or not resources.GetAbilityByTimerId then
+        return nil;
+    end
+
+    for index = 0, 31 do
+        local okId, id = pcall(function()
+            return recast:GetAbilityTimerId(index);
+        end);
+        local okTimer, timer = pcall(function()
+            return recast:GetAbilityTimer(index);
+        end);
+        if okId and okTimer and type(id) == 'number' and type(timer) == 'number' and timer > 0 then
+            local okAbility, ability = pcall(function()
+                return resources:GetAbilityByTimerId(id);
+            end);
+            if okAbility and abilityNameMatches(ability, abilityName) then
+                return true;
+            end
+        end
+    end
+
+    return false;
+end
+
+local function isThirdEyeOnCooldown()
+    local now = os.clock();
+    if now - lastThirdEyeRecastCheckAt < AUTO_THIRD_EYE_RECAST_POLL_SECONDS then
+        return lastThirdEyeOnCooldown;
+    end
+
+    lastThirdEyeRecastCheckAt = now;
+    lastThirdEyeOnCooldown = isAbilityOnCooldown('Third Eye');
+    return lastThirdEyeOnCooldown;
+end
+
+local function queueSamCommands(label, commands)
+    for _, command in ipairs(commands or {}) do
+        if command.delay and command.delay > 1 and scheduleTask(command.delay, function()
+            queueTypedCommand(command.text, 1);
+        end) then
+            -- Scheduled through ashita.tasks.once.
+        else
+            queueTypedCommand(command.text, command.delay or 1);
+        end
+        if command.text == THIRD_EYE_COMMAND then
+            lastAutoThirdEyeAt = os.clock();
+        end
+    end
+    message(label);
+end
+
+local function maybeAutoThirdEye(player)
+    if state.AutoCombat ~= true or state.AutoThirdEye ~= true then
+        return;
+    end
+    if not player or not isEngaged(player) then
+        return;
+    end
+    if not hasBuff('Seigan') then
+        return;
+    end
+    if hasBuff('Third Eye') then
+        return;
+    end
+
+    local onCooldown = isThirdEyeOnCooldown();
+    if onCooldown == true then
+        return;
+    end
+
+    local now = os.clock();
+    local retrySeconds = AUTO_THIRD_EYE_UNKNOWN_RETRY_SECONDS;
+    if onCooldown == false then
+        retrySeconds = AUTO_THIRD_EYE_READY_RETRY_SECONDS;
+    end
+    if now - lastAutoThirdEyeAt < retrySeconds then
+        return;
+    end
+
+    queueSamCommands('Seigan active; Third Eye queued.', {
+        { delay = 1, text = THIRD_EYE_COMMAND },
+    });
+end
+
+local function maybeAutoWarBuffs(player)
+    if state.AutoCombat ~= true or state.AutoWarBuffs ~= true then
+        return;
+    end
+    if not player or not isEngaged(player) then
+        return;
+    end
+
+    local now = os.clock();
+    local commands = {};
+    for _, buff in ipairs(warBuffCommands) do
+        if not hasBuff(buff.buff) then
+            local onCooldown = isAbilityOnCooldown(buff.ability);
+            if onCooldown ~= true then
+                local retrySeconds = AUTO_WAR_BUFF_UNKNOWN_RETRY_SECONDS;
+                if onCooldown == false then
+                    retrySeconds = AUTO_WAR_BUFF_READY_RETRY_SECONDS;
+                end
+                if now - lastAutoWarBuffAt[buff.ability] >= retrySeconds then
+                    commands[#commands + 1] = { delay = buff.delay, text = buff.command };
+                    lastAutoWarBuffAt[buff.ability] = now;
+                end
+            end
+        end
+    end
+
+    if #commands > 0 then
+        queueSamCommands('Auto WAR buffs queued.', commands);
+    end
 end
 
 local function setNameFor(styleName)
@@ -2031,6 +18223,174 @@ local function isClearSet(set)
     return true;
 end
 
+local function firstAvailableDefensiveSet()
+    local candidates = { 'PDT', 'Playstyle_Safe', 'Safe', 'Survival', 'Tank', 'Evasion', 'Hybrid', 'MDT' };
+    for _, setName in ipairs(candidates) do
+        local set = sets[setName];
+        if type(set) == 'table' and not isClearSet(set) then
+            return setName;
+        end
+    end
+    return nil;
+end
+
+local function providedThreatEntities(player)
+    if type(profile.GetThreatEntities) == 'function' then
+        local ok, entities = pcall(profile.GetThreatEntities, player);
+        if ok and type(entities) == 'table' then
+            return entities;
+        end
+    end
+    if gData and type(gData.GetThreatEntities) == 'function' then
+        local ok, entities = pcall(gData.GetThreatEntities, player);
+        if ok and type(entities) == 'table' then
+            return entities;
+        end
+    end
+    return nil;
+end
+
+local function isIncrediblyToughEntity(entity)
+    if type(entity) ~= 'table' then
+        return false;
+    end
+    if entity.IsIncrediblyTough == true or entity.isIncrediblyTough == true then
+        return true;
+    end
+    local difficulty = normalize(
+        entity.Difficulty
+        or entity.difficulty
+        or entity.Check
+        or entity.check
+        or entity.CheckMessage
+        or entity.checkMessage
+        or entity.DifficultyText
+        or entity.difficultyText
+    );
+    return difficulty == 'it'
+        or difficulty == 'incredibly tough'
+        or difficulty == 'incredibly_tough'
+        or difficulty == 'incrediblytough';
+end
+
+local function addThreatIdentifier(identifiers, value)
+    if value ~= nil and tostring(value) ~= '' then
+        identifiers[tostring(value)] = true;
+    end
+end
+
+local function playerThreatIdentifiers(player)
+    local identifiers = {};
+    if type(player) ~= 'table' then
+        return identifiers;
+    end
+    addThreatIdentifier(identifiers, player.Id or player.ID or player.id);
+    addThreatIdentifier(identifiers, player.ServerId or player.ServerID or player.serverId or player.serverID);
+    addThreatIdentifier(identifiers, player.TargetIndex or player.targetIndex or player.Index or player.index);
+    addThreatIdentifier(identifiers, player.Name or player.name);
+    return identifiers;
+end
+
+local function threatValueIsActive(value)
+    if value == true then
+        return true;
+    end
+    if type(value) == 'number' then
+        return value > 0;
+    end
+    if type(value) == 'string' then
+        local normalized = normalize(value);
+        return normalized == 'true' or normalized == 'yes' or normalized == 'active' or tonumber(value) ~= nil and tonumber(value) > 0;
+    end
+    return type(value) == 'table';
+end
+
+local function threatEntryMatchesPlayer(entry, identifiers)
+    if type(entry) ~= 'table' then
+        return false;
+    end
+    local id = entry.Id or entry.ID or entry.id or entry.ServerId or entry.ServerID or entry.serverId or entry.serverID;
+    local index = entry.Index or entry.index or entry.TargetIndex or entry.targetIndex;
+    local name = entry.Name or entry.name;
+    if (id ~= nil and identifiers[tostring(id)] == true)
+        or (index ~= nil and identifiers[tostring(index)] == true)
+        or (name ~= nil and identifiers[tostring(name)] == true) then
+        return threatValueIsActive(entry.Threat or entry.threat or entry.Enmity or entry.enmity or true);
+    end
+    return false;
+end
+
+local function entityHasPlayerThreat(entity, player)
+    if type(entity) ~= 'table' then
+        return false;
+    end
+    for _, field in ipairs({ 'HasPlayerThreat', 'hasPlayerThreat', 'OnPlayerThreatTable', 'onPlayerThreatTable', 'PlayerThreat', 'playerThreat', 'ClaimedByPlayer', 'claimedByPlayer' }) do
+        if threatValueIsActive(entity[field]) then
+            return true;
+        end
+    end
+
+    local identifiers = playerThreatIdentifiers(player);
+    for _, field in ipairs({ 'TargetId', 'targetId', 'TargetID', 'targetID', 'TargetServerId', 'targetServerId', 'TargetIndex', 'targetIndex' }) do
+        local value = entity[field];
+        if value ~= nil and identifiers[tostring(value)] == true then
+            return true;
+        end
+    end
+
+    local threatTable = entity.ThreatTable or entity.threatTable or entity.Threat or entity.threat or entity.Enmity or entity.enmity;
+    if type(threatTable) ~= 'table' then
+        return false;
+    end
+    for key, value in pairs(threatTable) do
+        if identifiers[tostring(key)] == true and threatValueIsActive(value) then
+            return true;
+        end
+        if threatEntryMatchesPlayer(value, identifiers) then
+            return true;
+        end
+    end
+    return false;
+end
+
+local function countOvertDefenseThreats(player)
+    local entities = providedThreatEntities(player);
+    if type(entities) ~= 'table' then
+        return 0;
+    end
+
+    local count = 0;
+    for _, entity in pairs(entities) do
+        if isIncrediblyToughEntity(entity) and entityHasPlayerThreat(entity, player) then
+            count = count + 1;
+        end
+    end
+    return count;
+end
+
+local function shouldEquipOvertDefense(player)
+    if not player or not isEngaged(player) then
+        return nil;
+    end
+    if countOvertDefenseThreats(player) < OVERT_DEFENSE_TARGET_COUNT then
+        return nil;
+    end
+
+    local defensiveSet = firstAvailableDefensiveSet();
+    if not defensiveSet then
+        return nil;
+    end
+    local hpp = playerHpp(player);
+    if hpp ~= nil and hpp < OVERT_DEFENSE_HP_FORCE_HPP then
+        return defensiveSet;
+    end
+    local tp = playerTp(player);
+    if tp < OVERT_DEFENSE_TP_UNLOCK then
+        return defensiveSet;
+    end
+    return nil;
+end
+
 local function applyWarpRingLock(set)
     if state.WarpRingLocked ~= true or type(set) ~= 'table' then
         return set;
@@ -2044,37 +18404,323 @@ local function applyWarpRingLock(set)
     return lockedSet;
 end
 
+local function desiredSecondarySlotLocks(setName)
+    local desired = {};
+    local setLocks = setSecondarySlotLocks[setName];
+    if type(setLocks) ~= 'table' then
+        return desired;
+    end
+
+    for _, lockedSlots in pairs(setLocks) do
+        if type(lockedSlots) == 'table' then
+            for _, slot in ipairs(lockedSlots) do
+                desired[slot] = true;
+            end
+        end
+    end
+    return desired;
+end
+
+local function desiredSecondarySlotLocksForSetNames(setNames)
+    local desired = {};
+    if type(setNames) ~= 'table' then
+        return desired;
+    end
+
+    for _, setName in ipairs(setNames) do
+        local setDesired = desiredSecondarySlotLocks(setName);
+        for slot, _ in pairs(setDesired) do
+            desired[slot] = true;
+        end
+    end
+    return desired;
+end
+
+local function releaseSecondarySlotLocksNotInSetNames(setNames)
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        state.SecondarySlotLocks = {};
+        return;
+    end
+
+    local desired = desiredSecondarySlotLocksForSetNames(setNames);
+    local slotsToEnable = {};
+    for slot, _ in pairs(active) do
+        if desired[slot] ~= true then
+            slotsToEnable[#slotsToEnable + 1] = slot;
+        end
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        active[slot] = nil;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        if gFunc and gFunc.Enable then
+            gFunc.Enable(slot);
+        end
+    end
+end
+
+local function releaseSecondarySlotLocksNotInSet(setName)
+    local contextSetNames = state.SecondarySlotLockContextSetNames;
+    if type(contextSetNames) == 'table' then
+        releaseSecondarySlotLocksNotInSetNames(contextSetNames);
+        return;
+    end
+
+    releaseSecondarySlotLocksNotInSetNames({ setName });
+end
+
+local function applySecondarySlotLocksForSet(setName)
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        active = {};
+        state.SecondarySlotLocks = active;
+    end
+
+    local desired = desiredSecondarySlotLocks(setName);
+    local slotsToDisable = {};
+    for slot, _ in pairs(desired) do
+        if active[slot] ~= true then
+            slotsToDisable[#slotsToDisable + 1] = slot;
+        end
+    end
+
+    for _, slot in ipairs(slotsToDisable) do
+        active[slot] = true;
+    end
+
+    for _, slot in ipairs(slotsToDisable) do
+        if gFunc and gFunc.Disable then
+            gFunc.Disable(slot);
+        end
+    end
+end
+
+local function unlockSecondarySlotLocks()
+    local active = state.SecondarySlotLocks;
+    if type(active) ~= 'table' then
+        state.SecondarySlotLocks = {};
+        return;
+    end
+
+    local slotsToEnable = {};
+    for slot, _ in pairs(active) do
+        slotsToEnable[#slotsToEnable + 1] = slot;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        active[slot] = nil;
+    end
+
+    for _, slot in ipairs(slotsToEnable) do
+        if gFunc and gFunc.Enable then
+            gFunc.Enable(slot);
+        end
+    end
+end
+
+local function applyConditionalEquipsForSet(setName, force)
+    if not conditionals or not conditionals.ApplyForSet then
+        return false;
+    end
+
+    return conditionals.ApplyForSet(conditionalEquips, setName, {
+        force = force,
+        gFunc = gFunc,
+        getEnvironment = getEnvironment,
+        getPlayer = getPlayer,
+        hasBuff = hasBuff,
+        state = state,
+    });
+end
+
+local reconciliationProtectedWeaponSlots = {
+    Main = true,
+    Sub = true,
+    Range = true,
+};
+
+local function copyEquipSet(set)
+    local copy = {};
+    if type(set) ~= 'table' then
+        return copy;
+    end
+    for slot, item in pairs(set) do
+        copy[slot] = item;
+    end
+    return copy;
+end
+
+local function overlayEquipSet(baseSet, overlay)
+    local result = copyEquipSet(baseSet);
+    if type(overlay) ~= 'table' then
+        return result;
+    end
+    for slot, item in pairs(overlay) do
+        result[slot] = item;
+    end
+    return result;
+end
+
+local function reconciliationEquipContext(force)
+    return {
+        force = force,
+        gFunc = gFunc,
+        getEnvironment = getEnvironment,
+        getPlayer = getPlayer,
+        hasBuff = hasBuff,
+        state = state,
+    };
+end
+
+local function conditionalOverlayForSet(setName, force)
+    if not conditionals or not conditionals.BuildOverlay then
+        return {};
+    end
+
+    local ok, overlay = pcall(function()
+        return conditionals.BuildOverlay(conditionalEquips[setName], reconciliationEquipContext(force));
+    end);
+    if ok and type(overlay) == 'table' then
+        return overlay;
+    end
+    return {};
+end
+
+local function shouldExpectProtectedWeapons(intent)
+    local status = nil;
+    if scale and scale.Status then
+        local ok, result = pcall(scale.Status);
+        if ok and type(result) == 'table' then
+            status = result;
+        end
+    end
+
+    if status and status.weaponLockEnabled == false then
+        return false;
+    end
+    if status and tonumber(status.tp or 0) and tonumber(status.tp or 0) > 0 then
+        return true;
+    end
+    if status and isEngaged(status) then
+        return intent ~= 'TP';
+    end
+
+    local player = getPlayer();
+    if playerTp(player) > 0 then
+        return true;
+    end
+    if isEngaged(player) then
+        return intent ~= 'TP';
+    end
+    return false;
+end
+
+local function expectedSetWithProtectedWeapons(expectedSet, requestedSet, intent)
+    local expected = copyEquipSet(expectedSet);
+    if not shouldExpectProtectedWeapons(intent) then
+        return expected;
+    end
+
+    local observed = observeReconciliationEquipment();
+    if type(observed) ~= 'table' then
+        return expected;
+    end
+
+    for slot, _ in pairs(reconciliationProtectedWeaponSlots) do
+        if requestedSet and requestedSet[slot] ~= nil and expected[slot] == nil and observed[slot] ~= nil then
+            expected[slot] = observed[slot];
+        end
+    end
+    return expected;
+end
+
+local function resolvedReconciliationExpectedSet(setName, requestedSet, appliedSet, force)
+    local expectedSet = copyEquipSet(appliedSet);
+    if next(expectedSet) == nil then
+        expectedSet = copyEquipSet(requestedSet);
+    end
+    expectedSet = expectedSetWithProtectedWeapons(expectedSet, requestedSet, setIntents[setName]);
+    expectedSet = overlayEquipSet(expectedSet, conditionalOverlayForSet(setName, force));
+    return expectedSet;
+end
+
+local function isStableEquipIntent(setName)
+    local intent = normalize(setIntents[setName] or '');
+    return intent == 'tp' or intent == 'idle' or intent == 'movement';
+end
+
+local function stableEquipForceForSet(setName, setToEquip, force)
+    if force == true then
+        if isStableEquipIntent(setName) then
+            state.StableEquipForcePending = false;
+        end
+        return true;
+    end
+    if state.StableEquipForcePending == true and isStableEquipIntent(setName) and not isClearSet(setToEquip) then
+        state.StableEquipForcePending = false;
+        return true;
+    end
+    return false;
+end
+
+local function markStableEquipForceNeeded(setName, force)
+    if force == true then
+        return;
+    end
+    if not isStableEquipIntent(setName) then
+        state.StableEquipForcePending = true;
+    end
+end
+
 local function equipNamedSet(setName, force)
     local set = sets[setName];
     if not set then
         return false;
     end
 
+    releaseSecondarySlotLocksNotInSet(setName);
+    local setToEquip = setWithSubjobLegalOffhand(setName, set);
+    local effectiveForce = stableEquipForceForSet(setName, setToEquip, force);
+
     if state.WarpRingLocked == true then
-        local lockedSet = applyWarpRingLock(set);
-        if force == true and gFunc and gFunc.ForceEquipSet then
+        local lockedSet = applyWarpRingLock(setToEquip);
+        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
             gFunc.ForceEquipSet(lockedSet);
         elseif gFunc and gFunc.EquipSet then
             gFunc.EquipSet(lockedSet);
         end
+        applyConditionalEquipsForSet(setName, effectiveForce);
+        applySecondarySlotLocksForSet(setName);
+        local equippedSet = resolvedReconciliationExpectedSet(setName, lockedSet, lockedSet, effectiveForce);
+        scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
+        markStableEquipForceNeeded(setName, effectiveForce);
         return true;
     end
 
-    if isClearSet(set) then
-        if force == true and gFunc and gFunc.ForceEquipSet then
-            gFunc.ForceEquipSet(set);
+    local appliedSet = setToEquip;
+    if isClearSet(setToEquip) then
+        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+            gFunc.ForceEquipSet(setToEquip);
         elseif gFunc and gFunc.EquipSet then
-            gFunc.EquipSet(set);
+            gFunc.EquipSet(setToEquip);
         end
-    elseif force == true and scale and scale.ForceEquipSet then
-        scale.ForceEquipSet(setName, set, setIntents[setName]);
-    elseif force == true and gFunc and gFunc.ForceEquipSet then
-        gFunc.ForceEquipSet(set);
+    elseif effectiveForce == true and scale and scale.ForceEquipSet then
+        appliedSet = scale.ForceEquipSet(setName, setToEquip, setIntents[setName]);
+    elseif effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+        gFunc.ForceEquipSet(setToEquip);
     elseif scale and scale.EquipSet then
-        scale.EquipSet(setName, set, setIntents[setName]);
+        appliedSet = scale.EquipSet(setName, setToEquip, setIntents[setName]);
     elseif gFunc and gFunc.EquipSet then
-        gFunc.EquipSet(set);
+        gFunc.EquipSet(setToEquip);
     end
+    applyConditionalEquipsForSet(setName, effectiveForce);
+    applySecondarySlotLocksForSet(setName);
+    local equippedSet = resolvedReconciliationExpectedSet(setName, setToEquip, appliedSet, effectiveForce);
+    scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
+    markStableEquipForceNeeded(setName, effectiveForce);
     return true;
 end
 
@@ -2084,6 +18730,30 @@ local function equipNamedSetIfNotClear(setName, force)
         return false;
     end
     return equipNamedSet(setName, force);
+end
+
+local function equipOvertDefensiveSet(setName)
+    if not setName then
+        return false;
+    end
+
+    local status = {};
+    if scale and scale.Status then
+        local ok, result = pcall(scale.Status);
+        if ok and type(result) == 'table' then
+            status = result;
+        end
+    end
+    local previousWeaponLockEnabled = status.weaponLockEnabled == true;
+
+    if scale and scale.SetWeaponLockEnabled then
+        scale.SetWeaponLockEnabled(false);
+    end
+    local ok, equipped = pcall(equipNamedSet, setName, true);
+    if scale and scale.SetWeaponLockEnabled then
+        scale.SetWeaponLockEnabled(previousWeaponLockEnabled);
+    end
+    return ok == true and equipped == true;
 end
 
 local function forceEquipInlineSet(set, ignoreWarpRingLock)
@@ -2106,13 +18776,23 @@ local function forceEquipInlineSet(set, ignoreWarpRingLock)
     return false;
 end
 
+local oddLuaWarpRing = {};
+
+function oddLuaWarpRing.lockRing2()
+    if gFunc and gFunc.Disable then
+        gFunc.Disable('Ring2');
+    end
+end
+
+function oddLuaWarpRing.unlockRing2()
+    if gFunc and gFunc.Enable then
+        gFunc.Enable('Ring2');
+    end
+end
+
 local function clearWarpRing()
     state.WarpRingLocked = false;
-    state.WarpUsePending = false;
-    state.WarpClearPending = false;
-    state.WarpUseAt = nil;
-    state.WarpClearAt = nil;
-
+    oddLuaWarpRing.unlockRing2();
     if forceEquipInlineSet({ Ring2 = 'remove' }, true) then
         message('Warp Ring removed from Ring2.');
     else
@@ -2120,56 +18800,42 @@ local function clearWarpRing()
     end
 end
 
-local function processWarpRingTimers()
-    local handled = false;
-    local now = nowSeconds();
-
-    if state.WarpRingLocked == true and state.WarpUsePending == true and state.WarpUseAt and now >= state.WarpUseAt then
-        handled = true;
-        state.WarpUsePending = false;
-        forceEquipInlineSet({ Ring2 = 'Warp Ring' });
-        local useQueued = queueTypedCommand('/item "Warp Ring" <me>', 1);
-        if useQueued then
-            message('Warp Ring use queued after 9 seconds.');
-        else
-            message('Warp Ring use failed: unable to queue item command.');
-        end
-    end
-
-    if state.WarpClearPending == true and state.WarpClearAt and now >= state.WarpClearAt then
-        handled = true;
+function oddLuaWarpRing.finishUse()
+    local useQueued = queueTypedCommand('/item "Warp Ring" <me>', 1);
+    if not useQueued then
+        message('Warp Ring use failed: unable to queue item command.');
         clearWarpRing();
+        return;
     end
-
-    return handled;
+    message('Warp Ring use queued. Ring2 unlocks in 10 seconds.');
+    if not scheduleTask(10, clearWarpRing) then
+        message('Warp Ring cleanup scheduling failed; use /lac fwd warpclear.');
+    end
 end
 
 local function useWarpRing()
+    if state.WarpRingLocked == true then
+        message('Warp Ring flow already running.');
+        return;
+    end
+
     state.WarpRingLocked = true;
-    if not forceEquipInlineSet({ Ring2 = 'Warp Ring' }) then
+    if not forceEquipInlineSet({ Ring2 = 'Warp Ring' }, true) then
         state.WarpRingLocked = false;
         message('Warp Ring equip failed: unable to force Ring2.');
         return;
     end
-
-    local now = nowSeconds();
-    state.WarpUsePending = true;
-    state.WarpClearPending = true;
-    state.WarpUseAt = now + 9;
-    state.WarpClearAt = now + 30;
-
-    local useScheduled = scheduleTask(9, processWarpRingTimers);
-    local cleanupScheduled = scheduleTask(30, processWarpRingTimers);
-    if useScheduled and cleanupScheduled then
-        message('Warp Ring armed: Ring2 locked; use in 9 seconds; Ring2 cleanup at 30 seconds.');
-    else
-        message('Warp Ring armed with default-tick fallback: Ring2 locked; use in 9 seconds; Ring2 cleanup at 30 seconds.');
+    oddLuaWarpRing.lockRing2();
+    message('Warp Ring equipped and locked in Ring2. Use fires in 10 seconds.');
+    if not scheduleTask(10, oddLuaWarpRing.finishUse) then
+        message('Warp Ring use scheduling failed.');
+        clearWarpRing();
     end
 end
 
 local function equipFirstAvailable(setNames, force)
     for _, setName in ipairs(setNames or {}) do
-        if setName and equipNamedSet(setName, force) then
+        if setName and equipNamedSetIfNotClear(setName, force) then
             return true;
         end
     end
@@ -2251,13 +18917,38 @@ local function equipCombatStyle(force)
     return equipNamedSet('Playstyle_StoreTP', force);
 end
 
-local function equipMovement(environment, force)
+local function lockstyleCombatSet()
+    if not equipNamedSet('TP', true) then
+        if not equipNamedSet(setNameFor('StoreTP'), true) then
+            message('Unable to equip TP set for lockstyle.');
+            return;
+        end
+    end
+
+    local function applyTpLockstyle()
+        if queueTypedCommand('/lockstyle on', 1) then
+            message('Lockstyle captured TP set.');
+        else
+            message('Lockstyle command unavailable; equip TP set manually, then use /lockstyle on.');
+        end
+    end
+
+    if not scheduleTask(0.3, applyTpLockstyle) then
+        applyTpLockstyle();
+    end
+end
+
+local function equipMovement(player, environment, force)
+    if not canEquipMovement(player, environment) then
+        return false;
+    end
+
     local equipped = false;
 
     if equipNamedSetIfNotClear('Movement', force) then
         equipped = true;
     end
-    if isCity(environment) and equipNamedSetIfNotClear('Movement_City', force) then
+    if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('Movement_City', force) then
         equipped = true;
     end
     if isNight(environment) and equipNamedSetIfNotClear('Movement_Night', force) then
@@ -2266,11 +18957,58 @@ local function equipMovement(environment, force)
     if isDuskToDawn(environment) and equipNamedSetIfNotClear('Movement_DuskToDawn', force) then
         equipped = true;
     end
+    if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('InCity', force) then
+        equipped = true;
+    end
 
     return equipped;
 end
 
-local function equipIdleState(player, force)
+local function addSecondarySlotLockSetNameIfNotClear(setNames, setName)
+    local set = sets[setName];
+    if set and not isClearSet(set) then
+        setNames[#setNames + 1] = setName;
+    end
+end
+
+local function addMovementSecondarySlotLockSetNames(setNames, player, environment)
+    if not canEquipMovement(player, environment) then
+        return;
+    end
+
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement');
+    if shouldEquipInCityMovement(player, environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_City');
+    end
+    if isNight(environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_Night');
+    end
+    if isDuskToDawn(environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Movement_DuskToDawn');
+    end
+    if shouldEquipInCityMovement(player, environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'InCity');
+    end
+end
+
+local function idleSecondarySlotLockSetNames(player, environment)
+    local setNames = {};
+    if isClearSet(sets['Aftercast']) then
+        return setNames;
+    end
+
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Aftercast');
+    if #setNames == 0 then
+        if isClearSet(sets['Idle']) then
+            return setNames;
+        end
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'Idle');
+    end
+    addMovementSecondarySlotLockSetNames(setNames, player, environment);
+    return setNames;
+end
+
+local function equipBaseIdleState(player, force)
     if isClearSet(sets['Aftercast']) then
         equipNamedSet('Aftercast', force);
         return true;
@@ -2285,20 +19023,40 @@ local function equipIdleState(player, force)
         equipped = equipNamedSetIfNotClear('Idle', force);
     end
 
-    equipMovement(getEnvironment(), force);
+    equipMovement(player, getEnvironment(), force);
     if equipped then
         return true;
     end
     return equipNamedSet('Idle', force);
 end
 
+local function equipIdleState(player, force)
+    local previousSecondarySlotLockContext = state.SecondarySlotLockContextSetNames;
+    state.SecondarySlotLockContextSetNames = idleSecondarySlotLockSetNames(player, getEnvironment());
+    local ok, equipped = pcall(equipBaseIdleState, player, force);
+    state.SecondarySlotLockContextSetNames = previousSecondarySlotLockContext;
+    if not ok then
+        error(equipped);
+    end
+    return equipped;
+end
+
 local function equipDefaultForPlayer(player, force)
     if hasDangerousStatus() then
         equipNamedSet('PDT', force);
-    elseif player and isEngaged(player) and isEmergencyHp(player) then
-        equipNamedSet('PDT', force);
     elseif player and isEngaged(player) then
-        equipCombatStyle(force);
+        local defensiveSet = shouldEquipOvertDefense(player);
+        if defensiveSet then
+            local equippedDefensive = equipOvertDefensiveSet(defensiveSet);
+            if equippedDefensive then
+                return;
+            end
+        end
+        if isEmergencyHp(player) then
+            equipNamedSet('PDT', force);
+        else
+            equipCombatStyle(force);
+        end
     elseif state.Playstyle == 'Craft' then
         if not equipNamedSet('Crafting', force) then
             equipNamedSet('Idle', force);
@@ -2310,14 +19068,193 @@ local function equipDefaultForPlayer(player, force)
     end
 end
 
-local function equipBlueMagic()
-    local active = activeCombatStyle();
-    if active == 'MagicalBlue' and equipNamedSet('Playstyle_MagicalBlue', false) then
-        return;
-    elseif active == 'PhysicalBlue' and equipNamedSet('Playstyle_PhysicalBlue', false) then
+local oddLuaNumberRow = {
+    renderEvent = 'oddlua_number_row_Aahtacos_30102_SAM',
+    imgui = nil,
+    overlayRegistered = false,
+    utilityFallbacks = {
+        craft = { 'Craft', 'Fishing', 'Gathering', 'Clamming', 'Movement', 'Resting', 'Treasure', 'Survival' },
+        movement = { 'Movement', 'Movement_City', 'Movement_Night', 'Movement_DuskToDawn', 'InCity', 'Survival' },
+    },
+};
+
+if type(require) == 'function' then
+    local ok, loaded = pcall(require, 'imgui');
+    if ok and loaded then
+        oddLuaNumberRow.imgui = loaded;
+    end
+end
+
+function oddLuaNumberRow.setBooleanValue(current, value)
+    local valueText = normalize(value);
+    if valueText == 'on' or valueText == 'enable' or valueText == 'enabled' then
+        return true;
+    elseif valueText == 'off' or valueText == 'disable' or valueText == 'disabled' then
+        return false;
+    end
+    return not current;
+end
+
+function oddLuaNumberRow.bindPalette()
+    if state.NumberRowPaletteEnabled ~= true then
         return;
     end
-    equipNamedSet('BlueMagic', false);
+    queueTypedCommand('/bind 1 /lac fwd styleprev', -1);
+    queueTypedCommand('/bind 2 /lac fwd stylenext', -1);
+    queueTypedCommand('/bind 3 /lac fwd styles', -1);
+    queueTypedCommand('/bind 4 /lac fwd warp', -1);
+    queueTypedCommand('/bind 5 /lac fwd lockstyle', -1);
+    queueTypedCommand('/bind 6 /lac fwd status', -1);
+    queueTypedCommand('/bind 7 /lac fwd utility craft', -1);
+    queueTypedCommand('/bind 8 /lac fwd utility movement', -1);
+    queueTypedCommand('/bind 9 /lac fwd autoeye', -1);
+    queueTypedCommand('/bind 0 /lac fwd autowar', -1);
+    queueTypedCommand('/bind - /ja "Meditate" <me>', -1);
+    queueTypedCommand('/bind = /ja "Third Eye" <me>', -1);
+end
+
+function oddLuaNumberRow.unbindPalette()
+    queueTypedCommand('/unbind 1', -1);
+    queueTypedCommand('/unbind 2', -1);
+    queueTypedCommand('/unbind 3', -1);
+    queueTypedCommand('/unbind 4', -1);
+    queueTypedCommand('/unbind 5', -1);
+    queueTypedCommand('/unbind 6', -1);
+    queueTypedCommand('/unbind 7', -1);
+    queueTypedCommand('/unbind 8', -1);
+    queueTypedCommand('/unbind 9', -1);
+    queueTypedCommand('/unbind 0', -1);
+    queueTypedCommand('/unbind -', -1);
+    queueTypedCommand('/unbind =', -1);
+end
+
+function oddLuaNumberRow.setPaletteEnabled(value)
+    local enabled = oddLuaNumberRow.setBooleanValue(state.NumberRowPaletteEnabled, value);
+    state.NumberRowPaletteEnabled = enabled;
+    if enabled then
+        oddLuaNumberRow.bindPalette();
+        message('OddLua number row palette: on');
+    else
+        oddLuaNumberRow.unbindPalette();
+        message('OddLua number row palette: off');
+    end
+end
+
+function oddLuaNumberRow.currentPlaystyleIndex()
+    for index, styleName in ipairs(playstyleNames) do
+        if styleName == state.Playstyle then
+            return index;
+        end
+    end
+    return 1;
+end
+
+function oddLuaNumberRow.cyclePlaystyle(delta)
+    if #playstyleNames == 0 then
+        message('No playstyles available.');
+        return false;
+    end
+    local index = oddLuaNumberRow.currentPlaystyleIndex();
+    local selectedIndex = ((index - 1 + delta) % #playstyleNames) + 1;
+    state.Playstyle = playstyleNames[selectedIndex];
+    message('Style=' .. state.Playstyle);
+    equipDefaultForPlayer(getPlayer(), true);
+    return true;
+end
+
+function oddLuaNumberRow.equipUtilityIntent(intent)
+    local fallback = oddLuaNumberRow.utilityFallbacks[normalize(intent)];
+    if type(fallback) ~= 'table' then
+        message('Not Applicable / Missing Equipment');
+        return false;
+    end
+    for _, setName in ipairs(fallback) do
+        if equipNamedSetIfNotClear(setName, true) then
+            message('Utility=' .. tostring(intent) .. '; set=' .. setName);
+            return true;
+        end
+    end
+    message('Not Applicable / Missing Equipment');
+    return false;
+end
+
+function oddLuaNumberRow.toggleIsOn(binding)
+    if not binding or binding.toggle == nil or binding.toggle == '' then
+        return false;
+    end
+    return state[binding.toggle] == true;
+end
+
+function oddLuaNumberRow.renderOverlay()
+    if state.NumberRowPaletteEnabled ~= true or oddLuaNumberRow.imgui == nil then
+        return;
+    end
+    local imgui = oddLuaNumberRow.imgui;
+    local flags = 0;
+    if bit and bit.bor then
+        flags = bit.bor(
+            ImGuiWindowFlags_NoDecoration or 0,
+            ImGuiWindowFlags_AlwaysAutoResize or 0,
+            ImGuiWindowFlags_NoMove or 0,
+            ImGuiWindowFlags_NoSavedSettings or 0,
+            ImGuiWindowFlags_NoFocusOnAppearing or 0,
+            ImGuiWindowFlags_NoNav or 0
+        );
+    end
+    local onColor = { 0.78, 1.0, 0.72, 1.0 };
+    local offColor = { 0.35, 0.40, 0.36, 1.0 };
+    local neutralColor = { 0.90, 0.94, 0.90, 1.0 };
+    local title = 'OddLua Aahtacos_30102 SAM';
+    if imgui.SetNextWindowPos then
+        imgui.SetNextWindowPos({ 16, 8 }, ImGuiCond_Always or 0);
+    end
+    if imgui.SetNextWindowBgAlpha then
+        imgui.SetNextWindowBgAlpha(0.42);
+    end
+    if imgui.Begin and imgui.Begin(title .. '##numberrow', true, flags) then
+        imgui.TextColored(neutralColor, title);
+        for index, binding in ipairs(numberRowBindings) do
+            if index > 1 and imgui.SameLine then
+                imgui.SameLine();
+            end
+            if binding.kind == 'toggle' and binding.toggle ~= '' then
+                if oddLuaNumberRow.toggleIsOn(binding) then
+                    imgui.TextColored(onColor, binding.key .. ' ' .. binding.label);
+                else
+                    imgui.TextColored(offColor, binding.key .. ' ' .. binding.label);
+                end
+            else
+                imgui.TextColored(neutralColor, binding.key .. ' ' .. binding.label);
+            end
+        end
+    end
+    if imgui.End then
+        imgui.End();
+    end
+end
+
+function oddLuaNumberRow.registerOverlay()
+    if oddLuaNumberRow.overlayRegistered == true or oddLuaNumberRow.imgui == nil or not ashita or not ashita.events then
+        return;
+    end
+    ashita.events.register('d3d_present', oddLuaNumberRow.renderEvent, oddLuaNumberRow.renderOverlay);
+    oddLuaNumberRow.overlayRegistered = true;
+end
+
+function oddLuaNumberRow.unregisterOverlay()
+    if oddLuaNumberRow.overlayRegistered ~= true or not ashita or not ashita.events then
+        return;
+    end
+    ashita.events.unregister('d3d_present', oddLuaNumberRow.renderEvent);
+    oddLuaNumberRow.overlayRegistered = false;
+end
+
+local function equipBlueMagic(name)
+    local route = blueMagicRoutes[normalize(name)];
+    if route and equipNamedSet(route, false) then
+        return;
+    end
+    equipFirstAvailable({ 'BlueMagic', 'PhysicalBlueMagic', 'MagicalBlueMagic', 'Midcast' }, false);
 end
 
 local function equipElementalMagic(action)
@@ -2446,6 +19383,10 @@ local function equipAbility()
         equipFirstAvailable({ 'BloodPactRage', 'PetReady', 'JobAbility' }, false);
     elseif actionType == 'blood pact: ward' then
         equipFirstAvailable({ 'BloodPactWard', 'PetTank', 'JobAbility' }, false);
+    elseif string.find(name, 'third eye', 1, true) then
+        equipFirstAvailable({ 'ThirdEye', 'JobAbility' }, false);
+    elseif string.find(name, 'meditate', 1, true) then
+        equipFirstAvailable({ 'Meditate', 'JobAbility' }, false);
     elseif string.find(name, 'provoke', 1, true) or string.find(name, 'sentinel', 1, true)
         or string.find(name, 'warcry', 1, true) or string.find(name, 'cover', 1, true)
         or string.find(name, 'palisade', 1, true) or string.find(name, 'flash', 1, true) then
@@ -2467,15 +19408,27 @@ end
 
 local function equipWeaponskill()
     local action = getAction();
-    local name = normalize(action and action.Name);
+    local name = action and action.Name;
+    local key = weaponSkillRouteKey(name);
+    local exactRoute = weaponSkillRoutes[key];
+    local accuracyRoute = weaponSkillAccuracyRoutes[key];
+    if state.Playstyle == 'Accuracy' then
+        if accuracyRoute and equipNamedSet(accuracyRoute, false) then
+            return;
+        end
+    end
+    if exactRoute and equipNamedSet(exactRoute, false) then
+        return;
+    end
+    local normalizedName = normalize(name);
     if state.Playstyle == 'Accuracy' then
         equipFirstAvailable({ 'WeaponSkillAccuracy', 'Weaponskill' }, false);
-    elseif string.find(name, 'aeolian', 1, true) or string.find(name, 'cyclone', 1, true)
-        or string.find(name, 'energy', 1, true) or string.find(name, 'red lotus', 1, true)
-        or string.find(name, 'seraph', 1, true) or string.find(name, 'sanguine', 1, true)
-        or string.find(name, 'wildfire', 1, true) or string.find(name, 'leaden', 1, true)
-        or string.find(name, 'jinpu', 1, true) or string.find(name, 'koki', 1, true)
-        or string.find(name, 'goten', 1, true) or string.find(name, 'kagero', 1, true) then
+    elseif string.find(normalizedName, 'aeolian', 1, true) or string.find(normalizedName, 'cyclone', 1, true)
+        or string.find(normalizedName, 'energy', 1, true) or string.find(normalizedName, 'red lotus', 1, true)
+        or string.find(normalizedName, 'seraph', 1, true) or string.find(normalizedName, 'sanguine', 1, true)
+        or string.find(normalizedName, 'wildfire', 1, true) or string.find(normalizedName, 'leaden', 1, true)
+        or string.find(normalizedName, 'jinpu', 1, true) or string.find(normalizedName, 'koki', 1, true)
+        or string.find(normalizedName, 'goten', 1, true) or string.find(normalizedName, 'kagero', 1, true) then
         equipFirstAvailable({ 'WSElemental', 'Elemental', 'Weaponskill' }, false);
     else
         equipNamedSet('Weaponskill', false);
@@ -2499,11 +19452,23 @@ profile.OnLoad = function()
         });
     end
 
-    message('OddLua dynamic profile loaded for Aahtacos_30102. Default combat style: ' .. state.Playstyle .. '. Use /lac fwd style storetp|accuracy|weaponskill|evasion.');
+    message('OddLua dynamic profile loaded for Aahtacos_30102. Default combat style: ' .. state.Playstyle .. '. Use /lac fwd help for commands and one-button setup.');
     message('Configured default Subjob=WAR. Use /lac fwd subjob for level-37 capabilities.');
+    oddLuaNumberRow.bindPalette();
+    oddLuaNumberRow.registerOverlay();
+    for _, bind in ipairs(samBinds) do
+        queueTypedCommand(bind.binding, -1);
+    end
+    samPrintHelp();
 end
 
 profile.OnUnload = function()
+    oddLuaNumberRow.unregisterOverlay();
+    oddLuaNumberRow.unbindPalette();
+    unlockSecondarySlotLocks();
+    for _, bind in ipairs(samBinds) do
+        queueTypedCommand(bind.unbind, -1);
+    end
 end
 
 profile.HandleCommand = function(args)
@@ -2512,21 +19477,34 @@ profile.HandleCommand = function(args)
     end
 
     if not args or not args[1] then
+        printOddLuaHelp();
         return;
     end
 
     local command = normalize(args[1]);
     local value = normalize(args[2]);
 
-    if command == 'style' or command == 'playstyle' then
+    if command == 'help' or command == '?' then
+        printOddLuaHelp();
+        samPrintHelp();
+        return;
+    elseif command == 'styles' or command == 'stylelist' then
+        printStyleList();
+        return;
+    elseif command == 'styleprev' or command == 'styleback' then
+        oddLuaNumberRow.cyclePlaystyle(-1);
+    elseif command == 'stylenext' or command == 'stylefwd' then
+        oddLuaNumberRow.cyclePlaystyle(1);
+    elseif command == 'style' or command == 'playstyle' then
         if value == '' or value == 'status' then
-            message('Current style: ' .. state.Playstyle .. '. Use style storetp|accuracy|weaponskill|evasion.');
+            printStyleList();
             return;
         end
 
         local selected = styleAliases[value];
         if not selected then
-            message('Unknown style: ' .. tostring(args[2]) .. '. Use style storetp|accuracy|weaponskill|evasion.');
+            message('Unknown style: ' .. tostring(args[2]) .. '.');
+            printStyleList();
             return;
         end
 
@@ -2539,17 +19517,33 @@ profile.HandleCommand = function(args)
 
         message('Style=' .. state.Playstyle);
         equipDefaultForPlayer(getPlayer(), true);
+    elseif command == 'lockstyle' or command == 'stylelock' then
+        lockstyleCombatSet();
     elseif command == 'warp' then
         useWarpRing();
     elseif command == 'warpclear' then
         clearWarpRing();
+    elseif command == 'utility' then
+        oddLuaNumberRow.equipUtilityIntent(value);
+    elseif command == 'palette' or command == 'numberrow' then
+        if value == 'missing' then
+            message('Not Applicable / Missing Equipment');
+            return;
+        end
+        oddLuaNumberRow.setPaletteEnabled(value);
+    elseif command == 'mechanics' then
+        handleMechanicsCommand(args);
+    elseif command == 'reconcile' then
+        handleReconcileCommand(args);
+    elseif command == 'refreshgear' or command == 'reprocessgear' or command == 'rebuildgear' then
+        startOddLuaGearRefresh(args);
     elseif command == 'status' then
         local subjob, subjobName = currentSubjobProfile();
         local capabilityText = 'none';
         if subjob and subjob.capabilities then
             capabilityText = table.concat(subjob.capabilities, ',');
         end
-        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText);
+        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText .. '; help=/lac fwd help; styles=/lac fwd styles');
     elseif command == 'subjob' or command == 'sj' then
         local subjob, subjobName = currentSubjobProfile();
         if not subjob then
@@ -2566,15 +19560,47 @@ profile.HandleCommand = function(args)
         else
             message('Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. table.concat(subjob.capabilities or {}, ',') .. '; use subjob traits|spells|abilities');
         end
+    elseif command == 'samhelp' then
+        samPrintHelp();
+    elseif command == 'sekkagekko' then
+        queueSamCommands('Sekkanoki + Tachi: Gekko queued.', {
+            { delay = 1, text = '/ja "Sekkanoki" <me>' },
+            { delay = 3, text = '/ws "Tachi: Gekko" <t>' },
+        });
+    elseif command == 'konzenshoha' then
+        queueSamCommands('Konzen-ittai + Tachi: Shoha queued.', {
+            { delay = 1, text = '/ja "Konzen-ittai" <me>' },
+            { delay = 3, text = '/ws "Tachi: Shoha" <t>' },
+        });
+    elseif command == 'seiganeye' then
+        queueSamCommands('Seigan + Third Eye queued.', {
+            { delay = 1, text = '/ja "Seigan" <me>' },
+            { delay = 3, text = '/ja "Third Eye" <me>' },
+        });
+    elseif command == 'warbuffs' then
+        queueSamCommands('Berserk + Warcry queued.', {
+            { delay = 1, text = '/ja "Berserk" <me>' },
+            { delay = 3, text = '/ja "Warcry" <me>' },
+        });
+    elseif command == 'autoeye' or command == 'autothirdeye' then
+        setBooleanMode('AutoThirdEye', value);
+        message('SAM auto Third Eye: ' .. (state.AutoThirdEye and 'on' or 'off'));
+    elseif command == 'autowar' or command == 'autowarbuffs' or command == 'autobuffs' then
+        setBooleanMode('AutoWarBuffs', value);
+        message('SAM auto WAR buffs: ' .. (state.AutoWarBuffs and 'on' or 'off'));
+    elseif command == 'autocombat' or command == 'autoincombat' then
+        setBooleanMode('AutoCombat', value);
+        message('SAM auto combat master: ' .. (state.AutoCombat and 'on' or 'off'));
+    else
+        message('Unknown command: ' .. tostring(args[1]) .. '. Use /lac fwd help.');
     end
 end
 
 profile.HandleDefault = function()
-    local handledWarpTimer = processWarpRingTimers();
-    if handledWarpTimer and state.WarpRingLocked ~= true then
-        return;
-    end
-    equipDefaultForPlayer(getPlayer(), false);
+    local player = getPlayer();
+    maybeAutoThirdEye(player);
+    maybeAutoWarBuffs(player);
+    equipDefaultForPlayer(player, false);
 end
 
 profile.HandleAbility = function()
@@ -2614,7 +19640,7 @@ profile.HandleMidcast = function()
     elseif skill == 'dark magic' then
         equipDarkMagic(name);
     elseif skill == 'blue magic' then
-        equipBlueMagic();
+        equipBlueMagic(name);
     elseif skill == 'singing' or skill == 'stringed instrument' or skill == 'wind instrument' then
         equipSong(name);
     elseif skill == 'geomancy' then

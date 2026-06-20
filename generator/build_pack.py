@@ -19,7 +19,7 @@ DEFAULT_OUTPUT_ROOT = ODDLUA_ROOT / "dist"
 
 sys.path.insert(0, str(ODDLUA_ROOT / "src"))
 
-from oddlua.builder import build_pack  # noqa: E402
+from oddlua.app.build_pack import build_pack  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,6 +51,7 @@ def main() -> int:
     )
     print(f"Wrote {result.profile_path}")
     print(f"Wrote {result.manifest_path}")
+    print(f"Wrote {result.keybindings_path}")
     return 0
 
 
