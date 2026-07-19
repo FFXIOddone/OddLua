@@ -51,6 +51,56 @@ local tpResetSlots = {
     Range = true
 };
 
+-- FFXI can equip only from Inventory and the eight Wardrobes. GearExport
+-- includes storage containers too, so those rows must never enter live Scale
+-- selection even when they score higher.
+local equipAccessibleContainerIds = {
+    [0] = true,
+    [8] = true,
+    [10] = true,
+    [11] = true,
+    [12] = true,
+    [13] = true,
+    [14] = true,
+    [15] = true,
+    [16] = true
+};
+
+local equipAccessibleContainerNames = {
+    inventory = true,
+    wardrobe = true,
+    wardrobe1 = true,
+    wardrobe2 = true,
+    wardrobe3 = true,
+    wardrobe4 = true,
+    wardrobe5 = true,
+    wardrobe6 = true,
+    wardrobe7 = true,
+    wardrobe8 = true
+};
+
+local weaponFamiliesBySkill = {
+    [1] = 'hand_to_hand',
+    [2] = 'dagger',
+    [3] = 'sword',
+    [4] = 'great_sword',
+    [5] = 'axe',
+    [6] = 'great_axe',
+    [7] = 'scythe',
+    [8] = 'polearm',
+    [9] = 'katana',
+    [10] = 'great_katana',
+    [11] = 'club',
+    [12] = 'staff',
+    [25] = 'bow',
+    [26] = 'gun',
+    [27] = 'throwing',
+    [40] = 'instrument',
+    [41] = 'instrument',
+    [42] = 'instrument',
+    [45] = 'instrument'
+};
+
 local jobNames = {
     WAR = true, MNK = true, WHM = true, BLM = true, RDM = true, THF = true,
     PLD = true, DRK = true, BST = true, BRD = true, RNG = true, SAM = true,
@@ -114,10 +164,12 @@ local weaponFamiliesById = {
 
 local intentWords = {
     FastCast = { 'chapeau', 'loquac', 'swith', 'nashira', 'quick', 'swift', 'seer' },
+    CurePrecast = { 'cure', 'healer', 'cleric', 'chapeau', 'loquac', 'swith' },
     Cure = { 'light staff', 'colossus', 'aqua', 'tamas', 'zenith', 'penitent', 'healing', 'mnd' },
     Healing = { 'light staff', 'colossus', 'aqua', 'tamas', 'zenith', 'penitent', 'healing', 'mnd' },
     Enhancing = { 'duelist', 'dls.', 'warlock', 'enhancing', 'colossus' },
     Enfeebling = { 'enfeebling', 'dls.', 'warlock', 'snow', 'incubus', 'mnd', 'int' },
+    Dia = { 'dia', 'dia wand', 'enfeebling', 'magic accuracy' },
     Nuke = { 'moldavite', 'novio', 'snow', 'elementium', 'yigit', 'zenith', 'mab' },
     DarkMagic = { 'pluto', 'dark', 'abyssal', 'moldavite', 'novio' },
     Idle = { 'refresh', 'relaxing', 'serket', 'hierarch', 'dalmatica', 'blood cuisses' },
@@ -125,10 +177,48 @@ local intentWords = {
     TP = { 'walahra', 'peacock', 'brutal', 'suppanomimi', 'sniper', 'swift', 'headlong', 'accuracy' },
     Crafting = { 'craft', 'artisan', 'carver', 'carpenter', 'smith', 'goldsmith', 'weaver', 'tanner', 'boneworker', 'alchemist', 'culinarian' },
     Weaponskill = { 'warwolf', 'chivalrous', 'brutal', 'corneus', 'enkidu', 'attack', 'str' },
+    WeaponSkillAccuracy = { 'accuracy', 'peacock', 'sniper', 'torque', 'accura', 'dex' },
+    WSElemental = { 'moldavite', 'novio', 'elementium', 'snow', 'magic', 'mab', 'int', 'mnd' },
     RangedPreshot = { 'snapshot', 'rapid', 'commodore', 'comm.' },
     RangedAccuracy = { 'marksman', 'peacock', 'commodore', 'comm.', 'accura', 'ranged accuracy' },
     RangedAttack = { 'commodore', 'comm.', 'ranged attack', 'attack' },
     Song = { 'song', 'singing', 'horn', 'harp', 'flute', 'lute', 'piccolo', 'ocarina' },
+    SongPrecast = { 'song', 'singing', 'fast cast', 'quick', 'chapeau', 'loquac', 'swith' },
+    SongBuff = { 'song', 'singing', 'horn', 'harp', 'flute', 'lute', 'piccolo', 'ocarina', 'duration' },
+    SongDebuff = { 'song', 'singing', 'horn', 'harp', 'flute', 'lute', 'piccolo', 'ocarina', 'accuracy' },
+    Enmity = { 'enmity', 'sattva', 'harmonia', 'knight', 'gallant', 'valor' },
+    JobAbility = { 'enmity', 'sattva', 'harmonia', 'knight', 'gallant', 'valor' },
+    SIRD = { 'spell interruption', 'aquaveil', 'healer', 'warlock', 'scholar' },
+    Summoning = { 'summoning', 'summoner', 'evoker' },
+    Barrage = { 'barrage', 'hunter', 'scout' },
+    Retaliation = { 'retaliation', 'warrior', 'war.' },
+    Counterstance = { 'counterstance', 'counter', 'melee', 'temple' },
+    CoverActive = { 'cover', 'gallant', 'valor' },
+    Meditate = { 'meditate', 'myochin', 'saotome' },
+    ThirdEye = { 'third eye', 'saotome' },
+    Flourish = { 'flourish', 'dancer', 'etoile' },
+    AncientCircle = { 'ancient circle', 'wyrm', 'drachen' },
+    ArcaneCircle = { 'arcane circle', 'abyss', 'chaos' },
+    HolyCircle = { 'holy circle', 'gallant', 'valor' },
+    WardingCircle = { 'warding circle', 'myochin', 'saotome' },
+    Flee = { 'flee', 'rogue', 'rog.' },
+    Hide = { 'hide', 'rogue', 'rog.' },
+    Camouflage = { 'camouflage', 'hunter', 'scout' },
+    PetMagic = { 'pet:', 'avatar', 'summoner', 'evoker', 'beast', 'puppetry' },
+    PetDamage = { 'pet:', 'beast', 'puppet', 'animator', 'feral' },
+    PetTank = { 'pet:', 'beast', 'puppet', 'animator', 'defense' },
+    Accuracy = { 'accuracy', 'peacock', 'sniper', 'optical', 'torque' },
+    Evasion = { 'evasion', 'dodge', 'nimble', 'scouter', 'empress' },
+    MagicAccuracy = { 'magic accuracy', 'enfeebling', 'elemental torque', 'snow', 'incubus' },
+    MDT = { 'magic defense', 'magic damage', 'merman', 'lamia', 'resistance' },
+    Movement = { 'movement', 'strider', 'herald', 'crimson', 'blood cuisses', 'gaiters' },
+    Refresh = { 'refresh', 'dalmatica', 'vermillion' },
+    Regen = { 'regen', 'cleric', 'orison', 'savant' },
+    Ninjutsu = { 'ninjutsu', 'ninja', 'koga', 'shinobi' },
+    NinjutsuEnfeeble = { 'ninjutsu', 'ninja', 'koga', 'shinobi', 'magic accuracy' },
+    BlueMagic = { 'blue magic', 'magus', 'mirage', 'assim', 'blue' },
+    PhysicalBlueMagic = { 'blue magic', 'magus', 'mirage', 'assim', 'attack', 'accuracy' },
+    Roll = { 'phantom roll', 'roll', 'corsair', 'commodore', 'luzaf' },
     QuickDraw = { 'novio', 'moldavite', 'elementium', 'snow', 'aqua', 'commodore', 'comm.' }
 };
 
@@ -138,6 +228,13 @@ local nonCombatUtilityNamePrefixes = {
     'field ',
     'fisherman',
     'chocobo '
+};
+
+-- Craft may downsync to craft-adjacent field/fishing gear, but Warp items and
+-- chocobo riding gear are never valid synthesis substitutes.
+local craftingUtilityNamePrefixes = {
+    'field ',
+    'fisherman'
 };
 
 local nonCombatUtilityNames = {
@@ -152,31 +249,31 @@ local customAugments = {
 local intentAugmentWeights = {
     FastCast = {
         { match = 'fast cast', weight = 700 },
-        { match = 'quickens spellcasting', weight = 450 },
-        { match = 'haste', weight = 120 },
-        { match = 'mnd', weight = 25 },
-        { match = 'mag atk bns', weight = 20 }
+        { match = 'quickens spellcasting', weight = 450, contains = true },
+        { match = 'quick magic', weight = 450 }
+    },
+    CurePrecast = {
+        { match = 'cure spellcasting time', weight = 700, reductionMagnitude = true },
+        { match = 'fast cast', weight = 700 },
+        { match = 'quickens spellcasting', weight = 450, contains = true },
+        { match = 'quick magic', weight = 450 }
     },
     Cure = {
         { match = 'cure potency', weight = 700 },
         { match = 'healing magic skill', weight = 120 },
         { match = 'mnd', weight = 60 },
-        { match = 'fast cast', weight = 80 },
-        { match = 'quickens spellcasting', weight = 60 }
+        { match = 'fast cast', weight = 80 }
     },
     Healing = {
         { match = 'cure potency', weight = 700 },
         { match = 'healing magic skill', weight = 120 },
         { match = 'mnd', weight = 60 },
-        { match = 'fast cast', weight = 80 },
-        { match = 'quickens spellcasting', weight = 60 }
+        { match = 'fast cast', weight = 80 }
     },
     Enhancing = {
         { match = 'enh mag eff dur', weight = 500 },
         { match = 'enhancing magic skill', weight = 120 },
-        { match = 'enh skill', weight = 120 },
-        { match = 'fast cast', weight = 80 },
-        { match = 'mnd', weight = 25 }
+        { match = 'enh skill', weight = 120 }
     },
     Enfeebling = {
         { match = 'enf dur', weight = 500 },
@@ -184,32 +281,78 @@ local intentAugmentWeights = {
         { match = 'enfbmag skill', weight = 150 },
         { match = 'magic accuracy', weight = 120 },
         { match = 'mag acc', weight = 120 },
+        { match = 'macc', weight = 120 },
         { match = 'mnd', weight = 50 },
-        { match = 'int', weight = 50 },
-        { match = 'fast cast', weight = 30 }
+        { match = 'int', weight = 50 }
+    },
+    Dia = {
+        { match = 'dia dot', weight = 700 },
+        { match = 'magic accuracy', weight = 160 },
+        { match = 'mag acc', weight = 160 },
+        { match = 'macc', weight = 160 },
+        { match = 'enfeebling skill', weight = 100 }
     },
     Nuke = {
         { match = 'mag atk bns', weight = 150 },
+        { match = 'mab', weight = 150 },
         { match = 'magic attack bonus', weight = 150 },
         { match = 'magic damage', weight = 120 },
         { match = 'magic accuracy', weight = 110 },
         { match = 'mag acc', weight = 110 },
+        { match = 'macc', weight = 110 },
+        { match = 'elem magic skill', weight = 75 },
         { match = 'int', weight = 55 },
         { match = 'mnd', weight = 20 }
     },
     DarkMagic = {
         { match = 'dark magic skill', weight = 140 },
         { match = 'mag atk bns', weight = 120 },
+        { match = 'mab', weight = 120 },
         { match = 'magic accuracy', weight = 110 },
         { match = 'mag acc', weight = 110 },
+        { match = 'macc', weight = 110 },
         { match = 'int', weight = 55 }
+    },
+    PetMagic = {
+        { match = 'pet: mag atk bns', weight = 180 },
+        { match = 'pet: magic attack bonus', weight = 180 },
+        { match = 'pet: magic accuracy', weight = 170 },
+        { match = 'pet: mag acc', weight = 170 },
+        { match = 'pet: macc', weight = 170 },
+        { match = 'pet: magatk bns', weight = 180 },
+        { match = 'pet: mab', weight = 180 },
+        { match = 'blood pact damage', weight = 160 },
+        { match = 'summoning magic skill', weight = 80 }
+    },
+    PetDamage = {
+        { match = 'pet: attack', weight = 180 },
+        { match = 'pet: atk', weight = 180 },
+        { match = 'pet: accuracy', weight = 170 },
+        { match = 'pet: acc', weight = 170 },
+        { match = 'pet: double attack', weight = 150 },
+        { match = 'pet: dbl atk', weight = 150 },
+        { match = 'pet: dblatk', weight = 150 },
+        { match = 'pet: haste', weight = 145 },
+        { match = 'pet: tp bonus', weight = 125 },
+        { match = 'pet: crithit rate', weight = 110 },
+        { match = 'pet: critical', weight = 110, contains = true }
+    },
+    PetTank = {
+        { match = 'pet: damage taken', weight = 300, lowerIsBetter = true },
+        { match = 'pet: phys dmg taken', weight = 330, lowerIsBetter = true },
+        { match = 'pet: magic dmg taken', weight = 300, lowerIsBetter = true },
+        { match = 'pet: defense', weight = 120 },
+        { match = 'pet: evasion', weight = 105 },
+        { match = 'pet: magic defense', weight = 110 },
+        { match = 'pet: magdefbns', weight = 110 }
     },
     Idle = {
         { match = 'refresh', weight = 1000 },
         { match = 'regen', weight = 200 },
         { match = 'damage taken', weight = 400, lowerIsBetter = true },
         { match = 'magic dmg taken', weight = 250, lowerIsBetter = true },
-        { match = 'mag def bns', weight = 60 }
+        { match = 'mag def bns', weight = 60 },
+        { match = 'magdefbns', weight = 60 }
     },
     PDT = {
         { match = 'damage taken', weight = 500, lowerIsBetter = true },
@@ -217,14 +360,105 @@ local intentAugmentWeights = {
         { match = 'magic dmg taken', weight = 250, lowerIsBetter = true },
         { match = 'def', weight = 20 },
         { match = 'evasion', weight = 15 },
-        { match = 'mag def bns', weight = 60 }
+        { match = 'mag def bns', weight = 60 },
+        { match = 'magdefbns', weight = 60 }
+    },
+    MDT = {
+        { match = 'magic dmg taken', weight = 600, lowerIsBetter = true },
+        { match = 'magic damage taken', weight = 600, lowerIsBetter = true },
+        { match = 'damage taken', weight = 250, lowerIsBetter = true },
+        { match = 'magic defense', weight = 130 },
+        { match = 'mag def bns', weight = 130 },
+        { match = 'magdefbns', weight = 130 },
+        { match = 'magic evasion', weight = 90 },
+        { match = 'elemental resistance', weight = 75 }
     },
     TP = {
         { match = 'haste', weight = 250 },
         { match = 'accuracy', weight = 90 },
+        { match = 'acc', weight = 90 },
         { match = 'attack', weight = 70 },
+        { match = 'atk', weight = 70 },
         { match = 'store tp', weight = 180 },
-        { match = 'dual wield', weight = 160 }
+        { match = 'dual wield', weight = 160 },
+        { match = 'dblatk', weight = 130 }
+    },
+    Accuracy = {
+        { match = 'accuracy', weight = 220 },
+        { match = 'acc', weight = 220 },
+        { match = 'weapon skill', weight = 90 },
+        { match = 'weapon skill acc', weight = 180 },
+        { match = 'dex', weight = 65 },
+        { match = 'agi', weight = 45 }
+    },
+    Evasion = {
+        { match = 'evasion', weight = 240 },
+        { match = 'agi', weight = 75 },
+        { match = 'dex', weight = 30 },
+        { match = 'counter', weight = 25 }
+    },
+    MagicAccuracy = {
+        { match = 'magic accuracy', weight = 250 },
+        { match = 'mag acc', weight = 250 },
+        { match = 'macc', weight = 250 },
+        { match = 'enfeebling skill', weight = 120 },
+        { match = 'elemental magic skill', weight = 100 },
+        { match = 'int', weight = 55 },
+        { match = 'mnd', weight = 55 }
+    },
+    Movement = {
+        { match = 'movement speed', weight = 1000 },
+        { match = 'move speed', weight = 1000 }
+    },
+    Refresh = {
+        { match = 'refresh', weight = 1000 },
+        { match = 'enh mag eff dur', weight = 300 }
+    },
+    Regen = {
+        { match = 'regen potency', weight = 1000 },
+        { match = 'regen', weight = 1000 },
+        { match = 'regen duration', weight = 500 },
+        { match = 'enh mag eff dur', weight = 300 }
+    },
+    Ninjutsu = {
+        { match = 'ninjutsu skill', weight = 220 },
+        { match = 'magic accuracy', weight = 170 },
+        { match = 'mag acc', weight = 170 },
+        { match = 'macc', weight = 170 },
+        { match = 'mag atk bns', weight = 130 },
+        { match = 'mab', weight = 130 },
+        { match = 'int', weight = 60 }
+    },
+    NinjutsuEnfeeble = {
+        { match = 'ninjutsu skill', weight = 220 },
+        { match = 'magic accuracy', weight = 190 },
+        { match = 'mag acc', weight = 190 },
+        { match = 'macc', weight = 190 },
+        { match = 'int', weight = 65 },
+        { match = 'fast cast', weight = 45 }
+    },
+    BlueMagic = {
+        { match = 'blue magic skill', weight = 240 },
+        { match = 'magic accuracy', weight = 140 },
+        { match = 'mag acc', weight = 140 },
+        { match = 'macc', weight = 140 },
+        { match = 'mag atk bns', weight = 110 },
+        { match = 'mab', weight = 110 },
+        { match = 'str', weight = 35 },
+        { match = 'dex', weight = 35 },
+        { match = 'int', weight = 35 },
+        { match = 'mnd', weight = 35 }
+    },
+    PhysicalBlueMagic = {
+        { match = 'blue magic skill', weight = 220 },
+        { match = 'accuracy', weight = 150 },
+        { match = 'acc', weight = 150 },
+        { match = 'attack', weight = 125 },
+        { match = 'atk', weight = 125 },
+        { match = 'str', weight = 70 },
+        { match = 'dex', weight = 65 },
+        { match = 'vit', weight = 55 },
+        { match = 'agi', weight = 55 }
     },
     Crafting = {
         { match = 'synthesis skill', weight = 500 },
@@ -236,8 +470,40 @@ local intentAugmentWeights = {
         { match = 'dex', weight = 65 },
         { match = 'mnd', weight = 50 },
         { match = 'attack', weight = 80 },
+        { match = 'atk', weight = 80 },
         { match = 'accuracy', weight = 60 },
+        { match = 'acc', weight = 60 },
+        { match = 'weapon skill acc', weight = 100 },
+        { match = 'dblatk', weight = 65 },
         { match = 'weapon skill damage', weight = 250 }
+    },
+    WeaponSkillAccuracy = {
+        { match = 'weapon skill accuracy', weight = 350 },
+        { match = 'weapon skill acc', weight = 350 },
+        { match = 'accuracy', weight = 180 },
+        { match = 'acc', weight = 180 },
+        { match = 'dex', weight = 75 },
+        { match = 'agi', weight = 55 },
+        { match = 'attack', weight = 25 },
+        { match = 'atk', weight = 25 },
+        { match = 'weapon skill damage', weight = 20 }
+    },
+    WSElemental = {
+        { match = 'mag atk bns', weight = 180 },
+        { match = 'mab', weight = 180 },
+        { match = 'magic attack bonus', weight = 180 },
+        { match = 'magic damage', weight = 150 },
+        { match = 'magic accuracy', weight = 125 },
+        { match = 'mag acc', weight = 125 },
+        { match = 'macc', weight = 125 },
+        { match = 'weapon skill damage', weight = 110 },
+        { match = 'tp bonus', weight = 100 },
+        { match = 'int', weight = 60 },
+        { match = 'mnd', weight = 55 },
+        { match = 'chr', weight = 45 },
+        { match = 'str', weight = 35 },
+        { match = 'dex', weight = 35 },
+        { match = 'agi', weight = 35 }
     },
     RangedPreshot = {
         { match = 'snapshot', weight = 400 },
@@ -245,27 +511,144 @@ local intentAugmentWeights = {
     },
     RangedAccuracy = {
         { match = 'ranged accuracy', weight = 120 },
-        { match = 'accuracy', weight = 80 },
+        { match = 'racc', weight = 120 },
+        { match = 'rngacc', weight = 120 },
+        { match = 'rng acc', weight = 120 },
         { match = 'agi', weight = 50 }
     },
     RangedAttack = {
         { match = 'ranged attack', weight = 110 },
-        { match = 'attack', weight = 70 },
+        { match = 'ratt', weight = 110 },
+        { match = 'rngatk', weight = 110 },
+        { match = 'rng atk', weight = 110 },
         { match = 'agi', weight = 45 }
     },
     Song = {
         { match = 'song', weight = 220 },
         { match = 'singing skill', weight = 180 },
         { match = 'wind instrument', weight = 180 },
+        { match = 'wind instrument skill', weight = 180 },
         { match = 'stringed instrument', weight = 180 },
+        { match = 'string instrument skill', weight = 180 },
         { match = 'chr', weight = 45 }
+    },
+    SongPrecast = {
+        { match = 'song spellcasting time', weight = 700, reductionMagnitude = true },
+        { match = 'fast cast', weight = 700 },
+        { match = 'quickens spellcasting', weight = 450, contains = true },
+        { match = 'quick magic', weight = 450 }
+    },
+    SongBuff = {
+        { match = 'all songs', weight = 350 },
+        { match = 'song duration', weight = 300 },
+        { match = 'song', weight = 220 },
+        { match = 'singing skill', weight = 180 },
+        { match = 'wind instrument', weight = 180 },
+        { match = 'wind instrument skill', weight = 180 },
+        { match = 'stringed instrument', weight = 180 },
+        { match = 'string instrument skill', weight = 180 },
+        { match = 'chr', weight = 45 }
+    },
+    SongDebuff = {
+        { match = 'magic accuracy', weight = 260 },
+        { match = 'mag acc', weight = 260 },
+        { match = 'macc', weight = 260 },
+        { match = 'all songs', weight = 300 },
+        { match = 'song', weight = 200 },
+        { match = 'singing skill', weight = 200 },
+        { match = 'wind instrument', weight = 200 },
+        { match = 'wind instrument skill', weight = 200 },
+        { match = 'stringed instrument', weight = 200 },
+        { match = 'string instrument skill', weight = 200 },
+        { match = 'chr', weight = 80 },
+        { match = 'song duration', weight = 100 }
+    },
+    Enmity = {
+        { match = 'enmity', weight = 350 }
+    },
+    JobAbility = {
+        { match = 'enmity', weight = 350 }
+    },
+    SIRD = {
+        { match = 'spell interruption rate down', weight = 700, reductionMagnitude = true },
+        { match = 'spell interruption', weight = 700, reductionMagnitude = true, contains = true },
+        { match = 'fast cast', weight = 100 }
+    },
+    Summoning = {
+        { match = 'summoning magic skill', weight = 300 },
+        { match = 'conserve mp', weight = 80 }
+    },
+    Barrage = {
+        { match = 'barrage count', weight = 700 },
+        { match = 'barrage accuracy', weight = 500 }
+    },
+    Retaliation = {
+        { match = 'retaliation', weight = 700 }
+    },
+    Counterstance = {
+        { match = 'counterstance effect', weight = 700 },
+        { match = 'counter damage', weight = 500 },
+        { match = 'counter', weight = 400 }
+    },
+    CoverActive = {
+        { match = 'cover to mp', weight = 700 },
+        { match = 'cover duration', weight = 600 },
+        { match = 'vit', weight = 55 },
+        { match = 'mnd', weight = 55 }
+    },
+    Meditate = {
+        { match = 'meditate duration', weight = 700 }
+    },
+    ThirdEye = {
+        { match = 'third eye counter rate', weight = 700 }
+    },
+    Flourish = {
+        { match = 'reverse flourish effect', weight = 700 },
+        { match = 'vflourish magic accuracy', weight = 600 },
+        { match = 'magic accuracy', weight = 100 },
+        { match = 'accuracy', weight = 80 },
+        { match = 'dex', weight = 50 }
+    },
+    AncientCircle = {
+        { match = 'ancient circle duration', weight = 700 },
+        { match = 'ancient circle potency', weight = 700 }
+    },
+    ArcaneCircle = {
+        { match = 'arcane circle duration', weight = 700 },
+        { match = 'arcane circle potency', weight = 700 }
+    },
+    HolyCircle = {
+        { match = 'holy circle duration', weight = 700 },
+        { match = 'holy circle potency', weight = 700 }
+    },
+    WardingCircle = {
+        { match = 'warding circle duration', weight = 700 },
+        { match = 'warding circle potency', weight = 700 }
+    },
+    Flee = {
+        { match = 'flee duration', weight = 700 }
+    },
+    Hide = {
+        { match = 'hide duration', weight = 700 }
+    },
+    Camouflage = {
+        { match = 'camouflage duration', weight = 700 }
     },
     QuickDraw = {
         { match = 'mag atk bns', weight = 150 },
+        { match = 'mab', weight = 150 },
         { match = 'magic damage', weight = 120 },
         { match = 'magic accuracy', weight = 110 },
         { match = 'mag acc', weight = 110 },
+        { match = 'macc', weight = 110 },
         { match = 'agi', weight = 50 }
+    },
+    Roll = {
+        { match = 'phantom roll ability delay', weight = 350, lowerIsBetter = true },
+        { match = 'phantom roll', weight = 350 },
+        { match = 'roll duration', weight = 300 },
+        { match = 'roll effect', weight = 300 },
+        { match = 'job ability delay', weight = 80 }
     }
 };
 
@@ -399,6 +782,14 @@ local function defaultAdapter()
                 return AshitaCore:GetInstallPath();
             end
             return '';
+        end,
+        getItemResource = function(itemId)
+            if missing(AshitaCore) or missing(AshitaCore.GetResourceManager) then
+                return;
+            end
+            return safeCall(function()
+                return AshitaCore:GetResourceManager():GetItemById(tonumber(itemId) or 0);
+            end, noValue());
         end
     };
 end
@@ -438,8 +829,26 @@ local function jobMatches(item, job)
     return false;
 end
 
+local function isEquipAccessible(item)
+    local containerId = item.container_id or item.containerId or item.ContainerId;
+    if hasValue(containerId) and tostring(containerId) ~= '' then
+        return equipAccessibleContainerIds[tonumber(containerId)] == true;
+    end
+    local container = item.container or item.Container;
+    if missing(container) or trim(container) == '' then
+        -- Older test fixtures and hand-authored owned tables predate container
+        -- metadata; retain compatibility only when the field is absent.
+        return true;
+    end
+    local normalized = string.gsub(lower(trim(container)), '%s+', '');
+    return equipAccessibleContainerNames[normalized] == true;
+end
+
 local function isLegal(item, slot, player)
     if missing(item) then
+        return false;
+    end
+    if not isEquipAccessible(item) then
         return false;
     end
     local level = tonumber(item.level or item.Level or 0) or 0;
@@ -464,8 +873,17 @@ local function startsWith(value, prefix)
     return string.sub(value, 1, string.len(prefix)) == prefix;
 end
 
-local function allowsNonCombatUtility(intent)
-    return intent == 'Crafting';
+local function allowsNonCombatUtility(intent, item)
+    if intent ~= 'Crafting' then
+        return false;
+    end
+    local itemName = lower(item and (item.name or item.Name));
+    for _, prefix in ipairs(craftingUtilityNamePrefixes) do
+        if startsWith(itemName, prefix) then
+            return true;
+        end
+    end
+    return false;
 end
 
 local function isNonCombatUtilityItem(item)
@@ -486,12 +904,35 @@ local function weaponFamilyFromName(name)
     local mapped = weaponFamiliesByName[text];
     if hasValue(mapped) then
         return mapped;
+    elseif string.find(text, 'animator', 1, true) or string.find(text, 'controller', 1, true) then
+        return 'controller';
     elseif string.find(text, 'grip', 1, true) or string.find(text, 'strap', 1, true) then
         return 'grip';
     elseif string.find(text, 'shield', 1, true) or string.find(text, 'buckler', 1, true) or string.find(text, 'targe', 1, true) then
         return 'shield';
-    elseif string.find(text, 'staff', 1, true) then
+    elseif string.find(text, 'great katana', 1, true) or string.find(text, 'tachi', 1, true) then
+        return 'great_katana';
+    elseif string.find(text, 'great sword', 1, true) then
+        return 'great_sword';
+    elseif string.find(text, 'great axe', 1, true) then
+        return 'great_axe';
+    elseif string.find(text, 'staff', 1, true) or string.find(text, 'pole', 1, true) then
         return 'staff';
+    elseif string.find(text, 'club', 1, true)
+        or string.find(text, 'mace', 1, true)
+        or string.find(text, 'hammer', 1, true)
+        or string.find(text, 'wand', 1, true)
+        or string.find(text, 'rod', 1, true) then
+        return 'club';
+    elseif string.find(text, 'knuckle', 1, true)
+        or string.find(text, 'claw', 1, true)
+        or string.find(text, 'cesti', 1, true)
+        or string.find(text, 'baghnakh', 1, true) then
+        return 'hand_to_hand';
+    elseif string.find(text, 'scythe', 1, true) then
+        return 'scythe';
+    elseif string.find(text, 'lance', 1, true) or string.find(text, 'spear', 1, true) then
+        return 'polearm';
     elseif string.find(text, 'dagger', 1, true) or string.find(text, 'knife', 1, true) or string.find(text, 'kukri', 1, true) then
         return 'dagger';
     elseif string.find(text, 'katana', 1, true) then
@@ -520,10 +961,43 @@ local function weaponFamilyFromName(name)
     return;
 end
 
+local function weaponFamilyFromResource(item)
+    local adapter = state.adapter or defaultAdapter();
+    if missing(adapter.getItemResource) then
+        return;
+    end
+    local resource = safeCall(function()
+        return adapter.getItemResource(item.id or item.Id or 0);
+    end, noValue());
+    if type(resource) ~= 'table' then
+        return;
+    end
+    local family = weaponFamiliesBySkill[tonumber(resource.Skill or resource.skill or 0) or 0];
+    if hasValue(family) then
+        return family;
+    end
+    if (tonumber(resource.ShieldSize or resource.shieldSize or 0) or 0) > 0 then
+        return 'shield';
+    end
+    return;
+end
+
 local function weaponFamilyFromItem(item)
+    local explicit = item.weapon_family or item.weaponFamily or item.WeaponFamily;
+    if hasValue(explicit) and trim(explicit) ~= '' then
+        return lower(trim(explicit));
+    end
     local mapped = weaponFamiliesById[tonumber(item.id or item.Id or 0) or 0];
     if hasValue(mapped) then
         return mapped;
+    end
+    local skillFamily = weaponFamiliesBySkill[tonumber(item.weapon_skill or item.weaponSkill or item.Skill or 0) or 0];
+    if hasValue(skillFamily) then
+        return skillFamily;
+    end
+    local resourceFamily = weaponFamilyFromResource(item);
+    if hasValue(resourceFamily) then
+        return resourceFamily;
     end
     return weaponFamilyFromName(item.name or item.Name);
 end
@@ -532,12 +1006,26 @@ local function isSupportFamily(family)
     return family == 'grip' or family == 'shield';
 end
 
-local function weaponFamilyMatches(slot, desiredName, item)
+local function desiredWeaponFamily(desiredName, owned)
+    if type(owned) == 'table' then
+        for _, ownedItem in ipairs(owned) do
+            if nameMatches(ownedItem, desiredName) then
+                local family = weaponFamilyFromItem(ownedItem);
+                if hasValue(family) then
+                    return family;
+                end
+            end
+        end
+    end
+    return weaponFamilyFromName(desiredName);
+end
+
+local function weaponFamilyMatches(slot, desiredName, item, owned)
     if slot ~= 'Main' and slot ~= 'Sub' and slot ~= 'Range' then
         return true;
     end
 
-    local desiredFamily = weaponFamilyFromName(desiredName);
+    local desiredFamily = desiredWeaponFamily(desiredName, owned);
     if missing(desiredFamily) then
         return true;
     end
@@ -560,11 +1048,19 @@ end
 
 local function inferIntent(setName)
     local name = tostring(setName or '');
+    if string.find(name, 'CurePrecast') then return 'CurePrecast'; end
     if string.find(name, 'FastCast') then return 'FastCast'; end
     if string.find(name, 'Cure') then return 'Cure'; end
     if string.find(name, 'Healing') then return 'Healing'; end
-    if string.find(name, 'Enhancing') or string.find(name, 'Refresh') or string.find(name, 'Stoneskin') then return 'Enhancing'; end
+    if string.find(name, 'Refresh') then return 'Refresh'; end
+    if string.find(name, 'Regen') then return 'Regen'; end
+    if string.find(name, 'Enhancing') or string.find(name, 'Stoneskin') then return 'Enhancing'; end
+    if string.find(name, 'SIRD') then return 'SIRD'; end
+    if string.find(name, 'NinjutsuEnfeeble') then return 'NinjutsuEnfeeble'; end
+    if string.find(name, 'Summoning') then return 'Summoning'; end
     if string.find(name, 'Enfeebling') then return 'Enfeebling'; end
+    if string.find(name, 'Dia') then return 'Dia'; end
+    if string.find(name, 'WSElemental') then return 'WSElemental'; end
     if string.find(name, 'Nuke') or string.find(name, 'Elemental') then return 'Nuke'; end
     if string.find(name, 'Dark') then return 'DarkMagic'; end
     if string.find(name, 'PDT') then return 'PDT'; end
@@ -573,7 +1069,29 @@ local function inferIntent(setName)
     if string.find(name, 'RangedAccuracy') then return 'RangedAccuracy'; end
     if string.find(name, 'RangedAttack') then return 'RangedAttack'; end
     if string.find(name, 'QuickDraw') then return 'QuickDraw'; end
+    if string.find(name, 'WeaponSkillAccuracy') or string.find(name, 'WSAcc') then return 'WeaponSkillAccuracy'; end
     if string.find(name, 'Weaponskill') then return 'Weaponskill'; end
+    if string.find(name, 'SongPrecast') then return 'SongPrecast'; end
+    if string.find(name, 'SongDebuff') then return 'SongDebuff'; end
+    if string.find(name, 'SongBuff') then return 'SongBuff'; end
+    if string.find(name, 'Song') then return 'Song'; end
+    if string.find(name, 'JobAbility') then return 'JobAbility'; end
+    if string.find(name, 'Enmity') then return 'Enmity'; end
+    if string.find(name, 'Barrage') then return 'Barrage'; end
+    if string.find(name, 'Retaliation') then return 'Retaliation'; end
+    if string.find(name, 'Counterstance') then return 'Counterstance'; end
+    if string.find(name, 'CoverActive') then return 'CoverActive'; end
+    if string.find(name, 'Meditate') then return 'Meditate'; end
+    if string.find(name, 'ThirdEye') then return 'ThirdEye'; end
+    if string.find(name, 'Flourish') then return 'Flourish'; end
+    if string.find(name, 'AncientCircle') then return 'AncientCircle'; end
+    if string.find(name, 'ArcaneCircle') then return 'ArcaneCircle'; end
+    if string.find(name, 'HolyCircle') then return 'HolyCircle'; end
+    if string.find(name, 'WardingCircle') then return 'WardingCircle'; end
+    if string.find(name, 'Flee') then return 'Flee'; end
+    if string.find(name, 'Hide') then return 'Hide'; end
+    if string.find(name, 'Camouflage') then return 'Camouflage'; end
+    if string.find(name, 'PhysicalBlueMagic') then return 'PhysicalBlueMagic'; end
     return 'Idle';
 end
 
@@ -646,12 +1164,18 @@ local function isFixedWeapon(slot, item)
 end
 
 local function filterTpResetSlots(setTable, explanations, player, intent)
-    if type(setTable) ~= 'table' or not shouldProtectWeapons(player, intent) then
+    if type(setTable) ~= 'table' then
         return setTable;
     end
+    local protectWeapons = shouldProtectWeapons(player, intent);
     local result = {};
     for slot, item in pairs(setTable) do
-        if isTpResetSlot(slot) and not isFixedWeapon(slot, item) then
+        local itemName = trim(getItemName(item));
+        if itemName == '' then
+            if type(explanations) == 'table' then
+                explanations[slot] = 'blank item request skipped';
+            end
+        elseif protectWeapons and isTpResetSlot(slot) and not isFixedWeapon(slot, item) then
             if type(explanations) == 'table' then
                 explanations[slot] = weaponGuardReason(player);
             end
@@ -696,10 +1220,29 @@ local function getClock()
     return os.clock();
 end
 
+local function selectorValueText(value)
+    if type(value) ~= 'table' then
+        return tostring(value);
+    end
+    local parts = {};
+    for _, entry in ipairs(value) do
+        table.insert(parts, tostring(entry));
+    end
+    return table.concat(parts, ',');
+end
+
 local function getSetItemName(item)
     local name = getItemName(item);
     if hasValue(name) then
-        return tostring(name);
+        local parts = { tostring(name) };
+        if type(item) == 'table' then
+            for _, key in ipairs({ 'Augment', 'AugPath', 'AugRank', 'AugTrial' }) do
+                if hasValue(item[key]) and tostring(item[key]) ~= '' then
+                    table.insert(parts, key .. '=' .. selectorValueText(item[key]));
+                end
+            end
+        end
+        return table.concat(parts, '|');
     end
     return tostring(item);
 end
@@ -883,6 +1426,87 @@ local function getAugmentValues(item)
     return output;
 end
 
+local function augmentIdentity(item)
+    local augments = item.augments or item.Augments or {};
+    local text = trim(item.augment_text or item.augmentText or augments.text or augments.Text or '');
+    local path = trim(item.augment_path or item.augmentPath or augments.path or augments.Path or '');
+    local rank = item.augment_rank or item.augmentRank or augments.rank or augments.Rank;
+    local trial = item.augment_trial or item.augmentTrial or augments.trial or augments.Trial;
+    return table.concat({ text, path, tostring(rank or ''), tostring(trial or '') }, '|');
+end
+
+local function hasCustomAugmentDecoder(item)
+    for _, augment in ipairs(getAugmentValues(item)) do
+        local id = tonumber(augment.id or augment.Id);
+        if hasValue(id) and hasValue(customAugments[id]) then
+            return true;
+        end
+    end
+    return false;
+end
+
+local function positiveAugmentStrength(item)
+    local strength = 0;
+    for _, augment in ipairs(getAugmentValues(item)) do
+        local value = tonumber(augment.computedValue or augment.value or augment.Value or 0) or 0;
+        if value > 0 then
+            strength = strength + value;
+        end
+    end
+    return strength;
+end
+
+local function augmentSelectorValue(text)
+    local values = {};
+    for part in string.gmatch(text or '', '[^|]+') do
+        local value = trim(part);
+        if value ~= '' then
+            table.insert(values, value);
+        end
+    end
+    if #values <= 1 then
+        return values[1] or '';
+    end
+    return values;
+end
+
+local function exactSelectorForAmbiguousItem(item, owned)
+    local name = item.name or item.Name;
+    local selectedIdentity = augmentIdentity(item);
+    if missing(name) or selectedIdentity == '|||' then
+        return name, '';
+    end
+
+    local hasSameName = false;
+    local hasDifferentIdentity = false;
+    for _, candidate in ipairs(owned or {}) do
+        if candidate ~= item and lower(candidate.name or candidate.Name) == lower(name) then
+            hasSameName = true;
+            if augmentIdentity(candidate) ~= selectedIdentity then
+                hasDifferentIdentity = true;
+            end
+        end
+    end
+    if not hasSameName or not hasDifferentIdentity then
+        return name, '';
+    end
+    if hasCustomAugmentDecoder(item) then
+        return name, 'ambiguous custom augment left name-only; LuAshitacast decoder parity unavailable';
+    end
+
+    local augments = item.augments or item.Augments or {};
+    local selector = { Name = name };
+    local text = trim(item.augment_text or item.augmentText or augments.text or augments.Text or '');
+    local path = trim(item.augment_path or item.augmentPath or augments.path or augments.Path or '');
+    local rank = item.augment_rank or item.augmentRank or augments.rank or augments.Rank;
+    local trial = item.augment_trial or item.augmentTrial or augments.trial or augments.Trial;
+    if text ~= '' then selector.Augment = augmentSelectorValue(text); end
+    if path ~= '' then selector.AugPath = path; end
+    if hasValue(rank) then selector.AugRank = rank; end
+    if hasValue(trial) then selector.AugTrial = trial; end
+    return selector, 'exact ambiguous augment selector';
+end
+
 local function scoreAugments(item, intent)
     local score = 0;
     local reasons = {};
@@ -892,9 +1516,16 @@ local function scoreAugments(item, intent)
         local text = augment.text or formatAugmentText(augment.stat, augment.computedValue, augment.percent == true);
         local value = tonumber(augment.computedValue or augment.value or augment.Value or 0) or 0;
         for _, rule in ipairs(rules) do
-            if string.find(stat, rule.match, 1, true) then
+            local normalizedMatch = normalizeStat(rule.match);
+            local matches = stat == normalizedMatch;
+            if rule.contains == true then
+                matches = string.find(stat, normalizedMatch, 1, true) ~= nil;
+            end
+            if matches then
                 local magnitude = value;
-                if rule.lowerIsBetter == true then
+                if rule.reductionMagnitude == true then
+                    magnitude = math.abs(magnitude);
+                elseif rule.lowerIsBetter == true then
                     magnitude = -magnitude;
                 end
                 local contribution = magnitude * rule.weight;
@@ -1043,21 +1674,32 @@ local function loadOwnedGear()
     return state.owned, state.ownedAvailable == true;
 end
 
-local function findBest(slot, desiredName, intent, player)
+local function findBest(slot, desiredName, intent, player, usedOwnedRows)
     local owned = loadOwnedGear();
     local best;
     local bestScore = -1;
     local bestReasons = {};
     local bestIsProfile = false;
+    local bestProfile;
+    local bestProfileScore = -1;
+    local bestProfileStrength = -1;
+    local bestProfileReasons = {};
     for _, item in ipairs(owned) do
-        if isLegal(item, slot, player)
-            and weaponFamilyMatches(slot, desiredName, item)
-            and (allowsNonCombatUtility(intent) or not isNonCombatUtilityItem(item)) then
+        if (type(usedOwnedRows) ~= 'table' or usedOwnedRows[item] ~= true)
+            and isLegal(item, slot, player)
+            and weaponFamilyMatches(slot, desiredName, item, owned)
+            and (allowsNonCombatUtility(intent, item) or not isNonCombatUtilityItem(item)) then
             local isProfile = hasValue(desiredName) and nameMatches(item, desiredName);
-            if state.preferProfileItems == true and isProfile then
-                return item, 'profile item selected; preferProfileItems=true';
-            end
             local score, reasons = scoreItem(item, intent, desiredName, player);
+            if state.preferProfileItems == true and isProfile then
+                local strength = positiveAugmentStrength(item);
+                if score > bestProfileScore or (score == bestProfileScore and strength > bestProfileStrength) then
+                    bestProfile = item;
+                    bestProfileScore = score;
+                    bestProfileStrength = strength;
+                    bestProfileReasons = reasons;
+                end
+            end
             if score > bestScore or (score == bestScore and isProfile and not bestIsProfile) then
                 best = item;
                 bestScore = score;
@@ -1065,6 +1707,9 @@ local function findBest(slot, desiredName, intent, player)
                 bestIsProfile = isProfile;
             end
         end
+    end
+    if hasValue(bestProfile) then
+        return bestProfile, string.format('profile item selected; preferProfileItems=true; score=%u (%s)', bestProfileScore, joinReasons(bestProfileReasons));
     end
     if hasValue(best) then
         local prefix = bestIsProfile and 'profile item selected' or ('selected best owned legal ' .. intent .. ' item');
@@ -1132,13 +1777,14 @@ end
 function scale.ResolveSet(setName, setTable, intent, player)
     local result = {};
     local explanations = {};
+    local usedOwnedRows = {};
     if type(setTable) ~= 'table' then
         state.lastExplain[setName or 'unknown'] = explanations;
         return result;
     end
     player = player or (state.adapter or defaultAdapter()).getPlayer();
     intent = intent or state.intents[setName] or inferIntent(setName);
-    local _, ownedAvailable = loadOwnedGear();
+    local owned, ownedAvailable = loadOwnedGear();
     if not ownedAvailable then
         explanations.Source = 'owned gear export unavailable; using original profile set';
         local filtered = filterTpResetSlots(setTable, explanations, player, intent);
@@ -1148,14 +1794,24 @@ function scale.ResolveSet(setName, setTable, intent, player)
     for _, slot in ipairs(slotOrder) do
         local desired = setTable[slot];
         if hasValue(desired) then
-            if isTpResetSlot(slot) and shouldProtectWeapons(player, intent) and not isFixedWeapon(slot, desired) then
+            local desiredName = trim(getItemName(desired));
+            if desiredName == '' then
+                explanations[slot] = 'blank item request skipped';
+            elseif isTpResetSlot(slot) and shouldProtectWeapons(player, intent) and not isFixedWeapon(slot, desired) then
                 explanations[slot] = weaponGuardReason(player);
+            elseif lower(desiredName) == 'remove' then
+                result[slot] = 'remove';
+                explanations[slot] = 'explicit remove preserved';
             else
-                local desiredName = getItemName(desired);
-                local item, reason = findBest(slot, desiredName, intent, player);
+                local item, reason = findBest(slot, desiredName, intent, player, usedOwnedRows);
                 if hasValue(item) then
-                    result[slot] = item.name or item.Name;
-                    explanations[slot] = string.format('%s -> %s: %s', tostring(desiredName), tostring(result[slot]), reason);
+                    -- Every export row represents one physical copy. Table
+                    -- identity keeps paired slots from contending for that
+                    -- copy while still allowing two distinct duplicate rows.
+                    usedOwnedRows[item] = true;
+                    local selector, selectorReason = exactSelectorForAmbiguousItem(item, owned);
+                    result[slot] = selector;
+                    explanations[slot] = string.format('%s -> %s: %s%s', tostring(desiredName), getSetItemName(result[slot]), reason, selectorReason ~= '' and ('; ' .. selectorReason) or '');
                 else
                     explanations[slot] = string.format('%s left unchanged: %s', tostring(desiredName), reason);
                 end

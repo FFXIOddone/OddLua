@@ -1,25 +1,50 @@
 local profile = {};
+profile.OddLuaBuildToken = 'E935F3724705DF4F9E6C3842C111FB84CE1D290927B62B9D71854F1A758F3BE7';
+
 
 local state = {
     Playstyle = 'Damage',
+    IdleOverrideSet = nil,
+    IdleMaxMPThreshold = 0,
+    IdleMaxMPAdd = 0,
+    IdleMaxHPThreshold = 0,
+    IdleMaxHPAdd = 0,
+    EmergencyHpActive = false,
+    IdleMaxMPActive = false,
+    IdleMaxHPActive = false,
     NumberRowPaletteEnabled = true,
     WarpRingLocked = false,
+    PetActionPin = nil,
+    LastEquippedSetName = nil,
+    ActiveConditionalOverlaySlots = {},
     SecondarySlotLocks = {},
     SecondarySlotLockContextSetNames = nil,
     MechanicsProbes = false,
     MechanicsExecution = false,
+    HpToMpBridgeInFlight = false,
     ReconcileEnabled = true,
+    BuffItemOverlaysEnabled = true,
     ReconcileSnapshotSeq = 0,
+    ReconcileCycleSeq = 0,
     ReconcilePendingSnapshot = nil,
     ReconcileScanScheduled = false,
     ReconcileScanToken = 0,
     ReconcileLastRecordedSignature = nil,
     ReconcileLast = nil,
+    ReconcileCompositionActive = false,
+    ReconcileCompositionPending = nil,
     ReconcileLogDirectoryReady = false,
     ReconcileLastWriteError = nil,
     StableEquipForcePending = false,
     OddLuaRefreshPending = false,
     OddLuaRefreshLastStatus = 'none',
+    MagicBurstMode = false,
+
+
+
+
+    ExplicitGearMode = 'off',
+    ExplicitGearModeDefaultRouting = false,
 
 };
 
@@ -29,11 +54,14 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
         Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
@@ -43,26 +71,24 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Pearl Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
 
     Playstyle_Waltz = {
-        Head = 'Empress Hairpin',
-        Neck = 'Bird Whistle',
-        Ear1 = 'Mythril Earring',
-        Ear2 = 'Mythril Earring',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Flower Necklace',
         Ring1 = 'Pearl Ring',
         Ring2 = 'Pearl Ring',
-        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
-        Feet = 'Mountain Gaiters',
     },
 
     Playstyle_Evasion = {
@@ -87,11 +113,14 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
         Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
@@ -101,26 +130,24 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Pearl Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
 
     Waltz = {
-        Head = 'Empress Hairpin',
-        Neck = 'Bird Whistle',
-        Ear1 = 'Mythril Earring',
-        Ear2 = 'Mythril Earring',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Flower Necklace',
         Ring1 = 'Pearl Ring',
         Ring2 = 'Pearl Ring',
-        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
-        Feet = 'Mountain Gaiters',
     },
 
     Evasion = {
@@ -141,33 +168,77 @@ local sets = {
     },
 
     Idle = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Silver Hairpin',
+        Neck = 'Stone Gorget',
+        Ear1 = 'Mythril Earring',
+        Ear2 = 'Black Earring',
+        Body = 'Cotton Doublet',
+        Hands = 'Guerilla Gloves',
+        Ring1 = 'Pearl Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    IdleCity = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Silver Hairpin',
+        Body = 'Kupo Suit',
+        Hands = 'Guerilla Gloves',
+        Legs = 'remove',
+    },
+
+    IdleCombat = {
+        Head = 'Cuir Bandana',
         Neck = 'Bird Whistle',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
+        Ring1 = 'Leather Ring',
+        Back = 'Ram Mantle',
         Waist = 'Leather Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Mountain Gaiters',
+    },
+
+    IdleMaxMP = {
+        Head = 'Silver Hairpin',
+        Ear1 = 'Black Earring',
+        Body = 'Cotton Doublet',
+        Hands = 'Guerilla Gloves',
+        Ring1 = 'Tamas Ring',
+        Legs = 'Linen Slops',
+    },
+
+    IdleMaxHP = {
+        Head = 'Cuir Bandana',
+        Neck = 'Bird Whistle',
+        Body = 'Cotton Doublet',
+        Hands = 'Guerilla Gloves',
+        Ring1 = 'Leather Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Mountain Gaiters',
+    },
+
+    IdleNonCombat = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Silver Hairpin',
+        Body = 'Cotton Doublet',
+        Hands = 'Guerilla Gloves',
         Legs = 'Linen Slops',
     },
 
     Resting = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Neck = 'Bird Whistle',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
         Back = 'Ram Mantle',
-        Waist = 'Leather Belt',
-        Legs = 'Linen Slops',
     },
 
     InCity = {
         Body = 'Kupo Suit',
+        Legs = 'remove',
     },
 
     Movement = {
@@ -247,27 +318,45 @@ local sets = {
     },
 
     Aftercast = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Silver Hairpin',
-        Neck = 'Bird Whistle',
+        Neck = 'Stone Gorget',
+        Ear1 = 'Mythril Earring',
+        Ear2 = 'Black Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
+        Ring1 = 'Pearl Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Ram Mantle',
         Waist = 'Leather Belt',
         Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Dt = {
+        Head = 'Cuir Bandana',
+        Neck = 'Bird Whistle',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Mythril Earring',
+        Body = 'Cotton Doublet',
+        Hands = 'Guerilla Gloves',
+        Ring1 = 'Leather Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Mountain Gaiters',
     },
 
     PDT = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Head = 'Cuir Bandana',
-        Neck = 'Stone Gorget',
-        Ear1 = 'Mythril Earring',
+        Neck = 'Bird Whistle',
+        Ear1 = 'Black Earring',
         Ear2 = 'Mythril Earring',
         Body = 'Cotton Doublet',
-        Hands = 'Cuir Gloves',
+        Hands = 'Guerilla Gloves',
         Ring1 = 'Leather Ring',
+        Ring2 = 'Pearl Ring',
         Back = 'Ram Mantle',
         Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
@@ -275,18 +364,71 @@ local sets = {
     },
 
     MDT = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Head = 'Noble\'s Ribbon',
         Neck = 'Chain Choker',
         Ear1 = 'Black Earring',
         Ear2 = 'Sardonyx Earring',
         Body = 'Benedight Coat',
+        Hands = 'remove',
         Ring1 = 'Pearl Ring',
         Ring2 = 'Pearl Ring',
-        Back = 'Invisible Mantle',
+        Back = 'Ram Mantle',
         Waist = 'Leather Belt',
         Legs = 'Benedight Hose',
+        Feet = 'remove',
+    },
+
+    FireRes = {
+        Head = 'Noble\'s Ribbon',
+        Ear1 = 'Sardonyx Earring',
+        Ring1 = 'Garnet Ring',
+    },
+
+    IceRes = {
+        Head = 'Noble\'s Ribbon',
+        Ear1 = 'Sardonyx Earring',
+        Ring1 = 'Clear Ring',
+    },
+
+    WindRes = {
+        Head = 'Bastokan Circlet',
+        Body = 'Carpenter\'s Apron',
+    },
+
+    EarthRes = {
+        Head = 'Bastokan Circlet',
+        Body = 'Carpenter\'s Apron',
+        Hands = 'Carpenter\'s Gloves',
+    },
+
+    ThunderRes = {
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Chain Choker',
+    },
+
+    LightningRes = {
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Chain Choker',
+    },
+
+    WaterRes = {
+        Head = 'Noble\'s Ribbon',
+        Neck = 'Chain Choker',
+    },
+
+    LightRes = {
+        Head = 'Noble\'s Ribbon',
+        Body = 'Benedight Coat',
+        Hands = 'remove',
+        Ring1 = 'Pearl Ring',
+        Ring2 = 'Pearl Ring',
+        Legs = 'Benedight Hose',
+        Feet = 'remove',
+    },
+
+    DarkRes = {
+        Head = 'Noble\'s Ribbon',
+        Ear1 = 'Black Earring',
     },
 
     Crafting = {
@@ -313,25 +455,29 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
         Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
 
     Hybrid = {
-        Main = 'Poison Knife',
+        Main = 'Kukri',
         Sub = 'Kukri',
-        Head = 'Cuir Bandana',
-        Neck = 'Stone Gorget',
-        Ear1 = 'Mythril Earring',
-        Ear2 = 'Mythril Earring',
+        Head = 'Empress Hairpin',
+        Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
-        Hands = 'Cuir Gloves',
-        Ring1 = 'Leather Ring',
+        Hands = 'Guerilla Gloves',
+        Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
         Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
@@ -343,43 +489,75 @@ local sets = {
         Sub = 'Kukri',
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Pearl Ring',
         Back = 'Ram Mantle',
+        Waist = 'Leather Belt',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
 
-    Precast = {
+    CombatSkillup = {
+        Head = 'Sprout Beret',
+    },
+
+    MagicSkillup = {
+        Head = 'Sprout Beret',
+    },
+
+    Proc = {
         Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+    },
+
+    Precast = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     FastCast = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SIRD = {
+        Feet = 'Mountain Gaiters',
     },
 
     Midcast = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -387,153 +565,195 @@ local sets = {
     },
 
     Cure = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
     },
 
     Healing = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
     },
 
     Enhancing = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     EnhancingDuration = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
-    Stoneskin = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
+    Spikes = {
         Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Ring2 = 'Clear Ring',
+        Feet = 'Mountain Gaiters',
     },
 
     Refresh = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Neck = 'Bird Whistle',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Waist = 'Leather Belt',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Regen = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     SneakInvisible = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Barspell = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Head = 'Noble\'s Ribbon',
-        Neck = 'Chain Choker',
-        Ear1 = 'Black Earring',
-        Ear2 = 'Sardonyx Earring',
-        Body = 'Benedight Coat',
-        Ring1 = 'Pearl Ring',
-        Ring2 = 'Pearl Ring',
-        Back = 'Invisible Mantle',
-        Waist = 'Leather Belt',
-        Legs = 'Benedight Hose',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Phalanx = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Head = 'Noble\'s Ribbon',
-        Neck = 'Chain Choker',
-        Ear1 = 'Black Earring',
-        Ear2 = 'Sardonyx Earring',
-        Body = 'Benedight Coat',
-        Ring1 = 'Pearl Ring',
-        Ring2 = 'Pearl Ring',
-        Back = 'Invisible Mantle',
-        Waist = 'Leather Belt',
-        Legs = 'Benedight Hose',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Aquaveil = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Haste = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
     },
 
     Enfeebling = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -541,12 +761,8 @@ local sets = {
     },
 
     Sleep = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -554,12 +770,44 @@ local sets = {
     },
 
     Bind = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Burn = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Choke = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Drown = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Frost = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -567,12 +815,8 @@ local sets = {
     },
 
     Gravity = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -580,38 +824,41 @@ local sets = {
     },
 
     Silence = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
-        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
-        Feet = 'Mountain Gaiters',
     },
 
     Slow = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
+        Ring1 = 'Tamas Ring',
+        Legs = 'Linen Slops',
+    },
+
+    Paralyze = {
+        Ring1 = 'Tamas Ring',
+        Legs = 'Linen Slops',
+    },
+
+    Poison = {
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
-    Paralyze = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
+    Rasp = {
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Shock = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -619,12 +866,8 @@ local sets = {
     },
 
     Blind = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -632,12 +875,8 @@ local sets = {
     },
 
     Dispel = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -645,52 +884,26 @@ local sets = {
     },
 
     Dia = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
-        Feet = 'Mountain Gaiters',
     },
 
     Bio = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Tamas Ring',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
     Divine = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
-        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
-        Feet = 'Mountain Gaiters',
     },
 
     Elemental = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -698,12 +911,8 @@ local sets = {
     },
 
     Nuke = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -711,54 +920,26 @@ local sets = {
     },
 
     DarkMagic = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Tamas Ring',
-        Legs = 'Linen Slops',
-        Feet = 'Mountain Gaiters',
-    },
-
-    DrainAspir = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Sinister Mask',
-        Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Tamas Ring',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
     Absorb = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Tamas Ring',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
     Stun = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
-        Head = 'Baron\'s Chapeau',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -766,8 +947,6 @@ local sets = {
     },
 
     Ninjutsu = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Empress Hairpin',
         Ear1 = 'Mythril Earring',
@@ -779,23 +958,15 @@ local sets = {
     },
 
     Utsusemi = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
-        Head = 'Silver Hairpin',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Tamas Ring',
-        Legs = 'Linen Slops',
-    },
-
-    NinjutsuEnfeeble = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
-        Ammo = 'Morion Tathlum',
         Head = 'Empress Hairpin',
         Ear1 = 'Mythril Earring',
         Ear2 = 'Mythril Earring',
+        Feet = 'Mountain Gaiters',
+    },
+
+    NinjutsuEnfeeble = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -807,8 +978,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Beetle Harness',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Tamas Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -819,7 +990,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Beetle Harness',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
+        Ring1 = 'Archer\'s Ring',
         Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
@@ -827,73 +998,48 @@ local sets = {
     },
 
     WSElemental = {
-        Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
+        Head = 'Empress Hairpin',
+        Neck = 'Flower Necklace',
+        Body = 'Beetle Harness',
         Ring1 = 'Tamas Ring',
-        Ring2 = 'Clear Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Ram Mantle',
         Legs = 'Linen Slops',
-        Feet = 'Mountain Gaiters',
+        Feet = 'Leaping Boots',
     },
 
     JobAbility = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Head = 'Baron\'s Chapeau',
-        Neck = 'Bird Whistle',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Leather Ring',
-        Back = 'Ram Mantle',
-        Waist = 'Leather Belt',
-        Legs = 'Republic Subligar',
-        Feet = 'Mountain Gaiters',
     },
 
     Enmity = {
         Main = 'Kukri',
         Sub = 'Kukri',
         Head = 'Baron\'s Chapeau',
-        Neck = 'Bird Whistle',
-        Body = 'Cotton Doublet',
+    },
+
+    Flourish = {
+        Head = 'Empress Hairpin',
+        Neck = 'Focus Collar',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Leather Ring',
+        Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
-        Waist = 'Leather Belt',
-        Legs = 'Republic Subligar',
-        Feet = 'Mountain Gaiters',
+        Legs = 'Linen Slops',
+        Feet = 'Leaping Boots',
     },
 
     Steps = {
         Head = 'Empress Hairpin',
         Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
-        Legs = 'Republic Subligar',
-        Feet = 'Leaping Boots',
-    },
-
-    Samba = {
-        Head = 'Empress Hairpin',
-        Neck = 'Focus Collar',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
-        Ring1 = 'Archer\'s Ring',
-        Ring2 = 'Garnet Ring',
-        Back = 'Ram Mantle',
-        Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
     },
 
     Elemental_Fire = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -901,12 +1047,8 @@ local sets = {
     },
 
     Weather_Fire = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -914,12 +1056,8 @@ local sets = {
     },
 
     Day_Fire = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -927,12 +1065,8 @@ local sets = {
     },
 
     Elemental_Ice = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -940,12 +1074,8 @@ local sets = {
     },
 
     Weather_Ice = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -953,12 +1083,8 @@ local sets = {
     },
 
     Day_Ice = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -966,12 +1092,8 @@ local sets = {
     },
 
     Elemental_Wind = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -979,12 +1101,8 @@ local sets = {
     },
 
     Weather_Wind = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -992,12 +1110,8 @@ local sets = {
     },
 
     Day_Wind = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1005,12 +1119,8 @@ local sets = {
     },
 
     Elemental_Earth = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1018,12 +1128,8 @@ local sets = {
     },
 
     Weather_Earth = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1031,12 +1137,8 @@ local sets = {
     },
 
     Day_Earth = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1044,12 +1146,8 @@ local sets = {
     },
 
     Elemental_Thunder = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1057,12 +1155,8 @@ local sets = {
     },
 
     Weather_Thunder = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1070,12 +1164,8 @@ local sets = {
     },
 
     Day_Thunder = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1083,12 +1173,8 @@ local sets = {
     },
 
     Elemental_Lightning = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1096,12 +1182,8 @@ local sets = {
     },
 
     Weather_Lightning = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1109,12 +1191,8 @@ local sets = {
     },
 
     Day_Lightning = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1122,12 +1200,8 @@ local sets = {
     },
 
     Elemental_Water = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1135,12 +1209,8 @@ local sets = {
     },
 
     Weather_Water = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1148,12 +1218,8 @@ local sets = {
     },
 
     Day_Water = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1161,12 +1227,8 @@ local sets = {
     },
 
     Elemental_Light = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1174,12 +1236,8 @@ local sets = {
     },
 
     Weather_Light = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1187,12 +1245,8 @@ local sets = {
     },
 
     Day_Light = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1200,12 +1254,8 @@ local sets = {
     },
 
     Elemental_Dark = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1213,12 +1263,8 @@ local sets = {
     },
 
     Weather_Dark = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
@@ -1226,26 +1272,52 @@ local sets = {
     },
 
     Day_Dark = {
-        Main = 'Poison Knife',
-        Sub = 'Kukri',
         Ammo = 'Morion Tathlum',
         Head = 'Sinister Mask',
-        Body = 'Cotton Doublet',
-        Hands = 'Guerilla Gloves',
         Ring1 = 'Tamas Ring',
         Ring2 = 'Clear Ring',
         Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
-    ThirdEye = {
-        Head = 'Empress Hairpin',
-        Neck = 'Bird Whistle',
-        Ear1 = 'Mythril Earring',
-        Ear2 = 'Mythril Earring',
+    DualWield = {
+        Main = 'Kukri',
+        Sub = 'Kukri',
+        Head = 'Sinister Mask',
+        Neck = 'Focus Collar',
+        Ear1 = 'Black Earring',
+        Ear2 = 'Sardonyx Earring',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
+        Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Pearl Ring',
+        Back = 'Ram Mantle',
         Waist = 'Leather Belt',
+        Legs = 'Republic Subligar',
+        Feet = 'Mountain Gaiters',
+    },
+
+    Cursna = {
+        Ring1 = 'Tamas Ring',
+        Feet = 'Mountain Gaiters',
+    },
+
+    StatusRemoval = {
+        Ring1 = 'Tamas Ring',
+        Feet = 'Mountain Gaiters',
+    },
+
+    DivineDamage = {
+        Ring1 = 'Tamas Ring',
+        Legs = 'Linen Slops',
+    },
+
+    DrainAspir = {
+        Ammo = 'Morion Tathlum',
+        Head = 'Sinister Mask',
+        Ring1 = 'Tamas Ring',
+        Ring2 = 'Clear Ring',
+        Legs = 'Linen Slops',
         Feet = 'Mountain Gaiters',
     },
 
@@ -1254,8 +1326,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1266,8 +1338,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
+        Ring2 = 'Garnet Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1277,8 +1349,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Legs = 'Republic Subligar',
     },
 
@@ -1286,8 +1357,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Legs = 'Republic Subligar',
     },
 
@@ -1296,8 +1366,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1308,8 +1378,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1320,8 +1390,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1332,8 +1401,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1364,7 +1432,7 @@ local sets = {
         Neck = 'Flower Necklace',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
+        Ring1 = 'Pearl Ring',
         Ring2 = 'Pearl Ring',
         Legs = 'Republic Subligar',
     },
@@ -1374,7 +1442,7 @@ local sets = {
         Neck = 'Flower Necklace',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
+        Ring1 = 'Pearl Ring',
         Ring2 = 'Pearl Ring',
         Legs = 'Republic Subligar',
     },
@@ -1384,8 +1452,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1396,8 +1463,7 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Archer\'s Ring',
+        Ring1 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1408,8 +1474,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1420,8 +1486,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Back = 'Ram Mantle',
         Legs = 'Republic Subligar',
         Feet = 'Leaping Boots',
@@ -1450,8 +1516,8 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Legs = 'Republic Subligar',
         Feet = 'Mountain Gaiters',
     },
@@ -1461,13 +1527,14 @@ local sets = {
         Neck = 'Focus Collar',
         Body = 'Cotton Doublet',
         Hands = 'Guerilla Gloves',
-        Ring1 = 'Venture Ring',
-        Ring2 = 'Garnet Ring',
+        Ring1 = 'Garnet Ring',
+        Ring2 = 'Archer\'s Ring',
         Legs = 'Republic Subligar',
         Feet = 'Mountain Gaiters',
     },
 
     WS_Shining_Blade = {
+        Head = 'Wool Hat',
         Ring1 = 'Garnet Ring',
         Ring2 = 'Tamas Ring',
         Legs = 'Linen Slops',
@@ -1475,6 +1542,7 @@ local sets = {
     },
 
     WSAcc_Shining_Blade = {
+        Head = 'Wool Hat',
         Neck = 'Focus Collar',
         Hands = 'Guerilla Gloves',
         Ring1 = 'Garnet Ring',
@@ -1541,6 +1609,25 @@ local sets = {
     },
 
     Song = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
+    SongPrecast = {
         Main = 'remove',
         Sub = 'remove',
         Range = 'remove',
@@ -1825,6 +1912,25 @@ local sets = {
         Feet = 'remove',
     },
 
+    Samba = {
+        Main = 'remove',
+        Sub = 'remove',
+        Range = 'remove',
+        Ammo = 'remove',
+        Head = 'remove',
+        Neck = 'remove',
+        Ear1 = 'remove',
+        Ear2 = 'remove',
+        Body = 'remove',
+        Hands = 'remove',
+        Ring1 = 'remove',
+        Ring2 = 'remove',
+        Back = 'remove',
+        Waist = 'remove',
+        Legs = 'remove',
+        Feet = 'remove',
+    },
+
     Jump = {
         Main = 'remove',
         Sub = 'remove',
@@ -1922,12 +2028,15 @@ local sets = {
 };
 
 profile.Sets = sets;
+local movementPenaltyItems = {
+
+};
 profile.Packer = {};
 profile.GetThreatEntities = nil;
 
 local subjobs = {
     NIN = {
-        level = 37,
+        level = 19,
         capabilities = {
             'dual_wield',
             'shadows',
@@ -1942,11 +2051,6 @@ local subjobs = {
             { name = 'dual wield', level = 10, rank = 1, mod = 'DUAL_WIELD', value = 10 },
             { name = 'resist bind', level = 10, rank = 1, mod = 'BINDRES', value = 10 },
             { name = 'subtle blow', level = 15, rank = 1, mod = 'SUBTLE_BLOW', value = 5 },
-            { name = 'max hp boost', level = 20, rank = 1, mod = 'BASE_HP', value = 30 },
-            { name = 'dual wield', level = 25, rank = 2, mod = 'DUAL_WIELD', value = 15 },
-            { name = 'daken', level = 25, rank = 1, mod = 'DAKEN', value = 20 },
-            { name = 'resist bind', level = 30, rank = 2, mod = 'BINDRES', value = 15 },
-            { name = 'subtle blow', level = 30, rank = 2, mod = 'SUBTLE_BLOW', value = 10 },
         },
         spells = {
             { name = 'tonko_ichi', level = 9, mp = 1194, cast = 1500, recast = 30000 },
@@ -1958,18 +2062,14 @@ local subjobs = {
             { name = 'raiton_ichi', level = 15, mp = 1173, cast = 4000, recast = 30000 },
             { name = 'suiton_ichi', level = 15, mp = 1176, cast = 4000, recast = 30000 },
             { name = 'kurayami_ichi', level = 19, mp = 1188, cast = 4000, recast = 30000 },
-            { name = 'hojo_ichi', level = 23, mp = 1185, cast = 4000, recast = 30000 },
-            { name = 'monomi_ichi', level = 25, mp = 2553, cast = 1500, recast = 30000 },
-            { name = 'dokumori_ichi', level = 27, mp = 1191, cast = 4000, recast = 30000 },
-            { name = 'jubaku_ichi', level = 30, mp = 1182, cast = 4000, recast = 30000 },
-            { name = 'tonko_ni', level = 34, mp = 1194, cast = 1500, recast = 45000 },
-            { name = 'utsusemi_ni', level = 37, mp = 1179, cast = 1500, recast = 45000 },
         },
     },
     WAR = {
-        level = 37,
+        level = 19,
         capabilities = {
             'provoke',
+            'berserk',
+            'aggressor',
             'attack_boost',
             'defense_boost',
             'melee_burst',
@@ -1977,50 +2077,36 @@ local subjobs = {
         abilities = {
             { name = 'provoke', level = 5, recast = 30, recastId = 5, ce = 1, ve = 1800 },
             { name = 'berserk', level = 15, recast = 300, recastId = 1, ce = 1, ve = 80 },
-            { name = 'defender', level = 25, recast = 180, recastId = 3, ce = 1, ve = 80 },
-            { name = 'warcry', level = 35, recast = 300, recastId = 2, ce = 1, ve = 300 },
         },
         traits = {
             { name = 'resist virus', level = 5, rank = 1, mod = 'VIRUSRES', value = 10 },
             { name = 'defense bonus', level = 10, rank = 1, mod = 'DEF', value = 10 },
-            { name = 'double attack', level = 25, rank = 1, mod = 'DOUBLE_ATTACK', value = 10 },
-            { name = 'attack bonus', level = 30, rank = 1, mod = 'ATT', value = 10 },
-            { name = 'attack bonus', level = 30, rank = 1, mod = 'RATT', value = 10 },
-            { name = 'max hp boost', level = 30, rank = 1, mod = 'BASE_HP', value = 30 },
-            { name = 'resist virus', level = 35, rank = 2, mod = 'VIRUSRES', value = 15 },
-            { name = 'smite', level = 35, rank = 1, mod = 'SMITE', value = 25 },
         },
         spells = {
         },
     },
     SAM = {
-        level = 37,
+        level = 19,
         capabilities = {
             'store_tp',
             'meditate',
             'third_eye',
             'weapon_skill',
+            'warding_circle',
         },
         abilities = {
             { name = 'warding_circle', level = 5, recast = 300, recastId = 135, ce = 1, ve = 20 },
             { name = 'third_eye', level = 15, recast = 60, recastId = 133, ce = 1, ve = 0 },
-            { name = 'hasso', level = 25, recast = 60, recastId = 138, ce = 1, ve = 300 },
-            { name = 'meditate', level = 30, recast = 180, recastId = 134, ce = 320, ve = 0 },
-            { name = 'seigan', level = 35, recast = 60, recastId = 139, ce = 1, ve = 300 },
         },
         traits = {
             { name = 'resist blind', level = 5, rank = 1, mod = 'BLINDRES', value = 10 },
             { name = 'store tp', level = 10, rank = 1, mod = 'STORETP', value = 10 },
-            { name = 'zanshin', level = 20, rank = 1, mod = 'ZANSHIN', value = 15 },
-            { name = 'resist blind', level = 25, rank = 2, mod = 'BLINDRES', value = 15 },
-            { name = 'store tp', level = 30, rank = 2, mod = 'STORETP', value = 15 },
-            { name = 'zanshin', level = 35, rank = 2, mod = 'ZANSHIN', value = 25 },
         },
         spells = {
         },
     },
     THF = {
-        level = 37,
+        level = 19,
         capabilities = {
             'sneak_attack',
             'treasure_hunter',
@@ -2031,38 +2117,29 @@ local subjobs = {
         abilities = {
             { name = 'steal', level = 5, recast = 300, recastId = 60, ce = 1, ve = 300 },
             { name = 'sneak_attack', level = 15, recast = 60, recastId = 64, ce = 1, ve = 0 },
-            { name = 'flee', level = 25, recast = 300, recastId = 62, ce = 1, ve = 80 },
-            { name = 'trick_attack', level = 30, recast = 60, recastId = 66, ce = 1, ve = 0 },
-            { name = 'mug', level = 35, recast = 300, recastId = 65, ce = 1, ve = 300 },
         },
         traits = {
             { name = 'gilfinder', level = 5, rank = 1, mod = 'GILFINDER', value = 1 },
             { name = 'evasion bonus', level = 10, rank = 1, mod = 'EVA', value = 10 },
             { name = 'treasure hunter', level = 15, rank = 1, mod = 'TREASURE_HUNTER', value = 1 },
-            { name = 'resist gravity', level = 20, rank = 1, mod = 'GRAVITYRES', value = 10 },
-            { name = 'evasion bonus', level = 30, rank = 2, mod = 'EVA', value = 22 },
         },
         spells = {
         },
     },
     WHM = {
-        level = 37,
+        level = 19,
         capabilities = {
             'cure',
             'status_removal',
             'protect_shell',
             'sneak_invisible',
+            'divine_damage',
         },
         abilities = {
             { name = 'divine_seal', level = 15, recast = 600, recastId = 26, ce = 0, ve = 80 },
         },
         traits = {
             { name = 'magic def. bonus', level = 10, rank = 1, mod = 'MDEF', value = 10 },
-            { name = 'clear mind', level = 20, rank = 1, mod = 'MPHEAL', value = 3 },
-            { name = 'tranquil heart', level = 21, rank = 1, mod = 'NONE', value = 0 },
-            { name = 'auto regen', level = 25, rank = 1, mod = 'REGEN', value = 1 },
-            { name = 'magic def. bonus', level = 30, rank = 2, mod = 'MDEF', value = 12 },
-            { name = 'clear mind', level = 35, rank = 2, mod = 'MPHEAL', value = 6 },
         },
         spells = {
             { name = 'cure', level = 1, mp = 8, cast = 2000, recast = 5000 },
@@ -2095,29 +2172,35 @@ local subjobs = {
             { name = 'diaga_ii', level = 18, mp = 60, cast = 1750, recast = 6250 },
             { name = 'blink', level = 19, mp = 20, cast = 6000, recast = 10000 },
             { name = 'silena', level = 19, mp = 24, cast = 1000, recast = 5000 },
-            { name = 'sneak', level = 20, mp = 12, cast = 3000, recast = 10000 },
-            { name = 'barblizzara', level = 21, mp = 12, cast = 500, recast = 10000 },
-            { name = 'cure_iii', level = 21, mp = 46, cast = 2500, recast = 6000 },
-            { name = 'regen', level = 21, mp = 15, cast = 1500, recast = 12000 },
-            { name = 'barsilencera', level = 23, mp = 30, cast = 5000, recast = 10000 },
-            { name = 'barthundra', level = 25, mp = 12, cast = 500, recast = 10000 },
-            { name = 'invisible', level = 25, mp = 15, cast = 3000, recast = 10000 },
-            { name = 'raise', level = 25, mp = 150, cast = 15000, recast = 60000 },
-            { name = 'reraise', level = 25, mp = 150, cast = 8000, recast = 60000 },
-            { name = 'protect_ii', level = 27, mp = 28, cast = 1250, recast = 5250 },
-            { name = 'protectra_ii', level = 27, mp = 28, cast = 1250, recast = 16000 },
-            { name = 'stoneskin', level = 28, mp = 29, cast = 7000, recast = 30000 },
-            { name = 'cursna', level = 29, mp = 30, cast = 1000, recast = 10000 },
-            { name = 'banish_ii', level = 30, mp = 57, cast = 2500, recast = 30000 },
-            { name = 'curaga_ii', level = 31, mp = 120, cast = 4750, recast = 10250 },
-            { name = 'erase', level = 32, mp = 18, cast = 2500, recast = 15000 },
-            { name = 'viruna', level = 34, mp = 48, cast = 1000, recast = 5000 },
-            { name = 'dia_ii', level = 36, mp = 30, cast = 1500, recast = 6000 },
-            { name = 'teleport-dem', level = 36, mp = 75, cast = 20000, recast = 10000 },
-            { name = 'teleport-holla', level = 36, mp = 75, cast = 20000, recast = 10000 },
-            { name = 'teleport-mea', level = 36, mp = 75, cast = 20000, recast = 10000 },
-            { name = 'shell_ii', level = 37, mp = 37, cast = 1250, recast = 5250 },
-            { name = 'shellra_ii', level = 37, mp = 37, cast = 1250, recast = 16000 },
+        },
+    },
+    DRK = {
+        level = 19,
+        capabilities = {
+            'last_resort',
+            'souleater',
+            'dark_magic',
+            'attack_boost',
+            'drain_aspir',
+            'elemental_magic',
+        },
+        abilities = {
+            { name = 'arcane_circle', level = 5, recast = 300, recastId = 86, ce = 1, ve = 20 },
+            { name = 'last_resort', level = 15, recast = 300, recastId = 87, ce = 1, ve = 1300 },
+        },
+        traits = {
+            { name = 'attack bonus', level = 10, rank = 1, mod = 'ATT', value = 10 },
+            { name = 'attack bonus', level = 10, rank = 1, mod = 'RATT', value = 10 },
+            { name = 'desperate blows', level = 15, rank = 1, mod = 'DESPERATE_BLOWS', value = 500 },
+            { name = 'smite', level = 15, rank = 1, mod = 'SMITE', value = 25 },
+        },
+        spells = {
+            { name = 'stone', level = 5, mp = 4, cast = 500, recast = 2000 },
+            { name = 'poison', level = 6, mp = 5, cast = 1000, recast = 5000 },
+            { name = 'drain', level = 10, mp = 21, cast = 3000, recast = 60000 },
+            { name = 'water', level = 11, mp = 5, cast = 500, recast = 2000 },
+            { name = 'bio', level = 15, mp = 15, cast = 1500, recast = 5000 },
+            { name = 'aero', level = 17, mp = 6, cast = 500, recast = 2000 },
         },
     },
 };
@@ -2159,6 +2242,11 @@ local setIntents = {
     Waltz = 'Cure',
     Evasion = 'Evasion',
     Idle = 'Idle',
+    IdleCity = 'Idle',
+    IdleCombat = 'PDT',
+    IdleMaxMP = 'Idle',
+    IdleMaxHP = 'Idle',
+    IdleNonCombat = 'Idle',
     Resting = 'Idle',
     InCity = 'Movement',
     Movement = 'Movement',
@@ -2166,22 +2254,36 @@ local setIntents = {
     Movement_Night = 'Movement',
     Movement_DuskToDawn = 'Movement',
     Aftercast = 'Idle',
+    Dt = 'PDT',
     PDT = 'PDT',
     MDT = 'MDT',
+    FireRes = 'MDT',
+    IceRes = 'MDT',
+    WindRes = 'MDT',
+    EarthRes = 'MDT',
+    ThunderRes = 'MDT',
+    LightningRes = 'MDT',
+    WaterRes = 'MDT',
+    LightRes = 'MDT',
+    DarkRes = 'MDT',
     Crafting = 'Crafting',
     TP = 'TP',
     Hybrid = 'TP',
     TPAccuracy = 'Accuracy',
+    CombatSkillup = 'TP',
+    MagicSkillup = 'MagicAccuracy',
+    Proc = 'TP',
     Precast = 'FastCast',
     FastCast = 'FastCast',
+    SIRD = 'SIRD',
     Midcast = 'MagicAccuracy',
     Cure = 'Cure',
     Healing = 'Healing',
     Enhancing = 'Enhancing',
     EnhancingDuration = 'Enhancing',
-    Stoneskin = 'Enhancing',
-    Refresh = 'Enhancing',
-    Regen = 'Healing',
+    Spikes = 'Enhancing',
+    Refresh = 'Refresh',
+    Regen = 'Regen',
     SneakInvisible = 'Enhancing',
     Barspell = 'Enhancing',
     Phalanx = 'Enhancing',
@@ -2190,31 +2292,37 @@ local setIntents = {
     Enfeebling = 'Enfeebling',
     Sleep = 'Enfeebling',
     Bind = 'Enfeebling',
+    Burn = 'Enfeebling',
+    Choke = 'Enfeebling',
+    Drown = 'Enfeebling',
+    Frost = 'Enfeebling',
     Gravity = 'Enfeebling',
     Silence = 'Enfeebling',
     Slow = 'Enfeebling',
     Paralyze = 'Enfeebling',
+    Poison = 'Enfeebling',
+    Rasp = 'Enfeebling',
+    Shock = 'Enfeebling',
     Blind = 'Enfeebling',
     Dispel = 'Enfeebling',
-    Dia = 'Enfeebling',
+    Dia = 'Dia',
     Bio = 'DarkMagic',
-    Divine = 'Cure',
+    Divine = 'Enfeebling',
     Elemental = 'Nuke',
     Nuke = 'Nuke',
     DarkMagic = 'DarkMagic',
-    DrainAspir = 'DarkMagic',
     Absorb = 'DarkMagic',
     Stun = 'DarkMagic',
     Ninjutsu = 'Ninjutsu',
     Utsusemi = 'FastCast',
-    NinjutsuEnfeeble = 'Ninjutsu',
+    NinjutsuEnfeeble = 'NinjutsuEnfeeble',
     Weaponskill = 'Weaponskill',
-    WeaponSkillAccuracy = 'Weaponskill',
-    WSElemental = 'Weaponskill',
-    JobAbility = 'TP',
+    WeaponSkillAccuracy = 'WeaponSkillAccuracy',
+    WSElemental = 'WSElemental',
+    JobAbility = 'JobAbility',
     Enmity = 'Enmity',
+    Flourish = 'Flourish',
     Steps = 'Accuracy',
-    Samba = 'TP',
     Elemental_Fire = 'Nuke',
     Weather_Fire = 'Nuke',
     Day_Fire = 'Nuke',
@@ -2242,37 +2350,42 @@ local setIntents = {
     Elemental_Dark = 'Nuke',
     Weather_Dark = 'Nuke',
     Day_Dark = 'Nuke',
-    ThirdEye = 'JobAbility',
-    WS_Combo = 'TP',
-    WSAcc_Combo = 'TP',
-    WS_Shoulder_Tackle = 'TP',
-    WSAcc_Shoulder_Tackle = 'TP',
-    WS_Backhand_Blow = 'TP',
-    WSAcc_Backhand_Blow = 'TP',
-    WS_Wasp_Sting = 'TP',
-    WSAcc_Wasp_Sting = 'TP',
-    WS_Gust_Slash = 'TP',
-    WSAcc_Gust_Slash = 'TP',
-    WS_Shadowstitch = 'TP',
-    WSAcc_Shadowstitch = 'TP',
-    WS_Viper_Bite = 'TP',
-    WSAcc_Viper_Bite = 'TP',
-    WS_Fast_Blade = 'TP',
-    WSAcc_Fast_Blade = 'TP',
-    WS_Burning_Blade = 'TP',
-    WSAcc_Burning_Blade = 'TP',
-    WS_Flat_Blade = 'TP',
-    WSAcc_Flat_Blade = 'TP',
-    WS_Shining_Blade = 'TP',
-    WSAcc_Shining_Blade = 'TP',
+    DualWield = 'TP',
+    Cursna = 'Healing',
+    StatusRemoval = 'Healing',
+    DivineDamage = 'Nuke',
+    DrainAspir = 'DarkMagic',
+    WS_Combo = 'Weaponskill',
+    WSAcc_Combo = 'WeaponSkillAccuracy',
+    WS_Shoulder_Tackle = 'Weaponskill',
+    WSAcc_Shoulder_Tackle = 'WeaponSkillAccuracy',
+    WS_Backhand_Blow = 'Weaponskill',
+    WSAcc_Backhand_Blow = 'WeaponSkillAccuracy',
+    WS_Wasp_Sting = 'Weaponskill',
+    WSAcc_Wasp_Sting = 'WeaponSkillAccuracy',
+    WS_Gust_Slash = 'Weaponskill',
+    WSAcc_Gust_Slash = 'WeaponSkillAccuracy',
+    WS_Shadowstitch = 'Weaponskill',
+    WSAcc_Shadowstitch = 'WeaponSkillAccuracy',
+    WS_Viper_Bite = 'Weaponskill',
+    WSAcc_Viper_Bite = 'WeaponSkillAccuracy',
+    WS_Fast_Blade = 'Weaponskill',
+    WSAcc_Fast_Blade = 'WeaponSkillAccuracy',
+    WS_Burning_Blade = 'Weaponskill',
+    WSAcc_Burning_Blade = 'WeaponSkillAccuracy',
+    WS_Flat_Blade = 'Weaponskill',
+    WSAcc_Flat_Blade = 'WeaponSkillAccuracy',
+    WS_Shining_Blade = 'Weaponskill',
+    WSAcc_Shining_Blade = 'WeaponSkillAccuracy',
     BlueMagic = 'BlueMagic',
-    PhysicalBlueMagic = 'BlueMagic',
+    PhysicalBlueMagic = 'PhysicalBlueMagic',
     MagicalBlueMagic = 'Nuke',
     Song = 'Song',
-    SongDebuff = 'Song',
-    SongBuff = 'Song',
+    SongPrecast = 'SongPrecast',
+    SongDebuff = 'SongDebuff',
+    SongBuff = 'SongBuff',
     Geomancy = 'MagicAccuracy',
-    Summoning = 'MagicAccuracy',
+    Summoning = 'Summoning',
     BloodPactRage = 'PetDamage',
     BloodPactWard = 'PetTank',
     AvatarPerp = 'Refresh',
@@ -2283,9 +2396,10 @@ local setIntents = {
     RangedAccuracy = 'RangedAccuracy',
     RangedAttack = 'RangedAttack',
     QuickDraw = 'QuickDraw',
+    Samba = 'TP',
     Jump = 'Weaponskill',
     PetReady = 'PetDamage',
-    PetMagic = 'PetDamage',
+    PetMagic = 'PetMagic',
     PetTank = 'PetTank',
     Roll = 'Roll',
 };
@@ -2305,22 +2419,92 @@ local playstyleNames = {
 };
 
 local numberRowBindings = {
-    { key = '1', label = 'Style-', literal = '/lac fwd styleprev', kind = 'action', toggle = '' },
-    { key = '2', label = 'Style+', literal = '/lac fwd stylenext', kind = 'action', toggle = '' },
-    { key = '3', label = 'Styles', literal = '/lac fwd styles', kind = 'action', toggle = '' },
-    { key = '4', label = 'Warp', literal = '/lac fwd warp', kind = 'action', toggle = '' },
-    { key = '5', label = 'Lockstyle', literal = '/lac fwd lockstyle', kind = 'action', toggle = '' },
-    { key = '6', label = 'Status', literal = '/lac fwd status', kind = 'action', toggle = '' },
-    { key = '7', label = 'Craft', literal = '/lac fwd utility craft', kind = 'utility', toggle = '' },
-    { key = '8', label = 'Move', literal = '/lac fwd utility movement', kind = 'utility', toggle = '' },
-    { key = '9', label = 'Auto 1', literal = '/lac fwd palette missing', kind = 'toggle', toggle = '' },
-    { key = '0', label = 'Auto 2', literal = '/lac fwd palette missing', kind = 'toggle', toggle = '' },
-    { key = '-', label = 'Job 1', literal = '/lac fwd palette missing', kind = 'job', toggle = '' },
-    { key = '=', label = 'Job 2', literal = '/lac fwd palette missing', kind = 'job', toggle = '' },
+    { key = 'NUMPAD.', displayKey = '.', label = 'Style-', literal = '/lac fwd styleprev', kind = 'action', toggle = '' },
+    { key = 'NUMPAD0', displayKey = '0', label = 'Style+', literal = '/lac fwd stylenext', kind = 'action', toggle = '' },
+    { key = 'NUMPAD1', displayKey = '1', label = 'Styles', literal = '/lac fwd styles', kind = 'action', toggle = '' },
+    { key = 'NUMPAD2', displayKey = '2', label = 'Status', literal = '/lac fwd status', kind = 'command-only', toggle = '' },
+    { key = 'NUMPAD3', displayKey = '3', label = 'Lockstyle', literal = '/lac fwd lockstyle', kind = 'action', toggle = '' },
+    { key = 'NUMPAD4', displayKey = '4', label = 'Move', literal = '/lac fwd utility movement', kind = 'command-only', toggle = '' },
+    { key = 'NUMPAD5', displayKey = '5', label = 'Craft', literal = '/lac fwd utility craft', kind = 'utility', toggle = '' },
+    { key = 'NUMPAD6', displayKey = '6', label = 'Auto 1', literal = '/lac fwd palette missing', kind = 'command-only', toggle = '' },
+    { key = 'NUMPAD7', displayKey = '7', label = 'Warp', literal = '/lac fwd warp', kind = 'action', toggle = '' },
+    { key = 'NUMPAD8', displayKey = '8', label = 'Auto 2', literal = '/lac fwd palette missing', kind = 'command-only', toggle = '' },
+    { key = 'NUMPAD9', displayKey = '9', label = 'Job 1', literal = '/lac fwd palette missing', kind = 'job', toggle = '' },
+    { key = '', displayKey = '', label = 'Unbound', literal = '', kind = 'unbound', toggle = '' },
 };
 
 local DEFAULT_PLAYSTYLE = 'Damage';
 local STYLE_COMMANDS_TEXT = 'damage|accuracy|waltz|evasion';
+profile.ResistAliases = {
+    allstatusres = 'StatusResist',
+    ares = 'WindRes',
+    bres = 'IceRes',
+    charmres = 'CharmResist',
+    charmresist = 'CharmResist',
+    clearres = '',
+    darkres = 'DarkRes',
+    darkresist = 'DarkRes',
+    darkresistance = 'DarkRes',
+    dres = 'DarkRes',
+    earthres = 'EarthRes',
+    earthresist = 'EarthRes',
+    earthresistance = 'EarthRes',
+    eres = 'EarthRes',
+    fireres = 'FireRes',
+    fireresist = 'FireRes',
+    fireresistance = 'FireRes',
+    fres = 'FireRes',
+    iceres = 'IceRes',
+    iceresist = 'IceRes',
+    iceresistance = 'IceRes',
+    ires = 'IceRes',
+    lightningres = 'LightningRes',
+    lightningresist = 'LightningRes',
+    lightningresistance = 'LightningRes',
+    lightres = 'LightRes',
+    lightresist = 'LightRes',
+    lightresistance = 'LightRes',
+    lres = 'LightningRes',
+    nores = '',
+    resistoff = '',
+    resoff = '',
+    sres = 'EarthRes',
+    statusres = 'StatusResist',
+    statusresist = 'StatusResist',
+    thunderres = 'ThunderRes',
+    thunderresist = 'ThunderRes',
+    thunderresistance = 'ThunderRes',
+    tres = 'LightningRes',
+    wares = 'WaterRes',
+    waterres = 'WaterRes',
+    waterresist = 'WaterRes',
+    waterresistance = 'WaterRes',
+    windres = 'WindRes',
+    windresist = 'WindRes',
+    windresistance = 'WindRes',
+    wires = 'WindRes',
+    wres = 'WaterRes',
+};
+profile.DefenseAliases = {
+    clearoverride = '',
+    defenseoff = '',
+    defoff = '',
+    dt = 'Dt',
+    eva = 'Evasion',
+    evasion = 'Evasion',
+    idlecity = 'IdleCity',
+    idlecombat = 'IdleCombat',
+    idlenoncombat = 'IdleNonCombat',
+    magicdefense = 'MagicDefense',
+    mdef = 'MagicDefense',
+    mdt = 'MDT',
+    nooverride = '',
+    overrideoff = '',
+    pdt = 'PDT',
+    safe = 'Safe',
+    survival = 'Survival',
+    tank = 'Tank',
+};
 local oddLuaRefresh = {
     launcher = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\Run-OddLuaGameRefresh.cmd',
     statusPath = 'C:\\Users\\jakeb\\Projects\\FFXI Personal Server\\OddLua\\reports\\game-refresh\\latest-status.json',
@@ -2331,6 +2515,9 @@ local oddLuaRefresh = {
 };
 
 local setSecondarySlotLocks = {
+    IdleCity = {
+        Body = { 'Legs' },
+    },
     InCity = {
         Body = { 'Legs' },
     },
@@ -2338,19 +2525,16 @@ local setSecondarySlotLocks = {
         Body = { 'Hands' },
         Legs = { 'Feet' },
     },
-    Barspell = {
-        Body = { 'Hands' },
-        Legs = { 'Feet' },
-    },
-    Phalanx = {
+    LightRes = {
         Body = { 'Hands' },
         Legs = { 'Feet' },
     },
 };
 
 local nativeDualWieldMainJobs = {
-    DNC = true,
-    NIN = true,
+    DNC = 20,
+    NIN = 10,
+    THF = 20,
 };
 
 local setRequiresDualWieldSub = {
@@ -2360,88 +2544,992 @@ local setRequiresDualWieldSub = {
     Damage = true,
     Accuracy = true,
     Evasion = true,
-    Idle = true,
-    Resting = true,
-    Aftercast = true,
-    PDT = true,
-    MDT = true,
     TP = true,
     Hybrid = true,
     TPAccuracy = true,
-    Precast = true,
-    FastCast = true,
-    Midcast = true,
-    Cure = true,
-    Healing = true,
-    Enhancing = true,
-    EnhancingDuration = true,
-    Stoneskin = true,
-    Refresh = true,
-    Regen = true,
-    SneakInvisible = true,
-    Barspell = true,
-    Phalanx = true,
-    Aquaveil = true,
-    Haste = true,
-    Enfeebling = true,
-    Sleep = true,
-    Bind = true,
-    Gravity = true,
-    Silence = true,
-    Slow = true,
-    Paralyze = true,
-    Blind = true,
-    Dispel = true,
-    Dia = true,
-    Bio = true,
-    Divine = true,
-    Elemental = true,
-    Nuke = true,
-    DarkMagic = true,
-    DrainAspir = true,
-    Absorb = true,
-    Stun = true,
-    Ninjutsu = true,
-    Utsusemi = true,
-    NinjutsuEnfeeble = true,
-    JobAbility = true,
     Enmity = true,
-    Elemental_Fire = true,
-    Weather_Fire = true,
-    Day_Fire = true,
-    Elemental_Ice = true,
-    Weather_Ice = true,
-    Day_Ice = true,
-    Elemental_Wind = true,
-    Weather_Wind = true,
-    Day_Wind = true,
-    Elemental_Earth = true,
-    Weather_Earth = true,
-    Day_Earth = true,
-    Elemental_Thunder = true,
-    Weather_Thunder = true,
-    Day_Thunder = true,
-    Elemental_Lightning = true,
-    Weather_Lightning = true,
-    Day_Lightning = true,
-    Elemental_Water = true,
-    Weather_Water = true,
-    Day_Water = true,
-    Elemental_Light = true,
-    Weather_Light = true,
-    Day_Light = true,
-    Elemental_Dark = true,
-    Weather_Dark = true,
-    Day_Dark = true,
+    DualWield = true,
 };
 
 local conditionalEquips = {};
 
+profile.BuffItemOverlays = {
+    Playstyle_Evasion = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Empress Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Evasion = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Empress Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Idle = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Silver Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IdleCity = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Silver Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IdleCombat = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Cuir Bandana' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IdleMaxMP = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Silver Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IdleMaxHP = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Cuir Bandana' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IdleNonCombat = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Silver Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Resting = {
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    InCity = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Movement = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Movement_City = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Movement_Night = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Movement_DuskToDawn = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Aftercast = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Silver Hairpin' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Dt = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Cuir Bandana' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    PDT = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            afterUse = { Feet = 'Mountain Gaiters' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Cuir Bandana' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    MDT = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            afterUse = { Back = 'Ram Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    FireRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    IceRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    WindRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Bastokan Circlet' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    EarthRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Bastokan Circlet' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    ThunderRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    LightningRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    WaterRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    LightRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    DarkRes = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            afterUse = { Head = 'Noble\'s Ribbon' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Crafting = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+    Refresh = {
+        {
+            condition = { type = 'missing_status', name = 'invisible', buffs = { 'invisible', 69 } },
+            slots = { Back = 'Invisible Mantle' },
+            item = {
+                ['id'] = 13685,
+                ['name'] = 'Invisible Mantle',
+                ['effect'] = 'invisible',
+                ['sourcePath'] = 'scripts\\items\\invisible_mantle.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'quickening', buffs = { 'quickening', 176 } },
+            slots = { Feet = 'Sprinter\'s Shoes' },
+            item = {
+                ['id'] = 15754,
+                ['name'] = 'Sprinter\'s Shoes',
+                ['effect'] = 'quickening',
+                ['sourcePath'] = 'scripts\\items\\sprinters_shoes.lua',
+            },
+        },
+        {
+            condition = { type = 'missing_status', name = 'reraise', buffs = { 'reraise', 113 } },
+            slots = { Head = 'Wh. Rarab Cap +1' },
+            item = {
+                ['id'] = 25679,
+                ['name'] = 'Wh. Rarab Cap +1',
+                ['effect'] = 'reraise',
+                ['sourcePath'] = 'scripts\\items\\white_rarab_cap_+1.lua',
+            },
+        },
+    },
+};
+
 local mechanicsSwapPlanner = {
     ['loaded'] = true,
-    ['plannerVersion'] = 2,
+    ['plannerVersion'] = 4,
     ['baselineSet'] = 'Aftercast',
+    ['negativeTickOwnershipKnown'] = true,
+    ['ownedNegativeTickItems'] = {},
     ['supportedOpportunities'] = { 'hp_bridge_swap', 'mp_bridge_swap', 'negative_tick_avoidance' },
+    ['explicitTransitions'] = {
+        ['setmp'] = {
+            ['available'] = false,
+            ['reason'] = 'ambiguous_idle_pool_equipment',
+        },
+        ['avoidtick'] = {
+            ['available'] = false,
+            ['reason'] = 'no_owned_negative_tick_items',
+            ['actions'] = {},
+        },
+    },
     ['transitions'] = {},
     ['skippedTransitions'] = {},
 };
@@ -2449,6 +3537,14 @@ mechanicsSwapPlanner.transitions['Damage'] = {
     ['sourceSet'] = 'Aftercast',
     ['targetSet'] = 'Damage',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -2487,6 +3583,22 @@ mechanicsSwapPlanner.transitions['Damage'] = {
             ['slot'] = 'Feet',
             ['itemId'] = 13014,
             ['item'] = 'Leaping Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13192,
+            ['item'] = 'Leather Belt',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -2532,23 +3644,23 @@ mechanicsSwapPlanner.transitions['Damage'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -2558,6 +3670,14 @@ mechanicsSwapPlanner.transitions['Accuracy'] = {
     ['sourceSet'] = 'Aftercast',
     ['targetSet'] = 'Accuracy',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -2601,9 +3721,33 @@ mechanicsSwapPlanner.transitions['Accuracy'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13192,
+            ['item'] = 'Leather Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -2633,23 +3777,23 @@ mechanicsSwapPlanner.transitions['Accuracy'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -2660,59 +3804,19 @@ mechanicsSwapPlanner.transitions['Waltz'] = {
     ['targetSet'] = 'Waltz',
     ['actions'] = {
         {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -2734,31 +3838,23 @@ mechanicsSwapPlanner.transitions['Waltz'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Head',
-            ['itemId'] = 15224,
-            ['item'] = 'Empress Hairpin',
-            ['reason'] = 'pool delta HP-9, MP-15',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
             ['slot'] = 'Legs',
             ['itemId'] = 14260,
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 1,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -2803,6 +3899,14 @@ mechanicsSwapPlanner.transitions['Evasion'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13177,
+            ['item'] = 'Stone Gorget',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Waist',
             ['itemId'] = 13192,
             ['item'] = 'Leather Belt',
@@ -2812,14 +3916,6 @@ mechanicsSwapPlanner.transitions['Evasion'] = {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ear1',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
             ['itemId'] = 13328,
             ['item'] = 'Mythril Earring',
             ['reason'] = 'ordinary target equip',
@@ -2875,23 +3971,23 @@ mechanicsSwapPlanner.transitions['Evasion'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13177,
-            ['item'] = 'Stone Gorget',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 4,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 7,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -2904,22 +4000,6 @@ mechanicsSwapPlanner.transitions['Idle'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
@@ -2955,213 +4035,6 @@ mechanicsSwapPlanner.transitions['Idle'] = {
             ['slot'] = 'Legs',
             ['itemId'] = 12857,
             ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = {},
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 10,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 34,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Resting'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Resting',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Back',
-            ['itemId'] = 13570,
-            ['item'] = 'Ram Mantle',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = {},
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 10,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['InCity'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'InCity',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Body',
-            ['itemId'] = 25726,
-            ['item'] = 'Kupo Suit',
-            ['reason'] = 'pool delta HP-7, MP-7',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 0,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 0,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['PDT'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'PDT',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 12443,
-            ['item'] = 'Cuir Bandana',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3170,6 +4043,14 @@ mechanicsSwapPlanner.transitions['PDT'] = {
             ['slot'] = 'Feet',
             ['itemId'] = 15348,
             ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13177,
+            ['item'] = 'Stone Gorget',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3192,8 +4073,167 @@ mechanicsSwapPlanner.transitions['PDT'] = {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 38,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Resting'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Resting',
+    ['actions'] = {
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 38,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['InCity'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'InCity',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 25726,
+            ['item'] = 'Kupo Suit',
+            ['reason'] = 'pool delta HP-7, MP-7',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -2,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 31,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['PDT'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'PDT',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13072,
+            ['item'] = 'Bird Whistle',
+            ['reason'] = 'pool delta HP+5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 12443,
+            ['item'] = 'Cuir Bandana',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Body',
+            ['itemId'] = 12593,
+            ['item'] = 'Cotton Doublet',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15052,
+            ['item'] = 'Guerilla Gloves',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13192,
+            ['item'] = 'Leather Belt',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3207,18 +4247,18 @@ mechanicsSwapPlanner.transitions['PDT'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Back',
             ['itemId'] = 13570,
             ['item'] = 'Ram Mantle',
             ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Hands',
-            ['itemId'] = 12699,
-            ['item'] = 'Cuir Gloves',
-            ['reason'] = 'pool delta HP-4, MP-4',
         },
         {
             ['key'] = 'pool_bridge_transition',
@@ -3231,23 +4271,23 @@ mechanicsSwapPlanner.transitions['PDT'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13177,
-            ['item'] = 'Stone Gorget',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 7,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 16,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 7,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3276,17 +4316,9 @@ mechanicsSwapPlanner.transitions['MDT'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13083,
+            ['item'] = 'Chain Choker',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3295,14 +4327,6 @@ mechanicsSwapPlanner.transitions['MDT'] = {
             ['slot'] = 'Waist',
             ['itemId'] = 13192,
             ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13331,
-            ['item'] = 'Sardonyx Earring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3325,8 +4349,8 @@ mechanicsSwapPlanner.transitions['MDT'] = {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Back',
-            ['itemId'] = 13685,
-            ['item'] = 'Invisible Mantle',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3348,23 +4372,404 @@ mechanicsSwapPlanner.transitions['MDT'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13083,
-            ['item'] = 'Chain Choker',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 4,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['FireRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'FireRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['IceRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'IceRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WindRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WindRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13899,
+            ['item'] = 'Bastokan Circlet',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14392,
+            ['item'] = 'Carpenter\'s Apron',
+            ['reason'] = 'pool delta HP-7, MP-7',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 4,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 16,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['EarthRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'EarthRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13899,
+            ['item'] = 'Bastokan Circlet',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 14392,
+            ['item'] = 'Carpenter\'s Apron',
+            ['reason'] = 'pool delta HP-7, MP-7',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Hands',
+            ['itemId'] = 14830,
+            ['item'] = 'Carpenter\'s Gloves',
+            ['reason'] = 'pool delta HP-4, MP-4',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 0,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 12,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['ThunderRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'ThunderRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13083,
+            ['item'] = 'Chain Choker',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['LightningRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'LightningRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13083,
+            ['item'] = 'Chain Choker',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['WaterRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'WaterRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13083,
+            ['item'] = 'Chain Choker',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['LightRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'LightRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 11309,
+            ['item'] = 'Benedight Coat',
+            ['reason'] = 'pool delta HP-7, MP-7',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Legs',
+            ['itemId'] = 16364,
+            ['item'] = 'Benedight Hose',
+            ['reason'] = 'pool delta MP-5',
+        },
+    },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 4,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DarkRes'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DarkRes',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 13833,
+            ['item'] = 'Noble\'s Ribbon',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 27,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3374,6 +4779,14 @@ mechanicsSwapPlanner.transitions['TP'] = {
     ['sourceSet'] = 'Aftercast',
     ['targetSet'] = 'TP',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -3412,6 +4825,22 @@ mechanicsSwapPlanner.transitions['TP'] = {
             ['slot'] = 'Feet',
             ['itemId'] = 13014,
             ['item'] = 'Leaping Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13192,
+            ['item'] = 'Leather Belt',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3457,23 +4886,23 @@ mechanicsSwapPlanner.transitions['TP'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3485,18 +4914,18 @@ mechanicsSwapPlanner.transitions['Hybrid'] = {
     ['actions'] = {
         {
             ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 12443,
-            ['item'] = 'Cuir Bandana',
-            ['reason'] = 'pool delta HP+6, MP-15',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
+            ['itemId'] = 16473,
+            ['item'] = 'Kukri',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3518,9 +4947,25 @@ mechanicsSwapPlanner.transitions['Hybrid'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Hands',
+            ['itemId'] = 15052,
+            ['item'] = 'Guerilla Gloves',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Feet',
             ['itemId'] = 15348,
             ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3534,25 +4979,17 @@ mechanicsSwapPlanner.transitions['Hybrid'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 13469,
-            ['item'] = 'Leather Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3566,10 +5003,10 @@ mechanicsSwapPlanner.transitions['Hybrid'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Hands',
-            ['itemId'] = 12699,
-            ['item'] = 'Cuir Gloves',
-            ['reason'] = 'pool delta HP-4, MP-4',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-9, MP-15',
         },
         {
             ['key'] = 'pool_bridge_transition',
@@ -3582,23 +5019,23 @@ mechanicsSwapPlanner.transitions['Hybrid'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13177,
-            ['item'] = 'Stone Gorget',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 7,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 7,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3608,6 +5045,14 @@ mechanicsSwapPlanner.transitions['TPAccuracy'] = {
     ['sourceSet'] = 'Aftercast',
     ['targetSet'] = 'TPAccuracy',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -3651,9 +5096,33 @@ mechanicsSwapPlanner.transitions['TPAccuracy'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Waist',
+            ['itemId'] = 13192,
+            ['item'] = 'Leather Belt',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3683,40 +5152,90 @@ mechanicsSwapPlanner.transitions['TPAccuracy'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['CombatSkillup'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'CombatSkillup',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15198,
+            ['item'] = 'Sprout Beret',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
     },
 };
-mechanicsSwapPlanner.transitions['Precast'] = {
+mechanicsSwapPlanner.transitions['MagicSkillup'] = {
     ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Precast',
+    ['targetSet'] = 'MagicSkillup',
     ['actions'] = {
         {
             ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15198,
+            ['item'] = 'Sprout Beret',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Proc'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Proc',
+    ['actions'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -3725,151 +5244,47 @@ mechanicsSwapPlanner.transitions['Precast'] = {
             ['item'] = 'Poison Knife',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 38,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
     },
 };
-mechanicsSwapPlanner.transitions['FastCast'] = {
+mechanicsSwapPlanner.transitions['SIRD'] = {
     ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'FastCast',
+    ['targetSet'] = 'SIRD',
     ['actions'] = {
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
             ['reason'] = 'ordinary target equip',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 38,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3898,41 +5313,9 @@ mechanicsSwapPlanner.transitions['Midcast'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -3963,14 +5346,14 @@ mechanicsSwapPlanner.transitions['Midcast'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -3988,74 +5371,18 @@ mechanicsSwapPlanner.transitions['Cure'] = {
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -4073,82 +5400,26 @@ mechanicsSwapPlanner.transitions['Healing'] = {
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
     },
 };
-mechanicsSwapPlanner.transitions['Enhancing'] = {
+mechanicsSwapPlanner.transitions['Spikes'] = {
     ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Enhancing',
+    ['targetSet'] = 'Spikes',
     ['actions'] = {
         {
             ['key'] = 'pool_bridge_transition',
@@ -4159,105 +5430,12 @@ mechanicsSwapPlanner.transitions['Enhancing'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['EnhancingDuration'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'EnhancingDuration',
-    ['actions'] = {
-        {
             ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
         {
             ['key'] = 'equip_target',
@@ -4270,799 +5448,31 @@ mechanicsSwapPlanner.transitions['EnhancingDuration'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Stoneskin'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Stoneskin',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Refresh'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Refresh',
-    ['actions'] = {
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
             ['reason'] = 'ordinary target equip',
         },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 10,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 34,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Regen'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Regen',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['SneakInvisible'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'SneakInvisible',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Barspell'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Barspell',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13320,
-            ['item'] = 'Black Earring',
-            ['reason'] = 'pool delta MP+4',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 13833,
-            ['item'] = 'Noble\'s Ribbon',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13331,
-            ['item'] = 'Sardonyx Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 13483,
-            ['item'] = 'Pearl Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13483,
-            ['item'] = 'Pearl Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Back',
-            ['itemId'] = 13685,
-            ['item'] = 'Invisible Mantle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Body',
-            ['itemId'] = 11309,
-            ['item'] = 'Benedight Coat',
-            ['reason'] = 'pool delta HP-7, MP-7',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 16364,
-            ['item'] = 'Benedight Hose',
-            ['reason'] = 'pool delta MP-5',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13083,
-            ['item'] = 'Chain Choker',
-            ['reason'] = 'pool delta HP-5',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 0,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 4,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Phalanx'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Phalanx',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13320,
-            ['item'] = 'Black Earring',
-            ['reason'] = 'pool delta MP+4',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 13833,
-            ['item'] = 'Noble\'s Ribbon',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13331,
-            ['item'] = 'Sardonyx Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 13483,
-            ['item'] = 'Pearl Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13483,
-            ['item'] = 'Pearl Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Back',
-            ['itemId'] = 13685,
-            ['item'] = 'Invisible Mantle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Body',
-            ['itemId'] = 11309,
-            ['item'] = 'Benedight Coat',
-            ['reason'] = 'pool delta HP-7, MP-7',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 16364,
-            ['item'] = 'Benedight Hose',
-            ['reason'] = 'pool delta MP-5',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13083,
-            ['item'] = 'Chain Choker',
-            ['reason'] = 'pool delta HP-5',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 0,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 4,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Aquaveil'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Aquaveil',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Haste'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Haste',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5091,41 +5501,9 @@ mechanicsSwapPlanner.transitions['Enfeebling'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5156,14 +5534,14 @@ mechanicsSwapPlanner.transitions['Enfeebling'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5185,25 +5563,9 @@ mechanicsSwapPlanner.transitions['Sleep'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5211,22 +5573,6 @@ mechanicsSwapPlanner.transitions['Sleep'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5257,14 +5603,14 @@ mechanicsSwapPlanner.transitions['Sleep'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5286,25 +5632,9 @@ mechanicsSwapPlanner.transitions['Bind'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5312,22 +5642,6 @@ mechanicsSwapPlanner.transitions['Bind'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5358,14 +5672,290 @@ mechanicsSwapPlanner.transitions['Bind'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Burn'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Burn',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Choke'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Choke',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Drown'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Drown',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Frost'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Frost',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5387,25 +5977,9 @@ mechanicsSwapPlanner.transitions['Gravity'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5413,22 +5987,6 @@ mechanicsSwapPlanner.transitions['Gravity'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5459,14 +6017,14 @@ mechanicsSwapPlanner.transitions['Gravity'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5485,54 +6043,6 @@ mechanicsSwapPlanner.transitions['Silence'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Legs',
@@ -5540,34 +6050,18 @@ mechanicsSwapPlanner.transitions['Silence'] = {
             ['item'] = 'Linen Slops',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13470,
-            ['item'] = 'Clear Ring',
-            ['reason'] = 'ordinary target equip',
-        },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5586,54 +6080,6 @@ mechanicsSwapPlanner.transitions['Slow'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Legs',
@@ -5641,34 +6087,18 @@ mechanicsSwapPlanner.transitions['Slow'] = {
             ['item'] = 'Linen Slops',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13470,
-            ['item'] = 'Clear Ring',
-            ['reason'] = 'ordinary target equip',
-        },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5687,28 +6117,49 @@ mechanicsSwapPlanner.transitions['Paralyze'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Poison'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Poison',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5716,22 +6167,6 @@ mechanicsSwapPlanner.transitions['Paralyze'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5762,14 +6197,152 @@ mechanicsSwapPlanner.transitions['Paralyze'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Rasp'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Rasp',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Shock'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Shock',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5791,25 +6364,9 @@ mechanicsSwapPlanner.transitions['Blind'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5817,22 +6374,6 @@ mechanicsSwapPlanner.transitions['Blind'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5863,14 +6404,14 @@ mechanicsSwapPlanner.transitions['Blind'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5892,25 +6433,9 @@ mechanicsSwapPlanner.transitions['Dispel'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -5918,22 +6443,6 @@ mechanicsSwapPlanner.transitions['Dispel'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -5964,14 +6473,14 @@ mechanicsSwapPlanner.transitions['Dispel'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -5982,62 +6491,6 @@ mechanicsSwapPlanner.transitions['Dia'] = {
     ['targetSet'] = 'Dia',
     ['actions'] = {
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Legs',
@@ -6045,34 +6498,18 @@ mechanicsSwapPlanner.transitions['Dia'] = {
             ['item'] = 'Linen Slops',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13470,
-            ['item'] = 'Clear Ring',
-            ['reason'] = 'ordinary target equip',
-        },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 38,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6085,7 +6522,7 @@ mechanicsSwapPlanner.transitions['Bio'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 15545,
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
@@ -6101,41 +6538,9 @@ mechanicsSwapPlanner.transitions['Bio'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6157,31 +6562,23 @@ mechanicsSwapPlanner.transitions['Bio'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
             ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
         },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6200,54 +6597,6 @@ mechanicsSwapPlanner.transitions['Divine'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Legs',
@@ -6255,34 +6604,18 @@ mechanicsSwapPlanner.transitions['Divine'] = {
             ['item'] = 'Linen Slops',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13470,
-            ['item'] = 'Clear Ring',
-            ['reason'] = 'ordinary target equip',
-        },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6311,41 +6644,9 @@ mechanicsSwapPlanner.transitions['Elemental'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6376,14 +6677,14 @@ mechanicsSwapPlanner.transitions['Elemental'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6412,41 +6713,9 @@ mechanicsSwapPlanner.transitions['Nuke'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6477,14 +6746,14 @@ mechanicsSwapPlanner.transitions['Nuke'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6497,7 +6766,7 @@ mechanicsSwapPlanner.transitions['DarkMagic'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 15545,
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
@@ -6513,41 +6782,9 @@ mechanicsSwapPlanner.transitions['DarkMagic'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6569,140 +6806,23 @@ mechanicsSwapPlanner.transitions['DarkMagic'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
-    },
-    ['warnings'] = {},
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['DrainAspir'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'DrainAspir',
-    ['actions'] = {
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
             ['slot'] = 'Ring2',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15219,
-            ['item'] = 'Sinister Mask',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
             ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
         },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6715,7 +6835,7 @@ mechanicsSwapPlanner.transitions['Absorb'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 15545,
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
@@ -6731,41 +6851,9 @@ mechanicsSwapPlanner.transitions['Absorb'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6787,31 +6875,23 @@ mechanicsSwapPlanner.transitions['Absorb'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
             ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
         },
     },
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6833,25 +6913,9 @@ mechanicsSwapPlanner.transitions['Stun'] = {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_mixed',
             ['slot'] = 'Head',
-            ['itemId'] = 15208,
-            ['item'] = 'Baron\'s Chapeau',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
             ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
@@ -6859,22 +6923,6 @@ mechanicsSwapPlanner.transitions['Stun'] = {
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -6905,14 +6953,14 @@ mechanicsSwapPlanner.transitions['Stun'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -6933,22 +6981,6 @@ mechanicsSwapPlanner.transitions['Ninjutsu'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
@@ -6981,14 +7013,6 @@ mechanicsSwapPlanner.transitions['Ninjutsu'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
             ['itemId'] = 13470,
             ['item'] = 'Clear Ring',
@@ -7002,18 +7026,26 @@ mechanicsSwapPlanner.transitions['Ninjutsu'] = {
             ['item'] = 'Empress Hairpin',
             ['reason'] = 'pool delta HP-9, MP-15',
         },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta MP-4',
+        },
     },
     ['warnings'] = { 'final_hp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = -15,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 38,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 49,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7024,81 +7056,49 @@ mechanicsSwapPlanner.transitions['Utsusemi'] = {
     ['targetSet'] = 'Utsusemi',
     ['actions'] = {
         {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
             ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_gain',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 15545,
-            ['item'] = 'Tamas Ring',
-            ['reason'] = 'pool delta MP+30',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ammo',
-            ['itemId'] = 18136,
-            ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
+            ['phase'] = 'equip_pool_loss',
             ['slot'] = 'Head',
-            ['itemId'] = 12495,
-            ['item'] = 'Silver Hairpin',
-            ['reason'] = 'ordinary target equip',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-9, MP-15',
         },
         {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Legs',
-            ['itemId'] = 12857,
-            ['item'] = 'Linen Slops',
-            ['reason'] = 'ordinary target equip',
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13328,
+            ['item'] = 'Mythril Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 5,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 64,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 19,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7117,20 +7117,12 @@ mechanicsSwapPlanner.transitions['NinjutsuEnfeeble'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
         {
             ['key'] = 'equip_target',
@@ -7159,47 +7151,23 @@ mechanicsSwapPlanner.transitions['NinjutsuEnfeeble'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
             ['itemId'] = 13470,
             ['item'] = 'Clear Ring',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Head',
-            ['itemId'] = 15224,
-            ['item'] = 'Empress Hairpin',
-            ['reason'] = 'pool delta HP-9, MP-15',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = -15,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 38,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7209,6 +7177,14 @@ mechanicsSwapPlanner.transitions['Weaponskill'] = {
     ['sourceSet'] = 'Aftercast',
     ['targetSet'] = 'Weaponskill',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -7228,15 +7204,15 @@ mechanicsSwapPlanner.transitions['Weaponskill'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13477,
             ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
@@ -7273,26 +7249,18 @@ mechanicsSwapPlanner.transitions['Weaponskill'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['warnings'] = { 'final_hp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 4,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 41,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7321,9 +7289,17 @@ mechanicsSwapPlanner.transitions['WeaponSkillAccuracy'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -7366,26 +7342,18 @@ mechanicsSwapPlanner.transitions['WeaponSkillAccuracy'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 4,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7404,30 +7372,6 @@ mechanicsSwapPlanner.transitions['WSElemental'] = {
             ['reason'] = 'pool delta MP+30',
         },
         {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_mixed',
-            ['slot'] = 'Head',
-            ['itemId'] = 15219,
-            ['item'] = 'Sinister Mask',
-            ['reason'] = 'pool delta HP+6, MP-15',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Legs',
@@ -7439,29 +7383,61 @@ mechanicsSwapPlanner.transitions['WSElemental'] = {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
+            ['itemId'] = 13014,
+            ['item'] = 'Leaping Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13470,
-            ['item'] = 'Clear Ring',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
             ['reason'] = 'ordinary target equip',
         },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-9, MP-15',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Body',
+            ['itemId'] = 12583,
+            ['item'] = 'Beetle Harness',
+            ['reason'] = 'pool delta HP-7, MP-7',
+        },
     },
-    ['warnings'] = {},
+    ['warnings'] = { 'final_hp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
+            ['sourceFlat'] = 38,
             ['targetFlat'] = 46,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
@@ -7480,98 +7456,18 @@ mechanicsSwapPlanner.transitions['JobAbility'] = {
             ['item'] = 'Baron\'s Chapeau',
             ['reason'] = 'pool delta HP+6, MP-15',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 13469,
-            ['item'] = 'Leather Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Back',
-            ['itemId'] = 13570,
-            ['item'] = 'Ram Mantle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 14260,
-            ['item'] = 'Republic Subligar',
-            ['reason'] = 'pool delta MP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 16,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7605,14 +7501,27 @@ mechanicsSwapPlanner.transitions['Enmity'] = {
             ['item'] = 'Kukri',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
+    },
+    ['warnings'] = { 'final_mp_pool_lower' },
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
         },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Flourish'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Flourish',
+    ['actions'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -7624,33 +7533,33 @@ mechanicsSwapPlanner.transitions['Enmity'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Feet',
-            ['itemId'] = 15348,
-            ['item'] = 'Mountain Gaiters',
+            ['itemId'] = 13014,
+            ['item'] = 'Leaping Boots',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Waist',
-            ['itemId'] = 13192,
-            ['item'] = 'Leather Belt',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 13469,
-            ['item'] = 'Leather Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -7664,23 +7573,23 @@ mechanicsSwapPlanner.transitions['Enmity'] = {
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 14260,
-            ['item'] = 'Republic Subligar',
-            ['reason'] = 'pool delta MP-5',
+            ['slot'] = 'Head',
+            ['itemId'] = 15224,
+            ['item'] = 'Empress Hairpin',
+            ['reason'] = 'pool delta HP-9, MP-15',
         },
     },
-    ['warnings'] = { 'final_mp_pool_lower' },
+    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 16,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7693,14 +7602,6 @@ mechanicsSwapPlanner.transitions['Steps'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Hands',
             ['itemId'] = 15052,
             ['item'] = 'Guerilla Gloves',
@@ -7712,6 +7613,14 @@ mechanicsSwapPlanner.transitions['Steps'] = {
             ['slot'] = 'Feet',
             ['itemId'] = 13014,
             ['item'] = 'Leaping Boots',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -7738,127 +7647,18 @@ mechanicsSwapPlanner.transitions['Steps'] = {
             ['item'] = 'Empress Hairpin',
             ['reason'] = 'pool delta HP-9, MP-15',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 14260,
-            ['item'] = 'Republic Subligar',
-            ['reason'] = 'pool delta MP-5',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-    },
-};
-mechanicsSwapPlanner.transitions['Samba'] = {
-    ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'Samba',
-    ['actions'] = {
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Feet',
-            ['itemId'] = 13014,
-            ['item'] = 'Leaping Boots',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 13514,
-            ['item'] = 'Archer\'s Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Back',
-            ['itemId'] = 13570,
-            ['item'] = 'Ram Mantle',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Head',
-            ['itemId'] = 15224,
-            ['item'] = 'Empress Hairpin',
-            ['reason'] = 'pool delta HP-9, MP-15',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Legs',
-            ['itemId'] = 14260,
-            ['item'] = 'Republic Subligar',
-            ['reason'] = 'pool delta MP-5',
-        },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
-    },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
-    ['poolSummaries'] = {
-        ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = -4,
-            ['sourcePercent'] = 0,
-            ['targetPercent'] = 0,
-        },
-        ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 23,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7887,41 +7687,9 @@ mechanicsSwapPlanner.transitions['Elemental_Fire'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -7952,14 +7720,14 @@ mechanicsSwapPlanner.transitions['Elemental_Fire'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -7988,41 +7756,9 @@ mechanicsSwapPlanner.transitions['Weather_Fire'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8053,14 +7789,14 @@ mechanicsSwapPlanner.transitions['Weather_Fire'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8089,41 +7825,9 @@ mechanicsSwapPlanner.transitions['Day_Fire'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8154,14 +7858,14 @@ mechanicsSwapPlanner.transitions['Day_Fire'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8190,41 +7894,9 @@ mechanicsSwapPlanner.transitions['Elemental_Ice'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8255,14 +7927,14 @@ mechanicsSwapPlanner.transitions['Elemental_Ice'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8291,41 +7963,9 @@ mechanicsSwapPlanner.transitions['Weather_Ice'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8356,14 +7996,14 @@ mechanicsSwapPlanner.transitions['Weather_Ice'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8392,41 +8032,9 @@ mechanicsSwapPlanner.transitions['Day_Ice'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8457,14 +8065,14 @@ mechanicsSwapPlanner.transitions['Day_Ice'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8493,41 +8101,9 @@ mechanicsSwapPlanner.transitions['Elemental_Wind'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8558,14 +8134,14 @@ mechanicsSwapPlanner.transitions['Elemental_Wind'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8594,41 +8170,9 @@ mechanicsSwapPlanner.transitions['Weather_Wind'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8659,14 +8203,14 @@ mechanicsSwapPlanner.transitions['Weather_Wind'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8695,41 +8239,9 @@ mechanicsSwapPlanner.transitions['Day_Wind'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8760,14 +8272,14 @@ mechanicsSwapPlanner.transitions['Day_Wind'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8796,41 +8308,9 @@ mechanicsSwapPlanner.transitions['Elemental_Earth'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8861,14 +8341,14 @@ mechanicsSwapPlanner.transitions['Elemental_Earth'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8897,41 +8377,9 @@ mechanicsSwapPlanner.transitions['Weather_Earth'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -8962,14 +8410,14 @@ mechanicsSwapPlanner.transitions['Weather_Earth'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -8998,41 +8446,9 @@ mechanicsSwapPlanner.transitions['Day_Earth'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9063,14 +8479,14 @@ mechanicsSwapPlanner.transitions['Day_Earth'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9099,41 +8515,9 @@ mechanicsSwapPlanner.transitions['Elemental_Thunder'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9164,14 +8548,14 @@ mechanicsSwapPlanner.transitions['Elemental_Thunder'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9200,41 +8584,9 @@ mechanicsSwapPlanner.transitions['Weather_Thunder'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9265,14 +8617,14 @@ mechanicsSwapPlanner.transitions['Weather_Thunder'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9301,41 +8653,9 @@ mechanicsSwapPlanner.transitions['Day_Thunder'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9366,14 +8686,14 @@ mechanicsSwapPlanner.transitions['Day_Thunder'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9402,41 +8722,9 @@ mechanicsSwapPlanner.transitions['Elemental_Lightning'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9467,14 +8755,14 @@ mechanicsSwapPlanner.transitions['Elemental_Lightning'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9503,41 +8791,9 @@ mechanicsSwapPlanner.transitions['Weather_Lightning'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9568,14 +8824,14 @@ mechanicsSwapPlanner.transitions['Weather_Lightning'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9604,41 +8860,9 @@ mechanicsSwapPlanner.transitions['Day_Lightning'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9669,14 +8893,14 @@ mechanicsSwapPlanner.transitions['Day_Lightning'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9705,41 +8929,9 @@ mechanicsSwapPlanner.transitions['Elemental_Water'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9770,14 +8962,14 @@ mechanicsSwapPlanner.transitions['Elemental_Water'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9806,41 +8998,9 @@ mechanicsSwapPlanner.transitions['Weather_Water'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9871,14 +9031,14 @@ mechanicsSwapPlanner.transitions['Weather_Water'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -9907,41 +9067,9 @@ mechanicsSwapPlanner.transitions['Day_Water'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -9972,14 +9100,14 @@ mechanicsSwapPlanner.transitions['Day_Water'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10008,41 +9136,9 @@ mechanicsSwapPlanner.transitions['Elemental_Light'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10073,14 +9169,14 @@ mechanicsSwapPlanner.transitions['Elemental_Light'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10109,41 +9205,9 @@ mechanicsSwapPlanner.transitions['Weather_Light'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10174,14 +9238,14 @@ mechanicsSwapPlanner.transitions['Weather_Light'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10210,41 +9274,9 @@ mechanicsSwapPlanner.transitions['Day_Light'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10275,14 +9307,14 @@ mechanicsSwapPlanner.transitions['Day_Light'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10311,41 +9343,9 @@ mechanicsSwapPlanner.transitions['Elemental_Dark'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10376,14 +9376,14 @@ mechanicsSwapPlanner.transitions['Elemental_Dark'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10412,41 +9412,9 @@ mechanicsSwapPlanner.transitions['Weather_Dark'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10477,14 +9445,14 @@ mechanicsSwapPlanner.transitions['Weather_Dark'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10513,41 +9481,9 @@ mechanicsSwapPlanner.transitions['Day_Dark'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Main',
-            ['itemId'] = 16472,
-            ['item'] = 'Poison Knife',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Sub',
-            ['itemId'] = 16473,
-            ['item'] = 'Kukri',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
             ['slot'] = 'Ammo',
             ['itemId'] = 18136,
             ['item'] = 'Morion Tathlum',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Body',
-            ['itemId'] = 12593,
-            ['item'] = 'Cotton Doublet',
-            ['reason'] = 'ordinary target equip',
-        },
-        {
-            ['key'] = 'equip_target',
-            ['phase'] = 'equip_target',
-            ['slot'] = 'Hands',
-            ['itemId'] = 15052,
-            ['item'] = 'Guerilla Gloves',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10578,23 +9514,55 @@ mechanicsSwapPlanner.transitions['Day_Dark'] = {
     ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 49,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
     },
 };
-mechanicsSwapPlanner.transitions['ThirdEye'] = {
+mechanicsSwapPlanner.transitions['DualWield'] = {
     ['sourceSet'] = 'Aftercast',
-    ['targetSet'] = 'ThirdEye',
+    ['targetSet'] = 'DualWield',
     ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ear1',
+            ['itemId'] = 13320,
+            ['item'] = 'Black Earring',
+            ['reason'] = 'pool delta MP+4',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Main',
+            ['itemId'] = 16473,
+            ['item'] = 'Kukri',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Sub',
+            ['itemId'] = 16473,
+            ['item'] = 'Kukri',
+            ['reason'] = 'ordinary target equip',
+        },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
@@ -10623,8 +9591,8 @@ mechanicsSwapPlanner.transitions['ThirdEye'] = {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Neck',
-            ['itemId'] = 13072,
-            ['item'] = 'Bird Whistle',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10638,39 +9606,235 @@ mechanicsSwapPlanner.transitions['ThirdEye'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ear1',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ear2',
-            ['itemId'] = 13328,
-            ['item'] = 'Mythril Earring',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Back',
+            ['itemId'] = 13570,
+            ['item'] = 'Ram Mantle',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'pool_bridge_transition',
             ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Head',
-            ['itemId'] = 15224,
-            ['item'] = 'Empress Hairpin',
-            ['reason'] = 'pool delta HP-9, MP-15',
+            ['slot'] = 'Legs',
+            ['itemId'] = 14260,
+            ['item'] = 'Republic Subligar',
+            ['reason'] = 'pool delta MP-5',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_loss',
+            ['slot'] = 'Ear2',
+            ['itemId'] = 13331,
+            ['item'] = 'Sardonyx Earring',
+            ['reason'] = 'pool delta MP-4',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
+    ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 1,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['Cursna'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'Cursna',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['StatusRemoval'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'StatusRemoval',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DivineDamage'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DivineDamage',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 68,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+    },
+};
+mechanicsSwapPlanner.transitions['DrainAspir'] = {
+    ['sourceSet'] = 'Aftercast',
+    ['targetSet'] = 'DrainAspir',
+    ['actions'] = {
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_gain',
+            ['slot'] = 'Ring1',
+            ['itemId'] = 15545,
+            ['item'] = 'Tamas Ring',
+            ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 15219,
+            ['item'] = 'Sinister Mask',
+            ['reason'] = 'pool delta HP+6, MP-15',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ammo',
+            ['itemId'] = 18136,
+            ['item'] = 'Morion Tathlum',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Legs',
+            ['itemId'] = 12857,
+            ['item'] = 'Linen Slops',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Feet',
+            ['itemId'] = 15348,
+            ['item'] = 'Mountain Gaiters',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
+            ['slot'] = 'Ring2',
+            ['itemId'] = 13470,
+            ['item'] = 'Clear Ring',
+            ['reason'] = 'ordinary target equip',
+        },
+    },
+    ['warnings'] = {},
+    ['poolSummaries'] = {
+        ['HP'] = {
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
+            ['sourcePercent'] = 0,
+            ['targetPercent'] = 0,
+        },
+        ['MP'] = {
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10707,17 +9871,25 @@ mechanicsSwapPlanner.transitions['WS_Combo'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10744,26 +9916,18 @@ mechanicsSwapPlanner.transitions['WS_Combo'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10800,17 +9964,25 @@ mechanicsSwapPlanner.transitions['WSAcc_Combo'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13514,
-            ['item'] = 'Archer\'s Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -10837,26 +10009,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Combo'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10885,15 +10049,15 @@ mechanicsSwapPlanner.transitions['WS_Shoulder_Tackle'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -10906,26 +10070,18 @@ mechanicsSwapPlanner.transitions['WS_Shoulder_Tackle'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 33,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -10954,15 +10110,15 @@ mechanicsSwapPlanner.transitions['WSAcc_Shoulder_Tackle'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -10975,26 +10131,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Shoulder_Tackle'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 5,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 33,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11031,17 +10179,25 @@ mechanicsSwapPlanner.transitions['WS_Backhand_Blow'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -11068,26 +10224,18 @@ mechanicsSwapPlanner.transitions['WS_Backhand_Blow'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11124,17 +10272,25 @@ mechanicsSwapPlanner.transitions['WSAcc_Backhand_Blow'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -11161,26 +10317,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Backhand_Blow'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11217,15 +10365,15 @@ mechanicsSwapPlanner.transitions['WS_Wasp_Sting'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -11254,26 +10402,18 @@ mechanicsSwapPlanner.transitions['WS_Wasp_Sting'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11310,15 +10450,15 @@ mechanicsSwapPlanner.transitions['WSAcc_Wasp_Sting'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -11347,26 +10487,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Wasp_Sting'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11428,14 +10560,14 @@ mechanicsSwapPlanner.transitions['WS_Gust_Slash'] = {
     ['warnings'] = { 'final_hp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = -15,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 35,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11480,6 +10612,14 @@ mechanicsSwapPlanner.transitions['WSAcc_Gust_Slash'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
@@ -11501,26 +10641,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Gust_Slash'] = {
             ['item'] = 'Empress Hairpin',
             ['reason'] = 'pool delta HP-9, MP-15',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = -11,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 39,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11557,9 +10689,17 @@ mechanicsSwapPlanner.transitions['WS_Shadowstitch'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -11578,26 +10718,18 @@ mechanicsSwapPlanner.transitions['WS_Shadowstitch'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13094,
-            ['item'] = 'Flower Necklace',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11634,9 +10766,17 @@ mechanicsSwapPlanner.transitions['WSAcc_Shadowstitch'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 13094,
+            ['item'] = 'Flower Necklace',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13483,
+            ['item'] = 'Pearl Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -11655,26 +10795,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Shadowstitch'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 13094,
-            ['item'] = 'Flower Necklace',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11711,15 +10843,15 @@ mechanicsSwapPlanner.transitions['WS_Viper_Bite'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -11748,26 +10880,18 @@ mechanicsSwapPlanner.transitions['WS_Viper_Bite'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11804,15 +10928,15 @@ mechanicsSwapPlanner.transitions['WSAcc_Viper_Bite'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
-            ['slot'] = 'Ring2',
+            ['slot'] = 'Ring1',
             ['itemId'] = 13514,
             ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
@@ -11841,26 +10965,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Viper_Bite'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11897,17 +11013,25 @@ mechanicsSwapPlanner.transitions['WS_Fast_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -11934,26 +11058,18 @@ mechanicsSwapPlanner.transitions['WS_Fast_Blade'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -11990,17 +11106,25 @@ mechanicsSwapPlanner.transitions['WSAcc_Fast_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -12027,26 +11151,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Fast_Blade'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_hp_pool_lower', 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = -4,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12097,17 +11213,17 @@ mechanicsSwapPlanner.transitions['WS_Burning_Blade'] = {
             ['reason'] = 'ordinary target equip',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 0,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 35,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12160,31 +11276,31 @@ mechanicsSwapPlanner.transitions['WSAcc_Burning_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
             ['itemId'] = 13477,
             ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 4,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 39,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12229,17 +11345,25 @@ mechanicsSwapPlanner.transitions['WS_Flat_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -12250,26 +11374,18 @@ mechanicsSwapPlanner.transitions['WS_Flat_Blade'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12314,17 +11430,25 @@ mechanicsSwapPlanner.transitions['WSAcc_Flat_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
-            ['itemId'] = 10870,
-            ['item'] = 'Venture Ring',
+            ['itemId'] = 13477,
+            ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
             ['slot'] = 'Ring2',
-            ['itemId'] = 13477,
-            ['item'] = 'Garnet Ring',
+            ['itemId'] = 13514,
+            ['item'] = 'Archer\'s Ring',
             ['reason'] = 'ordinary target equip',
         },
         {
@@ -12335,26 +11459,18 @@ mechanicsSwapPlanner.transitions['WSAcc_Flat_Blade'] = {
             ['item'] = 'Republic Subligar',
             ['reason'] = 'pool delta MP-5',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
     ['warnings'] = { 'final_mp_pool_lower' },
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
+            ['sourceFlat'] = 5,
             ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 11,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 18,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12371,6 +11487,14 @@ mechanicsSwapPlanner.transitions['WS_Shining_Blade'] = {
             ['itemId'] = 15545,
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 12474,
+            ['item'] = 'Wool Hat',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
         {
             ['key'] = 'equip_target',
@@ -12397,17 +11521,17 @@ mechanicsSwapPlanner.transitions['WS_Shining_Blade'] = {
             ['reason'] = 'ordinary target equip',
         },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 0,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 35,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
@@ -12424,6 +11548,14 @@ mechanicsSwapPlanner.transitions['WSAcc_Shining_Blade'] = {
             ['itemId'] = 15545,
             ['item'] = 'Tamas Ring',
             ['reason'] = 'pool delta MP+30',
+        },
+        {
+            ['key'] = 'pool_bridge_transition',
+            ['phase'] = 'equip_pool_mixed',
+            ['slot'] = 'Head',
+            ['itemId'] = 12474,
+            ['item'] = 'Wool Hat',
+            ['reason'] = 'pool delta HP+6, MP-15',
         },
         {
             ['key'] = 'equip_target',
@@ -12452,40 +11584,46 @@ mechanicsSwapPlanner.transitions['WSAcc_Shining_Blade'] = {
         {
             ['key'] = 'equip_target',
             ['phase'] = 'equip_target',
+            ['slot'] = 'Neck',
+            ['itemId'] = 16301,
+            ['item'] = 'Focus Collar',
+            ['reason'] = 'ordinary target equip',
+        },
+        {
+            ['key'] = 'equip_target',
+            ['phase'] = 'equip_target',
             ['slot'] = 'Ring1',
             ['itemId'] = 13477,
             ['item'] = 'Garnet Ring',
             ['reason'] = 'ordinary target equip',
         },
-        {
-            ['key'] = 'pool_bridge_transition',
-            ['phase'] = 'equip_pool_loss',
-            ['slot'] = 'Neck',
-            ['itemId'] = 16301,
-            ['item'] = 'Focus Collar',
-            ['reason'] = 'pool delta HP-5',
-        },
     },
-    ['warnings'] = { 'final_hp_pool_lower' },
+    ['warnings'] = {},
     ['poolSummaries'] = {
         ['HP'] = {
-            ['sourceFlat'] = 10,
-            ['targetFlat'] = 4,
+            ['sourceFlat'] = 5,
+            ['targetFlat'] = 11,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
         ['MP'] = {
-            ['sourceFlat'] = 34,
-            ['targetFlat'] = 39,
+            ['sourceFlat'] = 38,
+            ['targetFlat'] = 53,
             ['sourcePercent'] = 0,
             ['targetPercent'] = 0,
         },
     },
 };
+mechanicsSwapPlanner.skippedTransitions['IdleCity'] = 'runtime_overlay';
+mechanicsSwapPlanner.skippedTransitions['IdleCombat'] = 'runtime_overlay';
+mechanicsSwapPlanner.skippedTransitions['IdleMaxMP'] = 'runtime_overlay';
+mechanicsSwapPlanner.skippedTransitions['IdleMaxHP'] = 'runtime_overlay';
+mechanicsSwapPlanner.skippedTransitions['IdleNonCombat'] = 'runtime_overlay';
 mechanicsSwapPlanner.skippedTransitions['Movement'] = 'utility_set';
 mechanicsSwapPlanner.skippedTransitions['Movement_City'] = 'utility_set';
 mechanicsSwapPlanner.skippedTransitions['Movement_Night'] = 'utility_set';
 mechanicsSwapPlanner.skippedTransitions['Movement_DuskToDawn'] = 'utility_set';
+mechanicsSwapPlanner.skippedTransitions['Dt'] = 'utility_set';
 mechanicsSwapPlanner.skippedTransitions['Crafting'] = 'utility_set';
 
 local blueMagicRoutes = {
@@ -12589,7 +11727,7 @@ local blueMagicRoutes = {
     ['sandspray'] = 'Enfeebling',
     ['screwdriver'] = 'PhysicalBlueMagic',
     ['seedspray'] = 'PhysicalBlueMagic',
-    ['self-destruct'] = 'MagicalBlueMagic',
+    ['self destruct'] = 'MagicalBlueMagic',
     ['sheep song'] = 'Enfeebling',
     ['sickle slash'] = 'PhysicalBlueMagic',
     ['smite of rage'] = 'PhysicalBlueMagic',
@@ -12599,7 +11737,7 @@ local blueMagicRoutes = {
     ['spiral spin'] = 'PhysicalBlueMagic',
     ['sprout smack'] = 'PhysicalBlueMagic',
     ['stinking gas'] = 'Enfeebling',
-    ['sub-zero smash'] = 'PhysicalBlueMagic',
+    ['sub zero smash'] = 'PhysicalBlueMagic',
     ['sudden lunge'] = 'PhysicalBlueMagic',
     ['tail slap'] = 'PhysicalBlueMagic',
     ['temporal shift'] = 'Enfeebling',
@@ -12610,7 +11748,7 @@ local blueMagicRoutes = {
     ['venom shell'] = 'Enfeebling',
     ['vertical cleave'] = 'PhysicalBlueMagic',
     ['voracious trunk'] = 'Enfeebling',
-    ['warm-up'] = 'Enhancing',
+    ['warm up'] = 'Enhancing',
     ['whirl of rage'] = 'PhysicalBlueMagic',
     ['white wind'] = 'Cure',
     ['wild carrot'] = 'Cure',
@@ -12650,6 +11788,8 @@ local weaponSkillAccuracyRoutes = {
 
 
 
+
+
 local OVERT_DEFENSE_TARGET_COUNT = 3;
 local OVERT_DEFENSE_TP_UNLOCK = 700;
 local OVERT_DEFENSE_HP_FORCE_HPP = 60;
@@ -12665,14 +11805,6 @@ local dangerousStatusBuffs = {
 };
 
 local dangerousStatusIds = { 2, 7, 10, 11, 15, 18, 19, 28 };
-
-local mountedStatusBuffs = {
-    chocobo = true,
-    mount = true,
-    mounted = true,
-};
-
-local mountedStatusIds = { 252 };
 
 local cityZoneIds = {
     [26] = true,  -- Tavnazian Safehold
@@ -12830,6 +11962,172 @@ local function normalize(value)
     return string.lower(tostring(value or ''));
 end
 
+profile.BuffItemContainers = { 0, 8, 10, 11, 12, 13, 14, 15, 16 };
+
+function profile.BuffItemOverlaysEnabled()
+    return state.BuffItemOverlaysEnabled == true;
+end
+
+function profile.BuffItemOverlayStateText()
+    if profile.BuffItemOverlaysEnabled() then
+        return 'on';
+    end
+    return 'off';
+end
+
+function profile.HandleBuffItemOverlayCommand(args)
+    local value = normalize(args and args[2]);
+    if value == 'on' or value == 'enable' or value == 'enabled' or value == 'true' or value == '1' then
+        state.BuffItemOverlaysEnabled = true;
+        message('Buff item overlays=on.');
+    elseif value == 'off' or value == 'disable' or value == 'disabled' or value == 'false' or value == '0' then
+        state.BuffItemOverlaysEnabled = false;
+        message('Buff item overlays=off.');
+    elseif value == '' or value == 'status' or value == 'help' then
+        message('Buff item overlays=' .. profile.BuffItemOverlayStateText() .. '; use /lac fwd buffitems on|off|status.');
+    else
+        message('Unknown buffitems command. Use /lac fwd buffitems on|off|status.');
+    end
+end
+
+function profile.BuffItemInventory()
+    if not AshitaCore then
+        return nil;
+    end
+
+    if AshitaCore.GetMemoryManager then
+        local okManager, manager = pcall(function()
+            return AshitaCore:GetMemoryManager();
+        end);
+        if okManager and manager and manager.GetInventory then
+            local okInventory, inventory = pcall(function()
+                return manager:GetInventory();
+            end);
+            if okInventory and inventory then
+                return inventory;
+            end
+        end
+    end
+
+    if AshitaCore.GetDataManager then
+        local okManager, manager = pcall(function()
+            return AshitaCore:GetDataManager();
+        end);
+        if okManager and manager and manager.GetInventory then
+            local okInventory, inventory = pcall(function()
+                return manager:GetInventory();
+            end);
+            if okInventory and inventory then
+                return inventory;
+            end
+        end
+    end
+
+    return nil;
+end
+
+function profile.BuffItemContainerMax(inventory, container)
+    if not inventory then
+        return 80;
+    end
+
+    local maxValue = nil;
+    if inventory.GetContainerMax then
+        pcall(function()
+            maxValue = inventory:GetContainerMax(container);
+        end);
+    end
+    if maxValue == nil and inventory.GetContainerCountMax then
+        pcall(function()
+            maxValue = inventory:GetContainerCountMax(container);
+        end);
+    end
+    if maxValue == nil and inventory.GetContainerItemCount then
+        pcall(function()
+            maxValue = inventory:GetContainerItemCount(container);
+        end);
+    end
+
+    maxValue = tonumber(maxValue);
+    if maxValue ~= nil and maxValue >= 0 and maxValue <= 200 then
+        return maxValue;
+    end
+    return 80;
+end
+
+function profile.BuffItemContainerItem(inventory, container, index)
+    if not inventory then
+        return nil;
+    end
+
+    if inventory.GetContainerItem then
+        local ok, item = pcall(function()
+            return inventory:GetContainerItem(container, index);
+        end);
+        if ok and item then
+            return item;
+        end
+    end
+    if inventory.GetItem then
+        local ok, item = pcall(function()
+            return inventory:GetItem(container, index);
+        end);
+        if ok and item then
+            return item;
+        end
+    end
+    return nil;
+end
+
+function profile.BuffItemEntryId(entry)
+    if type(entry) ~= 'table' or type(entry.item) ~= 'table' then
+        return nil;
+    end
+    return tonumber(entry.item.id or entry.item.Id or entry.item.itemId or entry.item.ItemId);
+end
+
+function profile.BuffItemRuntimeItemId(item)
+    local itemType = type(item);
+    if itemType ~= 'table' and itemType ~= 'userdata' then
+        return nil;
+    end
+    return tonumber(item.Id or item.id or item.ItemId or item.itemId or item.Item or item.item);
+end
+
+function profile.BuffItemRuntimeItemCount(item)
+    local itemType = type(item);
+    if itemType ~= 'table' and itemType ~= 'userdata' then
+        return nil;
+    end
+    return tonumber(item.Count or item.count or item.Quantity or item.quantity or item.Charges or item.charges or item.Uses or item.uses);
+end
+
+function profile.BuffItemHasUsesLeft(entry)
+    local wantedId = profile.BuffItemEntryId(entry);
+    if wantedId == nil then
+        return false;
+    end
+
+    local inventory = profile.BuffItemInventory();
+    if not inventory then
+        return false;
+    end
+
+    for _, container in ipairs(profile.BuffItemContainers or {}) do
+        local maxIndex = profile.BuffItemContainerMax(inventory, container);
+        for index = 0, maxIndex do
+            local item = profile.BuffItemContainerItem(inventory, container, index);
+            if profile.BuffItemRuntimeItemId(item) == wantedId then
+                local count = profile.BuffItemRuntimeItemCount(item);
+                if count ~= nil and count > 0 then
+                    return true;
+                end
+            end
+        end
+    end
+    return false;
+end
+
 local function styleListText()
     local parts = {};
     for _, styleName in ipairs(playstyleNames) do
@@ -12855,13 +12153,24 @@ local function printStyleList()
 end
 
 local function printOddLuaHelp()
-    message('Quick start: /lac fwd help | styles | status | lockstyle | warp | subjob | mechanics help | reconcile status | refreshgear.');
+    message('Quick start: /lac fwd help | styles | status | keypad | lockstyle | weaponsync | warp | subjob | buffitems | pdt | fireres | mode.');
     message('Current style=' .. tostring(state.Playstyle) .. '; default=' .. tostring(DEFAULT_PLAYSTYLE) .. '.');
     printStyleList();
     message('Lockstyle: /lac fwd lockstyle equips the TP set first, then /lockstyle on.');
-    message('Reconciliation: /lac fwd reconcile on|off|status|last.');
-    message('Gear refresh: /lac fwd refreshgear queues /gearexport full, rebuilds OddLua, applies profiles, then reloads on success.');
-    message('One-button macros: review/load keybindings.txt; F-keys run /lac fwd commands.');
+    message('Weapon sync: /lac fwd weaponsync deliberately equips only the active style Main/Sub/Range through Scale and may reset TP; the weapon lock is restored immediately.');
+    message('Keypad macros: /lac fwd keypad shows keypad map; /lac fwd keypad off disables; /lac fwd keypad clear unbinds keypad and old number-row keys.');
+    message('Buff item overlays: /lac fwd buffitems on|off|status.');
+    message('Conditional overlays: /lac fwd overlays.');
+    message('Magic Burst mode: /lac fwd burst on|off|status (default off).');
+
+
+
+
+    message('Gear modes: /lac fwd mode combat|magic|proc|off|status (default off; Proc deliberately swaps Main and may reset TP).');
+    message('Defensive overrides: /lac fwd pdt|mdt|dt|evasion|safe|survival|tank|defenseoff.');
+    message('Resist overrides: /lac fwd fireres|iceres|earthres|windres|waterres|thunderres|lightningres|lightres|darkres|statusres|charmres|resoff.');
+    message('Idle pool floors: /lac fwd setmp <n>|addmp <n>|resetmp and sethp <n>|addhp <n>|resethp.');
+    message('Update gear: /lac fwd updategear; status: /lac fwd updategear status.');
 end
 
 local function oddLuaStatusField(text, field)
@@ -12904,14 +12213,14 @@ local function pollOddLuaRefreshStatus(attempt)
     elseif status == 'failed' or status == 'error' then
         state.OddLuaRefreshPending = false;
         state.OddLuaRefreshLastStatus = 'failed';
-        message('OddLua gear refresh failed: ' .. tostring(detail or '') .. '; status=' .. oddLuaRefresh.statusPath);
+        message('OddLua gear refresh failed: ' .. tostring(detail or '') .. '. Use /lac fwd refreshgear status.');
         return;
     end
 
     state.OddLuaRefreshLastStatus = status or 'running';
     if attempt >= oddLuaRefresh.maxPolls then
         state.OddLuaRefreshPending = false;
-        message('OddLua gear refresh still running or status unavailable after polling; check ' .. oddLuaRefresh.statusPath);
+        message('OddLua gear refresh still running or status unavailable after polling. Use /lac fwd refreshgear status.');
         return;
     end
 
@@ -12919,14 +12228,14 @@ local function pollOddLuaRefreshStatus(attempt)
         pollOddLuaRefreshStatus(attempt + 1);
     end) then
         state.OddLuaRefreshPending = false;
-        message('OddLua gear refresh poll scheduling failed; check ' .. oddLuaRefresh.statusPath);
+        message('OddLua gear refresh poll scheduling failed. Use /lac fwd refreshgear status.');
     end
 end
 
 local function launchOddLuaGearRefresh()
     if not ashita or not ashita.misc or not ashita.misc.execute then
         state.OddLuaRefreshPending = false;
-        message('OddLua gear refresh failed: ashita.misc.execute unavailable. Run the refresh script manually.');
+        message('OddLua gear refresh failed: command launcher unavailable in this runtime.');
         return false;
     end
 
@@ -12935,11 +12244,11 @@ local function launchOddLuaGearRefresh()
     end);
     if not ok then
         state.OddLuaRefreshPending = false;
-        message('OddLua gear refresh failed to launch: ' .. tostring(err));
+        message('OddLua gear refresh failed to launch.');
         return false;
     end
 
-    message('OddLua refresh launched. Polling status; log root is reports/game-refresh.');
+    message('OddLua refresh launched. Polling status.');
     pollOddLuaRefreshStatus(1);
     return true;
 end
@@ -12980,8 +12289,169 @@ local function startOddLuaGearRefresh(args)
     message('Queued /gearexport full. OddLua rebuild/apply will launch in ' .. tostring(delay) .. ' seconds.');
     if not scheduleTask(delay, launchOddLuaGearRefresh) then
         state.OddLuaRefreshPending = false;
-        message('OddLua gear refresh failed: scheduler unavailable after gearexport. Run ' .. oddLuaRefresh.launcher .. ' manually.');
+        message('OddLua gear refresh failed: scheduler unavailable after gearexport.');
     end
+end
+
+profile.OddLuaRuntime = profile.OddLuaRuntime or {};
+profile.OddLuaRuntime.Hysteresis = {
+    EmergencyHpEnterHpp = 35,
+    EmergencyHpExitHpp = 40,
+    IdlePoolBand = 10,
+};
+profile.OddLuaRuntime.MountedStatusBuffs = { 'chocobo', 'mount', 'mounted', 252 };
+profile.OddLuaRuntime.EncumbranceStatusBuffs = { 'encumbrance', 177, 259 };
+
+profile.OddLuaRuntime.StatusRemovalSpells = {
+    blindna = true,
+    cursna = true,
+    erase = true,
+    esuna = true,
+    paralyna = true,
+    poisona = true,
+    sacrifice = true,
+    silena = true,
+    stona = true,
+    viruna = true,
+};
+
+function profile.OddLuaRuntime.GetPlayer()
+    if not gData or not gData.GetPlayer then
+        return nil;
+    end
+    local ok, player = pcall(gData.GetPlayer);
+    if ok == true and type(player) == 'table' then
+        return player;
+    end
+    return nil;
+end
+
+function profile.OddLuaRuntime.GetEnvironment()
+    if not gData or not gData.GetEnvironment then
+        return nil;
+    end
+    local ok, environment = pcall(gData.GetEnvironment);
+    if ok ~= true or type(environment) ~= 'table' then
+        return nil;
+    end
+    if AshitaCore and AshitaCore.GetMemoryManager then
+        local okZone, zoneId = pcall(function()
+            return AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0);
+        end);
+        if okZone then
+            environment.ZoneId = zoneId;
+        end
+    end
+    return environment;
+end
+
+local function movementEquipItemName(item)
+    if type(item) == 'string' then
+        return item;
+    elseif type(item) == 'table' then
+        if item.Name ~= nil then
+            return item.Name;
+        elseif item.name ~= nil then
+            return item.name;
+        elseif type(item.Resource) == 'table' and type(item.Resource.Name) == 'table' then
+            return item.Resource.Name[1];
+        elseif type(item.Item) == 'table' and item.Item.Name ~= nil then
+            return item.Item.Name;
+        end
+    end
+    return nil;
+end
+
+function profile.OddLuaRuntime.PlayerIsMoving(player)
+    if type(player) ~= 'table' then
+        return false;
+    end
+    local value = player.IsMoving;
+    if value == nil then value = player.isMoving; end
+    if value == nil then value = player.Moving; end
+    if value == nil then value = player.moving; end
+    local text = normalize(value);
+    return value == true or text == 'true' or text == '1' or text == 'yes';
+end
+
+local function movementSafetyActive()
+    if next(movementPenaltyItems) == nil then
+        return false;
+    end
+    local player = profile.OddLuaRuntime.GetPlayer();
+    if profile.OddLuaRuntime.PlayerIsMoving(player) ~= true then
+        return false;
+    end
+    if type(profile.OddLuaRuntime.IsOnFoot) == 'function' then
+        local ok, onFoot = pcall(profile.OddLuaRuntime.IsOnFoot, player);
+        if ok == true and onFoot ~= true then
+            return false;
+        end
+    end
+    return true;
+end
+
+local function movementSafeEquipSet(set)
+    local safe = {};
+    if type(set) ~= 'table' then
+        return safe;
+    end
+    for slot, item in pairs(set) do
+        safe[slot] = item;
+    end
+    if movementSafetyActive() ~= true then
+        return safe;
+    end
+
+    local observed = nil;
+    if gData and gData.GetEquipment then
+        local ok, equipment = pcall(gData.GetEquipment);
+        if ok == true and type(equipment) == 'table' then
+            observed = equipment;
+        end
+    end
+
+    for slot, names in pairs(movementPenaltyItems) do
+        local requestedName = normalize(movementEquipItemName(safe[slot]));
+        if requestedName ~= '' and names[requestedName] == true then
+            safe[slot] = 'remove';
+        elseif safe[slot] == nil then
+            local observedName = '';
+            if observed ~= nil then
+                observedName = normalize(movementEquipItemName(observed[slot]));
+            end
+            if observed == nil or (observedName ~= '' and names[observedName] == true) then
+                safe[slot] = 'remove';
+            end
+        end
+    end
+    return safe;
+end
+
+profile.OddLuaRuntime.MovementSafeEquipSet = movementSafeEquipSet;
+
+function profile.OddLuaRuntime.PlayerContextReady(player)
+    if type(player) ~= 'table' then
+        return false;
+    end
+    local name = tostring(player.Name or player.name or '');
+    local hp = tonumber(player.HP or player.hp or player.CurrentHP or player.currentHP);
+    local hpp = tonumber(
+        player.HPP or player.hpp or player.HPPercent or player.hpPercent
+        or player.HPPercentage or player.hpPercentage
+    );
+    local status = normalize(player.Status or player.status or player.StatusName or player.statusName);
+    if name == '' or hp == nil or hp <= 0 then
+        return false;
+    end
+    if hpp == nil or hpp <= 0 then
+        return false;
+    end
+    if status == '' or status == 'unknown' or status == 'dead' or status == 'zoning'
+        or status == '2' or status == '3' or status == '4' then
+        return false;
+    end
+    return true;
 end
 
 
@@ -13010,6 +12480,94 @@ local reconciliationConfig = {
     'Feet',
     },
 };
+
+profile.ReconciliationNameAliases = {
+    groups = {
+        { 'Archer\'s Ring', 'archers_ring' },
+        { 'Baron\'s Chapeau', 'barons_chapeau' },
+        { 'Bastokan Circlet', 'bastokan_circlet' },
+        { 'Beetle Harness', 'beetle_harness' },
+        { 'Benedight Coat', 'benedight_coat' },
+        { 'Benedight Hose', 'benedight_hose' },
+        { 'Bird Whistle', 'bird_whistle' },
+        { 'Black Earring', 'black_earring' },
+        { 'Carpenter\'s Apron', 'carpenters_apron' },
+        { 'Carpenter\'s Gloves', 'carpenters_gloves' },
+        { 'Chain Choker', 'chain_choker' },
+        { 'Clear Ring', 'clear_ring' },
+        { 'Cotton Doublet', 'cotton_doublet' },
+        { 'Cuir Bandana', 'cuir_bandana' },
+        { 'Empress Hairpin', 'empress_hairpin' },
+        { 'Flower Necklace', 'flower_necklace' },
+        { 'Focus Collar', 'focus_collar' },
+        { 'Garnet Ring', 'garnet_ring' },
+        { 'Guerilla Gloves', 'guerilla_gloves' },
+        { 'Kukri', 'kukri' },
+        { 'Kupo Suit', 'kupo_suit' },
+        { 'Leaping Boots', 'leaping_boots' },
+        { 'Leather Belt', 'leather_belt' },
+        { 'Leather Ring', 'leather_ring' },
+        { 'Linen Slops', 'linen_slops' },
+        { 'Morion Tathlum', 'morion_tathlum' },
+        { 'Mountain Gaiters', 'mountain_gaiters' },
+        { 'Mythril Earring', 'mythril_earring' },
+        { 'Noble\'s Ribbon', 'nobles_ribbon' },
+        { 'Pearl Ring', 'pearl_ring' },
+        { 'Poison Knife', 'poison_knife' },
+        { 'Ram Mantle', 'ram_mantle' },
+        { 'Republic Subligar', 'republic_subligar' },
+        { 'Sardonyx Earring', 'sardonyx_earring' },
+        { 'Silver Hairpin', 'silver_hairpin' },
+        { 'Sinister Mask', 'sinister_mask' },
+        { 'Sprout Beret', 'sprout_beret' },
+        { 'Stone Gorget', 'stone_gorget' },
+        { 'Tamas Ring', 'tamas_ring' },
+        { 'Wool Hat', 'wool_hat' },
+        { 'Wool Slops', 'wool_slops' },
+    },
+    aliases = {},
+};
+
+function profile.ReconciliationNameAliases.Base(value)
+    if type(value) == 'table' then
+        value = value.Name or value.name or '';
+    end
+    local text = normalize(value);
+    text = string.gsub(text, '_', ' ');
+    text = string.gsub(text, '[%p%c]+', ' ');
+    text = string.gsub(text, '%s+', ' ');
+    text = string.gsub(text, '^%s+', '');
+    text = string.gsub(text, '%s+$', '');
+    return text;
+end
+
+function profile.ReconciliationNameAliases.Register(names)
+    local canonical = nil;
+    for _, name in ipairs(names or {}) do
+        local text = profile.ReconciliationNameAliases.Base(name);
+        if text ~= '' and canonical == nil then
+            canonical = text;
+        end
+    end
+    if canonical == nil then
+        return;
+    end
+    for _, name in ipairs(names or {}) do
+        local text = profile.ReconciliationNameAliases.Base(name);
+        if text ~= '' then
+            profile.ReconciliationNameAliases.aliases[text] = canonical;
+        end
+    end
+end
+
+for _, names in ipairs(profile.ReconciliationNameAliases.groups) do
+    profile.ReconciliationNameAliases.Register(names);
+end
+
+function profile.ReconciliationNameAliases.Canonical(value)
+    local text = profile.ReconciliationNameAliases.Base(value);
+    return profile.ReconciliationNameAliases.aliases[text] or text;
+end
 
 local function reconciliationJsonEscape(value)
     value = tostring(value or '');
@@ -13074,21 +12632,66 @@ local function reconciliationExpectedMap(set)
     return expected;
 end
 
+local function reconciliationObservedField(value, key)
+    if value == nil then
+        return nil;
+    end
+    local ok, result = pcall(function()
+        return value[key];
+    end);
+    if ok == true then
+        return result;
+    end
+    return nil;
+end
+
+local function reconciliationObservedResource(entry)
+    return reconciliationObservedField(entry, 'Resource')
+        or reconciliationObservedField(entry, 'resource')
+        or reconciliationObservedField(entry, 'Item')
+        or reconciliationObservedField(entry, 'item')
+        or entry;
+end
+
+local function reconciliationObservedLocalizedName(value)
+    if type(value) == 'string' then
+        return value;
+    end
+    return reconciliationObservedField(value, 1) or reconciliationObservedField(value, 0);
+end
+
 local function reconciliationObservedName(entry)
     if type(entry) == 'string' then
         return entry;
-    elseif type(entry) == 'table' then
-        if entry.Name ~= nil then
-            return entry.Name;
-        end
-        if type(entry.Resource) == 'table' and type(entry.Resource.Name) == 'table' then
-            return entry.Resource.Name[1];
-        end
-        if type(entry.Item) == 'table' and entry.Item.Name ~= nil then
-            return entry.Item.Name;
-        end
     end
-    return nil;
+    local directName = reconciliationObservedLocalizedName(
+        reconciliationObservedField(entry, 'Name')
+        or reconciliationObservedField(entry, 'name')
+    );
+    if directName ~= nil then
+        return directName;
+    end
+    local resource = reconciliationObservedResource(entry);
+    local name = reconciliationObservedField(resource, 'Name')
+        or reconciliationObservedField(resource, 'name');
+    return reconciliationObservedLocalizedName(name);
+end
+
+local function reconciliationObservedId(entry)
+    local item = reconciliationObservedField(entry, 'Item')
+        or reconciliationObservedField(entry, 'item');
+    local resource = reconciliationObservedResource(entry);
+    return tonumber(
+        reconciliationObservedField(item, 'Id')
+        or reconciliationObservedField(item, 'ID')
+        or reconciliationObservedField(item, 'id')
+        or reconciliationObservedField(entry, 'Id')
+        or reconciliationObservedField(entry, 'ID')
+        or reconciliationObservedField(entry, 'id')
+        or reconciliationObservedField(resource, 'Id')
+        or reconciliationObservedField(resource, 'ID')
+        or reconciliationObservedField(resource, 'id')
+    );
 end
 
 local function observeReconciliationEquipment()
@@ -13103,20 +12706,28 @@ local function observeReconciliationEquipment()
     if type(equipment) ~= 'table' then
         return nil, 'gData.GetEquipment returned non-table';
     end
+    if next(equipment) == nil then
+        return nil, 'gData.GetEquipment returned empty table';
+    end
 
     local observed = {};
+    local observedIds = {};
     for _, slot in ipairs(reconciliationConfig.slotOrder) do
         local name = reconciliationObservedName(equipment[slot]);
         if name ~= nil and tostring(name) ~= '' then
             observed[slot] = tostring(name);
         end
+        local itemId = reconciliationObservedId(equipment[slot]);
+        if itemId ~= nil and itemId > 0 then
+            observedIds[slot] = itemId;
+        end
     end
-    return observed, nil;
+    return observed, nil, observedIds;
 end
 
 local function reconciliationNamesMatch(expected, observed)
-    local expectedText = normalize(expected);
-    local observedText = normalize(observed);
+    local expectedText = profile.ReconciliationNameAliases.Canonical(expected);
+    local observedText = profile.ReconciliationNameAliases.Canonical(observed);
     if expectedText == 'remove' then
         return observedText == '';
     end
@@ -13178,15 +12789,28 @@ local function encodeReconciliationSnapshot(snapshot)
     parts[#parts + 1] = '"player":' .. reconciliationJsonEscape(reconciliationConfig.player);
     parts[#parts + 1] = '"playerId":' .. reconciliationJsonEscape(reconciliationConfig.playerId);
     parts[#parts + 1] = '"job":' .. reconciliationJsonEscape(reconciliationConfig.job);
+    parts[#parts + 1] = '"profileBuildToken":' .. reconciliationJsonEscape(snapshot.profileBuildToken);
     parts[#parts + 1] = '"sequence":' .. tostring(snapshot.sequence or 0);
+    parts[#parts + 1] = '"cycleSequence":' .. tostring(snapshot.cycleSequence or 0);
     parts[#parts + 1] = '"timestamp":' .. tostring(snapshot.timestamp or 0);
     parts[#parts + 1] = '"set":' .. reconciliationJsonEscape(snapshot.set);
     parts[#parts + 1] = '"status":' .. reconciliationJsonEscape(snapshot.status);
     parts[#parts + 1] = '"force":' .. reconciliationJsonBool(snapshot.force == true);
     parts[#parts + 1] = '"repair":' .. reconciliationJsonBool(snapshot.repair == true);
+    parts[#parts + 1] = '"repairAttempt":' .. tostring(tonumber(snapshot.repairAttempt) or 0);
     parts[#parts + 1] = '"repairQueued":' .. reconciliationJsonBool(snapshot.repairQueued == true);
+    parts[#parts + 1] = '"repairPaused":' .. reconciliationJsonBool(snapshot.repairPaused == true);
+    parts[#parts + 1] = '"repairFailed":' .. reconciliationJsonBool(snapshot.repairFailed == true);
+    parts[#parts + 1] = '"observationOnly":' .. reconciliationJsonBool(snapshot.observationOnly == true);
+    parts[#parts + 1] = '"contextSignature":' .. reconciliationJsonEscape(snapshot.contextSignature);
+    if snapshot.repairStrategy ~= nil and snapshot.repairStrategy ~= '' then
+        parts[#parts + 1] = '"repairStrategy":' .. reconciliationJsonEscape(snapshot.repairStrategy);
+    end
     parts[#parts + 1] = '"playstyle":' .. reconciliationJsonEscape(snapshot.playstyle);
     parts[#parts + 1] = '"intent":' .. reconciliationJsonEscape(snapshot.intent);
+    if snapshot.actionProbeSequence ~= nil and snapshot.actionProbeSequence ~= '' then
+        parts[#parts + 1] = '"actionProbeSequence":' .. reconciliationJsonEscape(snapshot.actionProbeSequence);
+    end
     parts[#parts + 1] = '"expected":' .. encodeReconciliationMap(snapshot.expected);
     parts[#parts + 1] = '"observed":' .. encodeReconciliationMap(snapshot.observed);
     parts[#parts + 1] = '"mismatches":' .. encodeReconciliationMismatches(snapshot.mismatches);
@@ -13235,7 +12859,89 @@ local function reconciliationExpectedSignature(setName, expected)
     return table.concat(parts, '|');
 end
 
+profile.OddLuaRuntime.ReconciliationObservationSettleSeconds = 0.25;
+
+function profile.OddLuaRuntime.ReconciliationContextSignature()
+    local player = profile.OddLuaRuntime.GetPlayer();
+    local environment = profile.OddLuaRuntime.GetEnvironment();
+    local function jobText(value)
+        local numeric = tonumber(value);
+        if numeric ~= nil and jobIdToAbbr[numeric] ~= nil then
+            return normalize(jobIdToAbbr[numeric]);
+        end
+        return normalize(value);
+    end
+    local function effectiveLevel(...)
+        for index = 1, select('#', ...) do
+            local candidate = select(index, ...);
+            local value = tonumber(candidate);
+            if value ~= nil then
+                return value;
+            end
+        end
+        return '';
+    end
+    local mainJob = '';
+    local subJob = '';
+    local mainLevel = '';
+    local subLevel = '';
+    local status = '';
+    local moving = false;
+    local tpPositive = false;
+    if type(player) == 'table' then
+        mainJob = jobText(player.MainJob or player.mainJob or player.MainJobName or player.mainJobName);
+        subJob = jobText(player.SubJob or player.subJob or player.Subjob or player.subjob or player.SubJobName or player.subJobName);
+        mainLevel = effectiveLevel(
+            player.MainJobSync,
+            player.mainJobSync,
+            player.MainJobLevel,
+            player.mainJobLevel,
+            player.MainLevel,
+            player.mainLevel
+        );
+        subLevel = effectiveLevel(
+            player.SubJobSync,
+            player.subJobSync,
+            player.SubJobLevel,
+            player.subJobLevel,
+            player.SubLevel,
+            player.subLevel
+        );
+        status = normalize(player.Status or player.status or player.StatusName or player.statusName);
+        moving = profile.OddLuaRuntime.PlayerIsMoving(player) == true;
+        local tp = tonumber(player.TP or player.tp or player.TacticalPoints or player.tacticalPoints);
+        tpPositive = tp ~= nil and tp > 0;
+    end
+    local zone = '';
+    local area = '';
+    if type(environment) == 'table' then
+        zone = tostring(environment.ZoneId or environment.zoneId or environment.Zone or environment.zone or '');
+        area = normalize(environment.Area or environment.area or environment.ZoneName or environment.zoneName);
+    end
+    return table.concat({
+        'moving=' .. tostring(moving),
+        'mainJob=' .. tostring(mainJob),
+        'mainLevel=' .. tostring(mainLevel),
+        'subJob=' .. tostring(subJob),
+        'subLevel=' .. tostring(subLevel),
+        'tpPositive=' .. tostring(tpPositive),
+        'status=' .. tostring(status),
+        'zone=' .. tostring(zone),
+        'area=' .. tostring(area),
+        'movementSafety=' .. tostring(movementSafetyActive() == true),
+    }, '|');
+end
+
+function profile.OddLuaRuntime.ReconciliationContextMatches(pending)
+    return type(pending) == 'table'
+        and type(pending.contextSignature) == 'string'
+        and pending.contextSignature == profile.OddLuaRuntime.ReconciliationContextSignature();
+end
+
 local function reconciliationDelayForSet(setName)
+    if state.IdleOverrideSet == setName then
+        return 0.35;
+    end
     local intent = normalize(setIntents[setName] or '');
     if intent == 'idle' or intent == 'movement' or intent == 'tp' then
         return 0.35;
@@ -13243,17 +12949,61 @@ local function reconciliationDelayForSet(setName)
     return 0.08;
 end
 
-local function reconciliationCanRepairIntent(intent)
+local function reconciliationCanRepairSet(setName, intent)
+    if state.IdleOverrideSet == setName then
+        return true;
+    end
     local intentText = normalize(intent or '');
     return intentText == 'tp' or intentText == 'idle' or intentText == 'movement';
 end
 
+local reconciliationMaxRepairAttempts = 2;
+local reconciliationResetBarrierDelaySeconds = 0.35;
+local reconciliationResetBarrierSafeSlots = {
+    Head = true,
+    Neck = true,
+    Ear1 = true,
+    Ear2 = true,
+    Body = true,
+    Hands = true,
+    Ring1 = true,
+    Ring2 = true,
+    Back = true,
+    Waist = true,
+    Legs = true,
+    Feet = true,
+};
 local repairReconciliationMismatch;
+local forceReconciliationExpected;
+local scheduleReconciliationSnapshot;
 
 local function cancelPendingReconciliationSnapshot()
     state.ReconcilePendingSnapshot = nil;
     state.ReconcileScanScheduled = false;
     state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+end
+
+function profile.OddLuaRuntime.QueueReconciliationObservationSettle(pending)
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return false;
+    end
+    scheduleReconciliationSnapshot(
+        pending.set,
+        pending.expected,
+        pending.force,
+        pending.repair,
+        pending.repairAttempt,
+        {
+            actionProbeSequence = pending.actionProbeSequence,
+            profileBuildToken = pending.profileBuildToken,
+            contextSignature = pending.contextSignature,
+            cycleSequence = pending.cycleSequence,
+            delaySeconds = profile.OddLuaRuntime.ReconciliationObservationSettleSeconds,
+            observationOnly = true,
+        }
+    );
+    return true;
 end
 
 local function recordPendingReconciliationSnapshot(token)
@@ -13272,8 +13022,39 @@ local function recordPendingReconciliationSnapshot(token)
     if type(pending) ~= 'table' then
         return;
     end
+    local superseding = pending.repairSupersedingSnapshot;
+    if type(superseding) == 'table' then
+        -- The old intent's delay says nothing about how long the new set has
+        -- been equipped. Yield without observing and grant the current intent
+        -- its complete normal settle window.
+        state.ReconcileLastRecordedSignature = nil;
+        if profile.OddLuaRuntime.ReconciliationContextMatches(superseding) ~= true then
+            return;
+        end
+        scheduleReconciliationSnapshot(
+            superseding.set,
+            superseding.expected,
+            superseding.force,
+            false,
+            nil,
+            {
+                actionProbeSequence = superseding.actionProbeSequence,
+                profileBuildToken = superseding.profileBuildToken,
+                contextSignature = superseding.contextSignature,
+            }
+        );
+        return;
+    end
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return;
+    end
 
     local observed, reason = observeReconciliationEquipment();
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return;
+    end
     local snapshot;
     if observed == nil then
         snapshot = {
@@ -13290,54 +13071,179 @@ local function recordPendingReconciliationSnapshot(token)
         snapshot.observed = observed;
     end
 
+    snapshot.profileBuildToken = pending.profileBuildToken;
     snapshot.sequence = pending.sequence;
+    snapshot.cycleSequence = pending.cycleSequence;
+    snapshot.contextSignature = pending.contextSignature;
     snapshot.timestamp = nowSeconds();
     snapshot.force = pending.force == true;
     snapshot.repair = pending.repair == true;
+    snapshot.repairAttempt = tonumber(pending.repairAttempt) or 0;
     snapshot.repairQueued = false;
+    snapshot.repairFailed = false;
+    snapshot.repairPaused = false;
+    snapshot.observationOnly = pending.observationOnly == true;
     snapshot.playstyle = pending.playstyle;
     snapshot.intent = pending.intent;
-    if snapshot.status == 'mismatch' and repairReconciliationMismatch then
-        snapshot.repairQueued = repairReconciliationMismatch(pending);
+    snapshot.actionProbeSequence = pending.actionProbeSequence;
+
+    if snapshot.status == 'mismatch' and snapshot.observationOnly ~= true then
+        local terminalRepairAttempt = snapshot.repair == true
+            and snapshot.repairAttempt >= reconciliationMaxRepairAttempts;
+        local actionNeedsSettle = snapshot.repair ~= true
+            and tostring(snapshot.actionProbeSequence or '') ~= ''
+            and reconciliationCanRepairSet(pending.set, pending.intent) ~= true;
+        if terminalRepairAttempt or actionNeedsSettle then
+            state.ReconcileLastRecordedSignature = nil;
+            profile.OddLuaRuntime.QueueReconciliationObservationSettle(pending);
+            return;
+        end
+    end
+
+    local repairPauseReason = nil;
+    local repairStrategy = nil;
+    if snapshot.status == 'mismatch'
+        and snapshot.observationOnly ~= true
+        and repairReconciliationMismatch
+    then
+        snapshot.repairQueued, repairPauseReason, repairStrategy = repairReconciliationMismatch(pending, snapshot.mismatches);
+    end
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return;
+    end
+    snapshot.repairStrategy = repairStrategy;
+    snapshot.repairPaused = repairPauseReason ~= nil;
+    snapshot.repairFailed = snapshot.status == 'mismatch'
+        and snapshot.observationOnly == true
+        and snapshot.repair == true
+        and snapshot.repairAttempt >= reconciliationMaxRepairAttempts;
+    if repairPauseReason ~= nil then
+        snapshot.reason = repairPauseReason;
     end
     state.ReconcileLast = snapshot;
-    state.ReconcileLastRecordedSignature = pending.signature;
+    if snapshot.status == 'unknown_observation' or snapshot.repairPaused == true then
+        state.ReconcileLastRecordedSignature = nil;
+    else
+        state.ReconcileLastRecordedSignature = pending.signature;
+    end
     writeReconciliationSnapshot(snapshot);
 
-    if snapshot.status == 'mismatch' and snapshot.repairQueued ~= true then
+    if snapshot.status == 'mismatch' and snapshot.repairQueued ~= true and snapshot.repairPaused ~= true then
         local repairText = '';
-        if snapshot.repair == true then
+        if snapshot.repairFailed == true then
             repairText = '; repair=failed';
         end
-        message('Reconcile mismatch set=' .. tostring(pending.set) .. '; slots=' .. reconciliationMismatchSlots(snapshot.mismatches) .. repairText .. '; log=' .. reconciliationConfig.logPath);
+        message('Reconcile mismatch set=' .. tostring(pending.set) .. '; slots=' .. reconciliationMismatchSlots(snapshot.mismatches) .. repairText .. '.');
     end
 end
 
-local function scheduleReconciliationSnapshot(setName, expectedSet, force, repair)
+scheduleReconciliationSnapshot = function(setName, expectedSet, force, repair, repairAttempt, options)
     if state.ReconcileEnabled ~= true then
         return;
     end
 
     local expected = reconciliationExpectedMap(expectedSet);
-    local signature = reconciliationExpectedSignature(setName, expected);
-    if repair ~= true and signature == state.ReconcileLastRecordedSignature then
-        if state.ReconcilePendingSnapshot and state.ReconcilePendingSnapshot.repair == true and state.ReconcilePendingSnapshot.signature == signature then
+    if repair ~= true and state.ReconcileCompositionActive == true then
+        -- Default handling composes a complete baseline and one or more sparse
+        -- overlays synchronously. Only its final request is an observable
+        -- intent; intermediate layers must not become scheduler superseders.
+        state.ReconcileCompositionPending = {
+            set = setName,
+            expected = expected,
+            force = force == true,
+        };
+        return;
+    end
+    local metadata = type(options) == 'table' and options or {};
+    local observationOnly = metadata.observationOnly == true;
+    local profileBuildToken = tostring(metadata.profileBuildToken or profile.OddLuaBuildToken or '');
+    local contextSignature = tostring(
+        metadata.contextSignature or profile.OddLuaRuntime.ReconciliationContextSignature()
+    );
+    local actionProbeSequence = metadata.actionProbeSequence;
+    if actionProbeSequence == nil then
+        actionProbeSequence = profile.OddLuaRuntime.ActionProbeSequence;
+    end
+    actionProbeSequence = tostring(actionProbeSequence or '');
+    local signature = reconciliationExpectedSignature(setName, expected)
+        .. '|contextSignature=' .. contextSignature;
+    local equipmentSignature = reconciliationExpectedSignature('', expected)
+        .. '|contextSignature=' .. contextSignature;
+    if actionProbeSequence ~= '' then
+        signature = signature .. '|actionProbeSequence=' .. actionProbeSequence;
+        equipmentSignature = equipmentSignature .. '|actionProbeSequence=' .. actionProbeSequence;
+    end
+    local scheduled = state.ReconcilePendingSnapshot;
+    if repair ~= true
+        and observationOnly ~= true
+        and state.ReconcileScanScheduled == true
+        and type(scheduled) == 'table'
+    then
+        -- Preserve one scheduler owner. Identical equipment can coalesce on
+        -- its existing timer only in the same runtime context; a different
+        -- final intent/context gets a complete fresh settle window.
+        local hasSupersedingIntent = type(scheduled.repairSupersedingSnapshot) == 'table';
+        if hasSupersedingIntent ~= true
+            and contextSignature == scheduled.contextSignature
+            and equipmentSignature == scheduled.equipmentSignature
+        then
+            if scheduled.repair ~= true then
+                scheduled.set = setName;
+                scheduled.expected = expected;
+                scheduled.force = force == true;
+                scheduled.playstyle = state.Playstyle;
+                scheduled.intent = setIntents[setName] or '';
+                scheduled.actionProbeSequence = actionProbeSequence;
+                scheduled.signature = signature;
+                scheduled.equipmentSignature = equipmentSignature;
+            end
             return;
         end
+        scheduled.repairSupersedingSnapshot = {
+            profileBuildToken = profileBuildToken,
+            set = setName,
+            expected = expected,
+            force = force == true,
+            playstyle = state.Playstyle,
+            intent = setIntents[setName] or '',
+            actionProbeSequence = actionProbeSequence,
+            contextSignature = contextSignature,
+            signature = signature,
+            equipmentSignature = equipmentSignature,
+        };
+        return;
+    end
+    if repair ~= true
+        and observationOnly ~= true
+        and signature == state.ReconcileLastRecordedSignature
+    then
         cancelPendingReconciliationSnapshot();
         return;
     end
 
+    local cycleSequence = tonumber(metadata.cycleSequence);
+    if cycleSequence == nil then
+        state.ReconcileCycleSeq = (state.ReconcileCycleSeq or 0) + 1;
+        cycleSequence = state.ReconcileCycleSeq;
+    end
     state.ReconcileSnapshotSeq = (state.ReconcileSnapshotSeq or 0) + 1;
     state.ReconcilePendingSnapshot = {
+        profileBuildToken = profileBuildToken,
         sequence = state.ReconcileSnapshotSeq,
+        cycleSequence = cycleSequence,
+        contextSignature = contextSignature,
         set = setName,
         expected = expected,
         force = force == true,
         repair = repair == true,
+        repairAttempt = repair == true and (tonumber(repairAttempt) or 1) or 0,
+        observationOnly = observationOnly,
         playstyle = state.Playstyle,
         intent = setIntents[setName] or '',
+        actionProbeSequence = actionProbeSequence,
         signature = signature,
+        equipmentSignature = equipmentSignature,
     };
 
     if state.ReconcileScanScheduled == true then
@@ -13347,53 +13253,356 @@ local function scheduleReconciliationSnapshot(setName, expectedSet, force, repai
     state.ReconcileScanScheduled = true;
     state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
     local token = state.ReconcileScanToken;
-    if not scheduleTask(reconciliationDelayForSet(setName), function()
+    local delaySeconds = tonumber(metadata.delaySeconds) or reconciliationDelayForSet(setName);
+    if not scheduleTask(delaySeconds, function()
         recordPendingReconciliationSnapshot(token);
     end) then
         recordPendingReconciliationSnapshot(token);
     end
 end
 
-repairReconciliationMismatch = function(pending)
+function profile.OddLuaRuntime.RunReconciliationComposition(callback)
+    if state.ReconcileCompositionActive == true then
+        return callback();
+    end
+    state.ReconcileCompositionActive = true;
+    state.ReconcileCompositionPending = nil;
+    local ok, result = pcall(callback);
+    local pending = state.ReconcileCompositionPending;
+    state.ReconcileCompositionPending = nil;
+    state.ReconcileCompositionActive = false;
+    if ok ~= true then
+        -- The failed composition may already have changed gear. Invalidate any
+        -- older observation, repair, or reset owner before propagating the
+        -- error so its queued callback cannot act on stale intent.
+        cancelPendingReconciliationSnapshot();
+        state.ReconcileLastRecordedSignature = nil;
+        error(result, 0);
+    end
+    if type(pending) == 'table' then
+        scheduleReconciliationSnapshot(pending.set, pending.expected, pending.force, false, nil);
+    end
+    return result;
+end
+
+forceReconciliationExpected = function(pending)
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return false;
+    end
+    if movementSafetyActive() == true and gFunc and gFunc.ForceEquipSet then
+        local ok = pcall(function()
+            gFunc.ForceEquipSet(movementSafeEquipSet(pending.expected));
+        end);
+        return ok == true;
+    elseif movementSafetyActive() == true and gFunc and gFunc.EquipSet then
+        local ok = pcall(function()
+            gFunc.EquipSet(movementSafeEquipSet(pending.expected));
+        end);
+        return ok == true;
+    elseif scale and scale.ForceEquipSet then
+        local ok = pcall(function()
+            scale.ForceEquipSet(pending.set, pending.expected, pending.intent);
+        end);
+        return ok == true;
+    elseif gFunc and gFunc.ForceEquipSet then
+        local ok = pcall(function()
+            gFunc.ForceEquipSet(movementSafeEquipSet(pending.expected));
+        end);
+        return ok == true;
+    elseif gFunc and gFunc.EquipSet then
+        local ok = pcall(function()
+            gFunc.EquipSet(movementSafeEquipSet(pending.expected));
+        end);
+        return ok == true;
+    end
+    return false;
+end
+
+local function reconciliationResetSetForMismatches(pending, mismatches)
+    local resetSet = {};
+    for _, mismatch in ipairs(mismatches or {}) do
+        local slot = tostring(mismatch.slot or '');
+        local expected = type(pending.expected) == 'table' and pending.expected[slot] or nil;
+        local expectedText = profile.ReconciliationNameAliases.Canonical(expected);
+        if reconciliationResetBarrierSafeSlots[slot] == true
+            and expectedText ~= ''
+            and expectedText ~= 'remove'
+        then
+            resetSet[slot] = 'remove';
+        end
+    end
+    return resetSet;
+end
+
+local function queueReconciliationResetBarrier(pending, mismatches, repairAttempt)
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return false;
+    end
+    if movementSafetyActive() == true or not gFunc or not gFunc.ForceEquipSet then
+        return false;
+    end
+    local resetSet = reconciliationResetSetForMismatches(pending, mismatches);
+    if next(resetSet) == nil then
+        return false;
+    end
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
+        return false;
+    end
+    local resetOk = pcall(function()
+        gFunc.ForceEquipSet(resetSet);
+    end);
+    if resetOk ~= true then
+        return false;
+    end
+
+    local nextAttempt = repairAttempt + 1;
+    local resetExpected = {};
+    for slot, _ in pairs(resetSet) do
+        resetExpected[slot] = pending.expected[slot];
+    end
+    local reservation = {
+        profileBuildToken = pending.profileBuildToken,
+        cycleSequence = pending.cycleSequence,
+        contextSignature = pending.contextSignature,
+        set = pending.set,
+        expected = pending.expected,
+        force = true,
+        repair = true,
+        repairAttempt = nextAttempt,
+        repairResetBarrier = true,
+        repairResetExpected = resetExpected,
+        playstyle = pending.playstyle,
+        intent = pending.intent,
+        actionProbeSequence = pending.actionProbeSequence,
+        signature = pending.signature,
+        equipmentSignature = pending.equipmentSignature,
+    };
+    state.ReconcilePendingSnapshot = reservation;
+    state.ReconcileScanScheduled = true;
+    state.ReconcileScanToken = (state.ReconcileScanToken or 0) + 1;
+    local token = state.ReconcileScanToken;
+    local function releaseResetBarrier()
+        state.ReconcileScanScheduled = false;
+        state.ReconcilePendingSnapshot = nil;
+    end
+    local function supersedeResetBarrierIfNeeded()
+        local superseding = reservation.repairSupersedingSnapshot;
+        if type(superseding) ~= 'table' then
+            return false;
+        end
+        releaseResetBarrier();
+        state.ReconcileLastRecordedSignature = nil;
+        if profile.OddLuaRuntime.ReconciliationContextMatches(superseding) ~= true then
+            return true;
+        end
+        scheduleReconciliationSnapshot(
+            superseding.set,
+            superseding.expected,
+            superseding.force,
+            false,
+            nil,
+            {
+                actionProbeSequence = superseding.actionProbeSequence,
+                profileBuildToken = superseding.profileBuildToken,
+                contextSignature = superseding.contextSignature,
+            }
+        );
+        return true;
+    end
+    local function resetBarrierContextDrifted()
+        if profile.OddLuaRuntime.ReconciliationContextMatches(reservation) == true then
+            return false;
+        end
+        releaseResetBarrier();
+        state.ReconcileLastRecordedSignature = nil;
+        return true;
+    end
+    local function resetBarrierCanContinue()
+        if state.ReconcileEnabled ~= true then
+            return false;
+        end
+        local contextReady = profile.OddLuaRuntime.PlayerContextReady(profile.OddLuaRuntime.GetPlayer()) == true;
+        local encumbranceState = profile.OddLuaRuntime.HasEncumbrance();
+        return contextReady == true
+            and encumbranceState == false
+            and movementSafetyActive() ~= true
+            and profile.OddLuaRuntime.ReconciliationContextMatches(reservation) == true;
+    end
+    local function deferResetBarrier()
+        releaseResetBarrier();
+        if profile.OddLuaRuntime.ReconciliationContextMatches(reservation) ~= true then
+            state.ReconcileLastRecordedSignature = nil;
+            return;
+        end
+        if state.ReconcileEnabled == true then
+            scheduleReconciliationSnapshot(
+                pending.set,
+                pending.expected,
+                true,
+                true,
+                repairAttempt,
+                {
+                    actionProbeSequence = pending.actionProbeSequence,
+                    profileBuildToken = pending.profileBuildToken,
+                    contextSignature = pending.contextSignature,
+                    cycleSequence = pending.cycleSequence,
+                }
+            );
+        end
+    end
+    local function forceResetBarrierExpected()
+        local request = {
+            profileBuildToken = reservation.profileBuildToken,
+            cycleSequence = reservation.cycleSequence,
+            contextSignature = reservation.contextSignature,
+            set = reservation.set,
+            expected = reservation.repairResetExpected,
+            intent = reservation.intent,
+        };
+        if forceReconciliationExpected(request) then
+            return true;
+        end
+        -- Scale can fail while raw ForceEquipSet remains available (the reset
+        -- removal above already proved that path). Keep the fallback scoped to
+        -- the same safe-slot subset so weapon slots can never be widened in.
+        if profile.OddLuaRuntime.ReconciliationContextMatches(reservation) ~= true then
+            state.ReconcileLastRecordedSignature = nil;
+            return false;
+        end
+        local ok = pcall(function()
+            gFunc.ForceEquipSet(reservation.repairResetExpected);
+        end);
+        return ok == true;
+    end
+    local function completeResetBarrierReassert()
+        if token ~= state.ReconcileScanToken or state.ReconcilePendingSnapshot ~= reservation then
+            return;
+        end
+        if supersedeResetBarrierIfNeeded() then
+            return;
+        end
+        if resetBarrierContextDrifted() then
+            return;
+        end
+        if resetBarrierCanContinue() ~= true then
+            deferResetBarrier();
+            return;
+        end
+        releaseResetBarrier();
+        -- One fixed, delayed reassert handles a partially accepted first send
+        -- without widening the reset to weapon slots or creating a retry loop.
+        forceResetBarrierExpected();
+        if profile.OddLuaRuntime.ReconciliationContextMatches(reservation) ~= true then
+            state.ReconcileLastRecordedSignature = nil;
+            return;
+        end
+        scheduleReconciliationSnapshot(
+            pending.set,
+            pending.expected,
+            true,
+            true,
+            nextAttempt,
+            {
+                actionProbeSequence = pending.actionProbeSequence,
+                profileBuildToken = pending.profileBuildToken,
+                contextSignature = pending.contextSignature,
+                cycleSequence = pending.cycleSequence,
+            }
+        );
+    end
+    local function completeResetBarrier()
+        if token ~= state.ReconcileScanToken or state.ReconcilePendingSnapshot ~= reservation then
+            return;
+        end
+        if supersedeResetBarrierIfNeeded() then
+            return;
+        end
+        if resetBarrierContextDrifted() then
+            return;
+        end
+        if resetBarrierCanContinue() ~= true then
+            deferResetBarrier();
+            return;
+        end
+        -- Keep Scale's cache aligned with the partial post-barrier request. If
+        -- LuAshitacast accepts only part of this send, the guarded reassert
+        -- below gets one bounded chance to finish the same safe-slot request.
+        forceResetBarrierExpected();
+        if resetBarrierContextDrifted() then
+            return;
+        end
+        if not scheduleTask(reconciliationResetBarrierDelaySeconds, completeResetBarrierReassert) then
+            completeResetBarrierReassert();
+        end
+    end
+    if not scheduleTask(reconciliationResetBarrierDelaySeconds, completeResetBarrier) then
+        completeResetBarrier();
+    end
+    return true;
+end
+
+repairReconciliationMismatch = function(pending, mismatches)
     if type(pending) ~= 'table' then
         return false;
     end
-    if pending.repair == true or not reconciliationCanRepairIntent(pending.intent) then
+    if profile.OddLuaRuntime.ReconciliationContextMatches(pending) ~= true then
+        state.ReconcileLastRecordedSignature = nil;
         return false;
+    end
+    if profile.OddLuaRuntime.PlayerContextReady(profile.OddLuaRuntime.GetPlayer()) ~= true then
+        return false;
+    end
+    if not reconciliationCanRepairSet(pending.set, pending.intent) then
+        return false;
+    end
+    local repairAttempt = tonumber(pending.repairAttempt) or 0;
+    if repairAttempt >= reconciliationMaxRepairAttempts then
+        return false;
+    end
+    local encumbranceState = profile.OddLuaRuntime.HasEncumbrance();
+    if encumbranceState == true then
+        return false, 'repair_paused_encumbrance';
+    elseif encumbranceState ~= false then
+        return false, 'repair_paused_encumbrance_unknown';
     end
     if type(pending.expected) ~= 'table' or next(pending.expected) == nil then
         return false;
     end
 
-    local repaired = false;
-    if scale and scale.ForceEquipSet then
-        local ok = pcall(function()
-            scale.ForceEquipSet(pending.set, pending.expected, pending.intent);
-        end);
-        repaired = ok == true;
-    elseif gFunc and gFunc.ForceEquipSet then
-        local ok = pcall(function()
-            gFunc.ForceEquipSet(pending.expected);
-        end);
-        repaired = ok == true;
-    elseif gFunc and gFunc.EquipSet then
-        local ok = pcall(function()
-            gFunc.EquipSet(pending.expected);
-        end);
-        repaired = ok == true;
+    if repairAttempt == 1 and queueReconciliationResetBarrier(pending, mismatches, repairAttempt) then
+        return true, nil, 'reset_barrier';
     end
 
+    local repaired = forceReconciliationExpected(pending);
     if repaired == true then
-        scheduleReconciliationSnapshot(pending.set, pending.expected, true, true);
+        scheduleReconciliationSnapshot(
+            pending.set,
+            pending.expected,
+            true,
+            true,
+            repairAttempt + 1,
+            {
+                actionProbeSequence = pending.actionProbeSequence,
+                profileBuildToken = pending.profileBuildToken,
+                contextSignature = pending.contextSignature,
+                cycleSequence = pending.cycleSequence,
+            }
+        );
     end
-    return repaired;
+    if repaired == true then
+        return true, nil, 'direct';
+    end
+    return false;
 end
 
 local function handleReconcileCommand(args)
     local command = normalize(args and args[2]);
     if command == 'on' then
         state.ReconcileEnabled = true;
-        message('Reconciliation snapshots enabled; log=' .. reconciliationConfig.logPath);
+        message('Reconciliation snapshots enabled.');
     elseif command == 'off' then
         state.ReconcileEnabled = false;
         message('Reconciliation snapshots disabled.');
@@ -13402,13 +13611,13 @@ local function handleReconcileCommand(args)
         if state.ReconcileLast and state.ReconcileLast.status then
             lastStatus = tostring(state.ReconcileLast.status);
         end
-        message('Reconcile enabled=' .. tostring(state.ReconcileEnabled == true) .. '; last=' .. lastStatus .. '; log=' .. reconciliationConfig.logPath .. '; use reconcile on|off|status|last.');
+        message('Reconcile enabled=' .. tostring(state.ReconcileEnabled == true) .. '; last=' .. lastStatus .. '; use /lac fwd reconcile on|off|status|last.');
     elseif command == 'last' then
         if not state.ReconcileLast then
-            message('Reconcile last: none yet; log=' .. reconciliationConfig.logPath);
+            message('Reconcile last: none yet.');
             return;
         end
-        message('Reconcile last set=' .. tostring(state.ReconcileLast.set) .. '; status=' .. tostring(state.ReconcileLast.status) .. '; mismatches=' .. reconciliationMismatchSlots(state.ReconcileLast.mismatches) .. '; log=' .. reconciliationConfig.logPath);
+        message('Reconcile last set=' .. tostring(state.ReconcileLast.set) .. '; status=' .. tostring(state.ReconcileLast.status) .. '; mismatches=' .. reconciliationMismatchSlots(state.ReconcileLast.mismatches) .. '.');
     else
         message('Unknown reconcile command. Use reconcile on|off|status|last.');
     end
@@ -13426,12 +13635,27 @@ local function weaponSkillRouteKey(name)
 end
 
 local function getPlayer()
-    if gData and gData.GetPlayer then
-        return gData.GetPlayer();
+    return profile.OddLuaRuntime.GetPlayer();
+end
+
+profile.OddLuaPet = {};
+
+function profile.OddLuaPet.getPet()
+    if gData and gData.GetPet then
+        local ok, pet = pcall(gData.GetPet);
+        if ok then
+            return pet;
+        end
+    end
+
+    local player = getPlayer();
+    if type(player) == 'table' then
+        return player.Pet or player.pet or player.PetName or player.petName;
     end
     return nil;
 end
 
+do
 local function mechanicsPlanForSet(setName)
     if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
         return nil;
@@ -13506,6 +13730,14 @@ local function mechanicsPlanActionWarningCounts()
             end
             if type(plan.warnings) == 'table' then
                 warningCount = warningCount + #plan.warnings;
+            end
+        end
+    end
+    local explicitTransitions = mechanicsSwapPlanner and mechanicsSwapPlanner.explicitTransitions;
+    if type(explicitTransitions) == 'table' then
+        for _, plan in pairs(explicitTransitions) do
+            if type(plan) == 'table' and type(plan.actions) == 'table' then
+                actionCount = actionCount + #plan.actions;
             end
         end
     end
@@ -13668,7 +13900,7 @@ local function mechanicsStatus()
     local skippedCount = tableCount(mechanicsSwapPlanner and mechanicsSwapPlanner.skippedTransitions);
     local actionCount, warningCount = mechanicsPlanActionWarningCounts();
     message('Mechanics planner loaded=' .. tostring(loaded) .. '; baseline=' .. tostring(baseline) .. '; version=' .. tostring(plannerVersion) .. '; transitions=' .. tostring(transitionCount) .. '; skipped=' .. tostring(skippedCount) .. '; actions=' .. tostring(actionCount) .. '; warnings=' .. tostring(warningCount) .. '; probes=' .. tostring(state.MechanicsProbes == true) .. '; execution=' .. tostring(state.MechanicsExecution == true));
-    message('Mechanics execution is disabled for this profile slice; use probes to validate timing before promotion.');
+    message('Automatic mechanics execution is disabled; explicit avoidtick acts only on receive-only observed harmful gear.');
 end
 
 local function handleMechanicsCommand(args)
@@ -13677,7 +13909,7 @@ local function handleMechanicsCommand(args)
         mechanicsStatus();
         return;
     elseif subcommand == 'help' then
-        message('mechanics status | mechanics list | mechanics warnings | mechanics skipped | mechanics probes on|off | mechanics plan <set> | mechanics probe <set>');
+        message('mechanics status | mechanics list | mechanics warnings | mechanics skipped | mechanics probes on|off | mechanics plan <set> | mechanics probe <set> | mechanics avoidtick');
         return;
     elseif subcommand == 'list' then
         printMechanicsList();
@@ -13703,8 +13935,19 @@ local function handleMechanicsCommand(args)
     elseif subcommand == 'probe' then
         probeMechanicsPlan(mechanicsTargetSet(args));
         return;
+    elseif subcommand == 'avoidtick' then
+        local avoided, detail = profile.OddLuaRuntime.AvoidNegativeTickGear();
+        if avoided == true then
+            message('Negative-tick avoidance requested: ' .. tostring(detail) .. '; verify observed equipment before treating it as proof.');
+        else
+            message('Negative-tick avoidance skipped: ' .. tostring(detail or 'unavailable') .. '.');
+        end
+        return;
     end
     message('Unknown mechanics command. Use mechanics help.');
+end
+
+profile.OddLuaRuntime.HandleMechanicsCommand = handleMechanicsCommand;
 end
 
 local function getAction()
@@ -13715,21 +13958,7 @@ local function getAction()
 end
 
 local function getEnvironment()
-    if gData and gData.GetEnvironment then
-        local ok, environment = pcall(gData.GetEnvironment);
-        if ok then
-            if environment and AshitaCore and AshitaCore.GetMemoryManager then
-                local okZone, zoneId = pcall(function()
-                    return AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0);
-                end);
-                if okZone then
-                    environment.ZoneId = zoneId;
-                end
-            end
-            return environment;
-        end
-    end
-    return nil;
+    return profile.OddLuaRuntime.GetEnvironment();
 end
 
 local function truthy(value)
@@ -13800,36 +14029,91 @@ local function isDuskToDawn(environment)
 end
 
 local function getBuffCount(name)
-    if not gData or not gData.GetBuffCount then
-        return 0;
+    if name == nil or tostring(name) == '' or not gData or not gData.GetBuffCount then
+        return 0, false;
     end
 
     local ok, count = pcall(gData.GetBuffCount, name);
     if ok and type(count) == 'number' then
-        return count;
+        return count, true;
     end
-    return 0;
+    return 0, false;
 end
 
 local function hasBuff(name)
-    if name == nil or tostring(name) == '' then
-        return false;
-    end
-    return getBuffCount(name) > 0;
+    local count, known = getBuffCount(name);
+    return known == true and count > 0;
 end
 
-local function hasDangerousStatus()
+
+
+profile.OddLuaRuntime.IncapacitatingStatusBuffs = {
+    'sleep', 'sleep ii', 'stun', 'lullaby', 'petrification', 'terror', 'impairment',
+    2, 7, 10, 19, 28, 193, 261,
+};
+
+profile.OddLuaRuntime.AmnesiaStatusBuffs = { 'amnesia', 16 };
+profile.OddLuaRuntime.WeaknessStatusBuffs = { 'weakness', 1 };
+profile.OddLuaRuntime.CurseStatusBuffs = { 'curse', 9, 20 };
+
+function profile.OddLuaRuntime.StatusListState(statuses)
+    local unknown = false;
+    for _, status in ipairs(statuses or {}) do
+        local count, known = getBuffCount(status);
+        if known ~= true then
+            unknown = true;
+        elseif count > 0 then
+            return true;
+        end
+    end
+    if unknown then
+        return nil;
+    end
+    return false;
+end
+
+function profile.OddLuaRuntime.HasIncapacitatingStatus()
+    return profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.IncapacitatingStatusBuffs);
+end
+
+function profile.OddLuaRuntime.HasAmnesia()
+    return profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.AmnesiaStatusBuffs);
+end
+
+function profile.OddLuaRuntime.HasWeakness()
+    return profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.WeaknessStatusBuffs);
+end
+
+function profile.OddLuaRuntime.HasEncumbrance()
+    return profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.EncumbranceStatusBuffs);
+end
+
+function profile.OddLuaRuntime.DangerousStatusState()
+    local unknown = false;
     for name in pairs(dangerousStatusBuffs) do
-        if hasBuff(name) then
+        local count, known = getBuffCount(name);
+        if known ~= true then
+            unknown = true;
+        elseif count > 0 then
             return true;
         end
     end
     for _, id in ipairs(dangerousStatusIds) do
-        if hasBuff(id) then
+        local count, known = getBuffCount(id);
+        if known ~= true then
+            unknown = true;
+        elseif count > 0 then
             return true;
         end
     end
+    if unknown then
+        return nil;
+    end
     return false;
+end
+
+local function hasDangerousStatus()
+    return profile.OddLuaRuntime.DangerousStatusState() == true;
 end
 
 local function activeSubjob()
@@ -13844,7 +14128,7 @@ local function activeSubjob()
             return string.upper(tostring(subjob));
         end
     end
-    return '';
+    return 'NIN';
 end
 
 local function currentSubjobProfile()
@@ -13869,7 +14153,21 @@ end
 profile.HasSubjobCapability = hasSubjobCapability;
 
 local function mainJobHasNativeDualWield()
-    return nativeDualWieldMainJobs['DNC'] == true;
+    local minimumLevel = nativeDualWieldMainJobs['DNC'];
+    if type(minimumLevel) ~= 'number' then
+        return false;
+    end
+    local player = gData.GetPlayer();
+    if type(player) ~= 'table' then
+        return false;
+    end
+    local mainLevel = tonumber(
+        player.MainJobSync
+        or player.mainJobSync
+        or player.MainJobLevel
+        or player.mainJobLevel
+    );
+    return mainLevel ~= nil and mainLevel >= minimumLevel;
 end
 
 local function setWithSubjobLegalOffhand(setName, set)
@@ -13917,6 +14215,19 @@ local function isEngaged(player)
     return status == 'engaged' or status == 'attack' or status == 'attacking' or status == '1';
 end
 
+function profile.OddLuaRuntime.CanIssueAutomaticJobAbility(player)
+    if profile.OddLuaRuntime.PlayerContextReady(player) ~= true or not isEngaged(player) then
+        return false;
+    end
+    if profile.OddLuaRuntime.HasIncapacitatingStatus() ~= false then
+        return false;
+    end
+    if profile.OddLuaRuntime.HasAmnesia() ~= false then
+        return false;
+    end
+    return true;
+end
+
 local function isResting(player)
     if not player then
         return false;
@@ -13937,32 +14248,22 @@ local function isMounted(player)
         end
     end
 
-    for name, _ in pairs(mountedStatusBuffs) do
-        if hasBuff(name) then
-            return true;
-        end
-    end
-    for _, id in ipairs(mountedStatusIds) do
-        if hasBuff(id) then
-            return true;
-        end
-    end
-    return false;
+    return profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.MountedStatusBuffs);
 end
 
-local function isOnFoot(player)
-    return not isMounted(player);
+function profile.OddLuaRuntime.IsOnFoot(player)
+    return isMounted(player) == false;
 end
 
 local function canEquipMovement(player, environment)
-    if isCity(environment) then
-        return true;
+    if not profile.OddLuaRuntime.IsOnFoot(player) then
+        return false;
     end
-    return not isEngaged(player) and isOnFoot(player);
+    return profile.OddLuaRuntime.PlayerIsMoving(player) == true;
 end
 
 local function shouldEquipInCityMovement(player, environment)
-    return isCity(environment);
+    return isCity(environment) and profile.OddLuaRuntime.IsOnFoot(player);
 end
 
 local function playerHpp(player)
@@ -13983,6 +14284,20 @@ local function playerHpp(player)
     return nil;
 end
 
+function profile.OddLuaRuntime.PlayerHp(player)
+    if not player then
+        return nil;
+    end
+    return tonumber(player.HP or player.hp or player.CurrentHP or player.currentHP);
+end
+
+function profile.OddLuaRuntime.PlayerMp(player)
+    if not player then
+        return nil;
+    end
+    return tonumber(player.MP or player.mp or player.CurrentMP or player.currentMP);
+end
+
 local function playerTp(player)
     if not player then
         return 0;
@@ -13991,8 +14306,22 @@ local function playerTp(player)
 end
 
 local function isEmergencyHp(player)
+    if player == nil then
+        state.EmergencyHpActive = false;
+        return false;
+    end
     local hpp = playerHpp(player);
-    return hpp ~= nil and hpp <= 35;
+    local thresholds = profile.OddLuaRuntime.Hysteresis;
+    return profile.OddLuaRuntime.UpdateHysteresisState(
+        'EmergencyHpActive',
+        hpp ~= nil,
+        hpp ~= nil and hpp <= thresholds.EmergencyHpEnterHpp,
+        hpp ~= nil and hpp >= thresholds.EmergencyHpExitHpp
+    );
+end
+
+function profile.OddLuaRuntime.IsEmergencyHp(player)
+    return isEmergencyHp(player);
 end
 
 
@@ -14029,7 +14358,7 @@ local function isClearSet(set)
 end
 
 local function firstAvailableDefensiveSet()
-    local candidates = { 'PDT', 'Playstyle_Safe', 'Safe', 'Survival', 'Tank', 'Evasion', 'Hybrid', 'MDT' };
+    local candidates = { 'IdleCombat', 'Dt', 'PDT', 'Playstyle_Safe', 'Safe', 'Survival', 'Tank', 'Evasion', 'MDT', 'MagicDefense' };
     for _, setName in ipairs(candidates) do
         local set = sets[setName];
         if type(set) == 'table' and not isClearSet(set) then
@@ -14173,6 +14502,94 @@ local function countOvertDefenseThreats(player)
     return count;
 end
 
+function profile.OddLuaRuntime.CountPlayerThreats(player)
+    local entities = providedThreatEntities(player);
+    if type(entities) ~= 'table' then
+        return 0;
+    end
+
+    local count = 0;
+    for _, entity in pairs(entities) do
+        if entityHasPlayerThreat(entity, player) then
+            count = count + 1;
+        end
+    end
+    return count;
+end
+
+function profile.OddLuaRuntime.ShouldEquipIdleCombat(player)
+    if not player or isEngaged(player) or isResting(player) then
+        return false;
+    end
+    return profile.OddLuaRuntime.CountPlayerThreats(player) > 0;
+end
+
+function profile.OddLuaRuntime.IdlePoolFloor(threshold, extra)
+    local floor = (tonumber(threshold or 0) or 0) + (tonumber(extra or 0) or 0);
+    if floor < 0 then
+        return 0;
+    end
+    return floor;
+end
+
+function profile.OddLuaRuntime.UpdateHysteresisState(fieldName, observed, shouldEnter, shouldExit)
+    if fieldName ~= 'EmergencyHpActive'
+        and fieldName ~= 'IdleMaxMPActive'
+        and fieldName ~= 'IdleMaxHPActive' then
+        return false;
+    end
+    if observed ~= true then
+        return state[fieldName] == true;
+    end
+    if state[fieldName] == true then
+        if shouldExit == true then
+            state[fieldName] = false;
+        end
+    elseif shouldEnter == true then
+        state[fieldName] = true;
+    end
+    return state[fieldName] == true;
+end
+
+function profile.OddLuaRuntime.ShouldEquipIdleMaxMP(player)
+    if not player or isEngaged(player) or isResting(player) then
+        state.IdleMaxMPActive = false;
+        return false;
+    end
+    local floor = profile.OddLuaRuntime.IdlePoolFloor(state.IdleMaxMPThreshold, state.IdleMaxMPAdd);
+    if floor <= 0 then
+        state.IdleMaxMPActive = false;
+        return false;
+    end
+    local mp = profile.OddLuaRuntime.PlayerMp(player);
+    local exitFloor = math.max(0, floor - profile.OddLuaRuntime.Hysteresis.IdlePoolBand);
+    return profile.OddLuaRuntime.UpdateHysteresisState(
+        'IdleMaxMPActive',
+        mp ~= nil,
+        mp ~= nil and mp >= floor,
+        mp ~= nil and mp <= exitFloor
+    );
+end
+
+function profile.OddLuaRuntime.ShouldEquipIdleMaxHP(player)
+    if not player or isEngaged(player) or isResting(player) then
+        state.IdleMaxHPActive = false;
+        return false;
+    end
+    local floor = profile.OddLuaRuntime.IdlePoolFloor(state.IdleMaxHPThreshold, state.IdleMaxHPAdd);
+    if floor <= 0 then
+        state.IdleMaxHPActive = false;
+        return false;
+    end
+    local hp = profile.OddLuaRuntime.PlayerHp(player);
+    return profile.OddLuaRuntime.UpdateHysteresisState(
+        'IdleMaxHPActive',
+        hp ~= nil,
+        hp ~= nil and hp < floor,
+        hp ~= nil and hp >= floor + profile.OddLuaRuntime.Hysteresis.IdlePoolBand
+    );
+end
+
 local function shouldEquipOvertDefense(player)
     if not player or not isEngaged(player) then
         return nil;
@@ -14187,13 +14604,44 @@ local function shouldEquipOvertDefense(player)
     end
     local hpp = playerHpp(player);
     if hpp ~= nil and hpp < OVERT_DEFENSE_HP_FORCE_HPP then
-        return defensiveSet;
+        return defensiveSet, true;
     end
     local tp = playerTp(player);
     if tp < OVERT_DEFENSE_TP_UNLOCK then
-        return defensiveSet;
+        return defensiveSet, tp == 0;
     end
     return nil;
+end
+
+function profile.OddLuaRuntime.ActiveSafetyReason(player)
+    if profile.OddLuaRuntime.PlayerContextReady(player) ~= true then
+        return 'none';
+    end
+    if hasDangerousStatus() then
+        return 'dangerous-status';
+    end
+    if profile.OddLuaRuntime.HasWeakness() == true then
+        return 'weakness';
+    end
+    if (player and isResting(player)) or state.Playstyle == 'Craft' then
+        return 'none';
+    end
+    if state.IdleOverrideSet ~= nil
+        and type(sets[state.IdleOverrideSet]) == 'table'
+        and not isClearSet(sets[state.IdleOverrideSet])
+    then
+        return 'manual-override';
+    end
+    if player and isEngaged(player) then
+        if shouldEquipOvertDefense(player) ~= nil then
+            return 'overt-threat';
+        end
+        if isEmergencyHp(player) and firstAvailableDefensiveSet() ~= nil then
+            return 'emergency-hp';
+        end
+
+    end
+    return 'none';
 end
 
 local function applyWarpRingLock(set)
@@ -14240,6 +14688,46 @@ local function desiredSecondarySlotLocksForSetNames(setNames)
     end
     return desired;
 end
+
+local function contextSecondarySlotSafeSet(set)
+    local contextSetNames = state.SecondarySlotLockContextSetNames;
+    if type(set) ~= 'table' or type(contextSetNames) ~= 'table' then
+        return set;
+    end
+
+    local lockedSlots = desiredSecondarySlotLocksForSetNames(contextSetNames);
+    if next(lockedSlots) == nil then
+        return set;
+    end
+
+    local safe = {};
+    for slot, item in pairs(set) do
+        if lockedSlots[slot] ~= true then
+            safe[slot] = item;
+        end
+    end
+    return safe;
+end
+
+local function contextSafeEquipSet(set)
+    return movementSafeEquipSet(contextSecondarySlotSafeSet(set));
+end
+
+local contextSafeGFunc = {};
+contextSafeGFunc.EquipSet = function(set)
+    if gFunc and gFunc.EquipSet then
+        return gFunc.EquipSet(contextSafeEquipSet(set));
+    end
+    return nil;
+end;
+contextSafeGFunc.ForceEquipSet = function(set)
+    if gFunc and gFunc.ForceEquipSet then
+        return gFunc.ForceEquipSet(contextSafeEquipSet(set));
+    elseif gFunc and gFunc.EquipSet then
+        return gFunc.EquipSet(contextSafeEquipSet(set));
+    end
+    return nil;
+end;
 
 local function releaseSecondarySlotLocksNotInSetNames(setNames)
     local active = state.SecondarySlotLocks;
@@ -14326,19 +14814,101 @@ local function unlockSecondarySlotLocks()
     end
 end
 
-local function applyConditionalEquipsForSet(setName, force)
+local function buildConditionalOverlayForSet(setName, context)
+    return conditionals.BuildOverlay(conditionalEquips[setName], context);
+end
+
+local function applyConditionalEquipsForSet(setName, baseSet, force)
+    if not conditionals or not conditionals.BuildOverlay then
+        return false;
+    end
+
+    local ok, overlay = pcall(function()
+        return buildConditionalOverlayForSet(setName, {
+            force = force,
+            gFunc = contextSafeGFunc,
+            getBuffCount = getBuffCount,
+            getEnvironment = getEnvironment,
+            getPlayer = getPlayer,
+            hasBuff = hasBuff,
+            itemHasUsesLeft = profile.BuffItemHasUsesLeft,
+            state = state,
+        });
+    end);
+    if ok ~= true or type(overlay) ~= 'table' then
+        overlay = {};
+    end
+
+    local previousSlots = state.ActiveConditionalOverlaySlots;
+    if type(previousSlots) ~= 'table' then
+        previousSlots = {};
+    end
+    local restoration = {};
+    local activeSlots = {};
+    for slot, _ in pairs(previousSlots) do
+        if overlay[slot] == nil then
+            if state.WarpRingLocked == true and slot == 'Ring2' then
+                activeSlots[slot] = true;
+            else
+                local baseItem = type(baseSet) == 'table' and baseSet[slot] or nil;
+                restoration[slot] = baseItem or 'remove';
+            end
+        end
+    end
+    for slot, _ in pairs(overlay) do
+        activeSlots[slot] = true;
+    end
+    state.ActiveConditionalOverlaySlots = activeSlots;
+
+    local equipped = false;
+    for _, candidate in ipairs({ restoration, overlay }) do
+        if next(candidate) ~= nil then
+            if force == true and gFunc and gFunc.ForceEquipSet then
+                gFunc.ForceEquipSet(contextSafeEquipSet(candidate));
+                equipped = true;
+            elseif gFunc and gFunc.EquipSet then
+                gFunc.EquipSet(contextSafeEquipSet(candidate));
+                equipped = true;
+            end
+        end
+    end
+    return equipped;
+end
+
+function profile.ApplyBuffItemOverlaysForSet(setName, force)
     if not conditionals or not conditionals.ApplyForSet then
         return false;
     end
 
-    return conditionals.ApplyForSet(conditionalEquips, setName, {
+    local equipped = false;
+    if profile.BuffItemAfterUseOverlayForSet then
+        local afterUseOverlay = profile.BuffItemAfterUseOverlayForSet(setName, force);
+        if next(afterUseOverlay) ~= nil then
+            if force == true and gFunc and gFunc.ForceEquipSet then
+                gFunc.ForceEquipSet(contextSafeEquipSet(afterUseOverlay));
+                equipped = true;
+            elseif gFunc and gFunc.EquipSet then
+                gFunc.EquipSet(contextSafeEquipSet(afterUseOverlay));
+                equipped = true;
+            end
+        end
+    end
+
+    if profile.BuffItemOverlaysEnabled() ~= true then
+        return equipped;
+    end
+
+    local overlayEquipped = conditionals.ApplyForSet(profile.BuffItemOverlays, setName, {
         force = force,
-        gFunc = gFunc,
+        gFunc = contextSafeGFunc,
+        getBuffCount = getBuffCount,
         getEnvironment = getEnvironment,
         getPlayer = getPlayer,
         hasBuff = hasBuff,
+        itemHasUsesLeft = profile.BuffItemHasUsesLeft,
         state = state,
     });
+    return equipped or overlayEquipped;
 end
 
 local reconciliationProtectedWeaponSlots = {
@@ -14346,6 +14916,31 @@ local reconciliationProtectedWeaponSlots = {
     Sub = true,
     Range = true,
 };
+
+local scaleWeaponGuardBypassSlotsBySet = {};
+
+local function profileSlotsDroppedByScale(setName, requestedSet, appliedSet)
+    local dropped = {};
+    if type(requestedSet) ~= 'table' then
+        return dropped;
+    end
+    if type(appliedSet) ~= 'table' then
+        appliedSet = {};
+    end
+
+    local bypassSlots = scaleWeaponGuardBypassSlotsBySet[setName] or {};
+    for _, slot in ipairs(equipmentSlots) do
+        local requestedRemove = normalize(requestedSet[slot]) == 'remove';
+        local scaleChangedRemove = requestedRemove and normalize(appliedSet[slot]) ~= 'remove';
+        if requestedSet[slot] ~= nil
+            and (appliedSet[slot] == nil or scaleChangedRemove)
+            and (reconciliationProtectedWeaponSlots[slot] ~= true
+                or bypassSlots[slot] == true) then
+            dropped[slot] = requestedSet[slot];
+        end
+    end
+    return dropped;
+end
 
 local function copyEquipSet(set)
     local copy = {};
@@ -14369,13 +14964,41 @@ local function overlayEquipSet(baseSet, overlay)
     return result;
 end
 
+function profile.OddLuaRuntime.ScaleGuardedDirectEquipSet(setName, requestedSet)
+    local guardedSet = copyEquipSet(requestedSet);
+    local bypassSlots = scaleWeaponGuardBypassSlotsBySet[setName] or {};
+    for slot, _ in pairs(reconciliationProtectedWeaponSlots) do
+        if bypassSlots[slot] ~= true then
+            guardedSet[slot] = nil;
+        end
+    end
+    return guardedSet;
+end
+
+local function equipProfileSlotsDroppedByScale(setName, requestedSet, appliedSet, force)
+    local dropped = profileSlotsDroppedByScale(setName, requestedSet, appliedSet);
+    if next(dropped) == nil then
+        return appliedSet;
+    end
+    dropped = movementSafeEquipSet(dropped);
+
+    if force == true and gFunc and gFunc.ForceEquipSet then
+        gFunc.ForceEquipSet(dropped);
+    elseif gFunc and gFunc.EquipSet then
+        gFunc.EquipSet(dropped);
+    end
+    return overlayEquipSet(appliedSet, dropped);
+end
+
 local function reconciliationEquipContext(force)
     return {
         force = force,
-        gFunc = gFunc,
+        gFunc = contextSafeGFunc,
+        getBuffCount = getBuffCount,
         getEnvironment = getEnvironment,
         getPlayer = getPlayer,
         hasBuff = hasBuff,
+        itemHasUsesLeft = profile.BuffItemHasUsesLeft,
         state = state,
     };
 end
@@ -14386,7 +15009,168 @@ local function conditionalOverlayForSet(setName, force)
     end
 
     local ok, overlay = pcall(function()
-        return conditionals.BuildOverlay(conditionalEquips[setName], reconciliationEquipContext(force));
+        return buildConditionalOverlayForSet(setName, reconciliationEquipContext(force));
+    end);
+    if ok and type(overlay) == 'table' then
+        return overlay;
+    end
+    return {};
+end
+
+local function globalConditionalOverlay(force)
+    if not conditionals or not conditionals.BuildOverlay then
+        return {};
+    end
+
+    local ok, overlay = pcall(function()
+        return conditionals.BuildOverlay(conditionalEquips.Global, reconciliationEquipContext(force));
+    end);
+    if ok and type(overlay) == 'table' then
+        return overlay;
+    end
+    return {};
+end
+
+local function applyGlobalConditionalEquips(force)
+    local overlay = globalConditionalOverlay(force);
+    if next(overlay) == nil then
+        return false;
+    end
+    if force == true and gFunc and gFunc.ForceEquipSet then
+        gFunc.ForceEquipSet(contextSafeEquipSet(overlay));
+        return true;
+    elseif gFunc and gFunc.EquipSet then
+        gFunc.EquipSet(contextSafeEquipSet(overlay));
+        return true;
+    end
+    return false;
+end
+
+
+
+
+
+
+
+
+
+local explicitGearModeSetNames = {
+    combat = 'CombatSkillup',
+    magic = 'MagicSkillup',
+    proc = 'Proc',
+};
+
+local function explicitGearModeSetAvailable(mode)
+    local setName = explicitGearModeSetNames[normalize(mode)];
+    return setName ~= nil
+        and type(sets[setName]) == 'table'
+        and not isClearSet(sets[setName]);
+end
+
+function profile.OddLuaRuntime.ExplicitGearModeAvailabilityText()
+    local parts = {};
+    for _, mode in ipairs({ 'combat', 'magic', 'proc' }) do
+        parts[#parts + 1] = mode .. '=' .. (explicitGearModeSetAvailable(mode) and 'yes' or 'no');
+    end
+    return table.concat(parts, ',');
+end
+
+function profile.OddLuaRuntime.ExplicitGearModeOverlay(surface)
+    local mode = normalize(state.ExplicitGearMode);
+    if surface == 'default'
+        and (mode == 'combat' or mode == 'proc')
+        and not isEngaged(getPlayer())
+    then
+        return {};
+    end
+    local active = (surface == 'default' and (mode == 'combat' or mode == 'proc'))
+        or (surface == 'midcast' and mode == 'magic');
+    if active ~= true or explicitGearModeSetAvailable(mode) ~= true then
+        return {};
+    end
+
+    local overlay = copyEquipSet(sets[explicitGearModeSetNames[mode]]);
+    if mode == 'proc' then
+        -- Proc is intentionally a Main-only weapon decision. Fail closed if a
+        -- malformed generated set ever grows armor or secondary weapon slots.
+        for _, slot in ipairs(equipmentSlots) do
+            if slot ~= 'Main' then
+                overlay[slot] = nil;
+            end
+        end
+    else
+        overlay.Main = nil;
+        overlay.Sub = nil;
+        overlay.Range = nil;
+        overlay.Ammo = nil;
+    end
+    return overlay;
+end
+
+function profile.OddLuaRuntime.ApplyExplicitGearMode(surface, force)
+    local overlay = profile.OddLuaRuntime.ExplicitGearModeOverlay(surface);
+    if next(overlay) == nil then
+        return false;
+    end
+    if force == true and gFunc and gFunc.ForceEquipSet then
+        gFunc.ForceEquipSet(movementSafeEquipSet(overlay));
+        return true;
+    elseif gFunc and gFunc.EquipSet then
+        gFunc.EquipSet(movementSafeEquipSet(overlay));
+        return true;
+    end
+    return false;
+end
+
+function profile.BuffItemAfterUseOverlayForSet(setName, force)
+    if not conditionals or not conditionals.ConditionMatches then
+        return {};
+    end
+
+    local entries = profile.BuffItemOverlays[setName];
+    if type(entries) ~= 'table' then
+        return {};
+    end
+
+    local context = reconciliationEquipContext(force);
+    local overlay = {};
+    local function setOwnsSlot(slot)
+        local set = sets[setName];
+        return type(set) == 'table' and set[slot] ~= nil;
+    end
+    for _, entry in ipairs(entries) do
+        if type(entry) == 'table' then
+            local hasUsesLeft = true;
+            if type(entry.item) == 'table' then
+                hasUsesLeft = profile.BuffItemHasUsesLeft(entry) == true;
+            end
+            if profile.BuffItemOverlaysEnabled() ~= true
+                or conditionals.ConditionMatches(entry.condition, context) ~= true
+                or hasUsesLeft ~= true then
+                for slot, item in pairs(entry.afterUse or {}) do
+                    if normalize(item) ~= 'remove' or setOwnsSlot(slot) then
+                        overlay[slot] = item;
+                    end
+                end
+            end
+        end
+    end
+    if state.WarpRingLocked == true then
+        overlay.Ring2 = nil;
+    end
+    return overlay;
+end
+
+function profile.BuffItemOverlayForSet(setName, force)
+    if not conditionals or not conditionals.BuildOverlay then
+        return {};
+    end
+    if profile.BuffItemOverlaysEnabled() ~= true then
+        return {};
+    end
+
+    local ok, overlay = pcall(function()
+        return conditionals.BuildOverlay(profile.BuffItemOverlays[setName], reconciliationEquipContext(force));
     end);
     if ok and type(overlay) == 'table' then
         return overlay;
@@ -14449,10 +15233,19 @@ local function resolvedReconciliationExpectedSet(setName, requestedSet, appliedS
     end
     expectedSet = expectedSetWithProtectedWeapons(expectedSet, requestedSet, setIntents[setName]);
     expectedSet = overlayEquipSet(expectedSet, conditionalOverlayForSet(setName, force));
-    return expectedSet;
+    expectedSet = overlayEquipSet(expectedSet, profile.BuffItemAfterUseOverlayForSet(setName, force));
+    expectedSet = overlayEquipSet(expectedSet, profile.BuffItemOverlayForSet(setName, force));
+    expectedSet = overlayEquipSet(expectedSet, globalConditionalOverlay(force));
+
+
+    expectedSet = overlayEquipSet(expectedSet, profile.OddLuaRuntime.ExplicitGearModeOverlay('default'));
+    return contextSafeEquipSet(expectedSet);
 end
 
 local function isStableEquipIntent(setName)
+    if state.IdleOverrideSet == setName then
+        return true;
+    end
     local intent = normalize(setIntents[setName] or '');
     return intent == 'tp' or intent == 'idle' or intent == 'movement';
 end
@@ -14480,52 +15273,110 @@ local function markStableEquipForceNeeded(setName, force)
     end
 end
 
-local function equipNamedSet(setName, force)
-    local set = sets[setName];
+local function equipNamedSet(setName, force, requestedSet)
+    local set = requestedSet or sets[setName];
     if not set then
         return false;
     end
 
-    releaseSecondarySlotLocksNotInSet(setName);
     local setToEquip = setWithSubjobLegalOffhand(setName, set);
+    setToEquip = contextSecondarySlotSafeSet(setToEquip);
+    if state.ExplicitGearModeDefaultRouting == true
+        and normalize(state.ExplicitGearMode) == 'proc'
+    then
+        local protectedSet = copyEquipSet(setToEquip);
+        protectedSet.Main = nil;
+        setToEquip = protectedSet;
+    end
+
     local effectiveForce = stableEquipForceForSet(setName, setToEquip, force);
+    if isClearSet(setToEquip) then
+        markStableEquipForceNeeded(setName, effectiveForce);
+        return false;
+    end
+
+    releaseSecondarySlotLocksNotInSet(setName);
 
     if state.WarpRingLocked == true then
-        local lockedSet = applyWarpRingLock(setToEquip);
-        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
-            gFunc.ForceEquipSet(lockedSet);
-        elseif gFunc and gFunc.EquipSet then
-            gFunc.EquipSet(lockedSet);
+        local appliedLockedSet = nil;
+        if scale and scale.ResolveSet then
+            local ok, resolved = pcall(scale.ResolveSet, setName, setToEquip, setIntents[setName]);
+            if ok == true and type(resolved) == 'table' then
+                appliedLockedSet = resolved;
+            end
         end
-        applyConditionalEquipsForSet(setName, effectiveForce);
+        if type(appliedLockedSet) ~= 'table' then
+            appliedLockedSet = profile.OddLuaRuntime.ScaleGuardedDirectEquipSet(setName, setToEquip);
+        end
+        appliedLockedSet = movementSafeEquipSet(applyWarpRingLock(appliedLockedSet));
+        local requestedLockedSet = applyWarpRingLock(setToEquip);
+        if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+            gFunc.ForceEquipSet(appliedLockedSet);
+        elseif gFunc and gFunc.EquipSet then
+            gFunc.EquipSet(appliedLockedSet);
+        end
+        applyConditionalEquipsForSet(setName, appliedLockedSet, effectiveForce);
+        profile.ApplyBuffItemOverlaysForSet(setName, effectiveForce);
+        applyGlobalConditionalEquips(effectiveForce);
+
         applySecondarySlotLocksForSet(setName);
-        local equippedSet = resolvedReconciliationExpectedSet(setName, lockedSet, lockedSet, effectiveForce);
+        local equippedSet = resolvedReconciliationExpectedSet(setName, requestedLockedSet, appliedLockedSet, effectiveForce);
         scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
         markStableEquipForceNeeded(setName, effectiveForce);
+        state.LastEquippedSetName = setName;
         return true;
     end
 
     local appliedSet = setToEquip;
-    if isClearSet(setToEquip) then
+    local usedScaleResolver = false;
+    if movementSafetyActive() == true then
+        -- Resolve first, then apply movement safety and dispatch directly so a
+        -- movement-penalty item cannot be restored by a stale Scale copy.
+        if scale and scale.ResolveSet then
+            local ok, resolved = pcall(scale.ResolveSet, setName, setToEquip, setIntents[setName]);
+            if ok == true and type(resolved) == 'table' then
+                appliedSet = resolved;
+                usedScaleResolver = true;
+            end
+        end
+        if usedScaleResolver ~= true then
+            appliedSet = profile.OddLuaRuntime.ScaleGuardedDirectEquipSet(setName, appliedSet);
+        end
+        appliedSet = movementSafeEquipSet(appliedSet);
         if effectiveForce == true and gFunc and gFunc.ForceEquipSet then
-            gFunc.ForceEquipSet(setToEquip);
+            gFunc.ForceEquipSet(appliedSet);
         elseif gFunc and gFunc.EquipSet then
-            gFunc.EquipSet(setToEquip);
+            gFunc.EquipSet(appliedSet);
         end
     elseif effectiveForce == true and scale and scale.ForceEquipSet then
         appliedSet = scale.ForceEquipSet(setName, setToEquip, setIntents[setName]);
-    elseif effectiveForce == true and gFunc and gFunc.ForceEquipSet then
-        gFunc.ForceEquipSet(setToEquip);
+        usedScaleResolver = true;
     elseif scale and scale.EquipSet then
         appliedSet = scale.EquipSet(setName, setToEquip, setIntents[setName]);
+        usedScaleResolver = true;
+    elseif effectiveForce == true and gFunc and gFunc.ForceEquipSet then
+        appliedSet = profile.OddLuaRuntime.ScaleGuardedDirectEquipSet(setName, setToEquip);
+        gFunc.ForceEquipSet(movementSafeEquipSet(appliedSet));
     elseif gFunc and gFunc.EquipSet then
-        gFunc.EquipSet(setToEquip);
+        appliedSet = profile.OddLuaRuntime.ScaleGuardedDirectEquipSet(setName, setToEquip);
+        gFunc.EquipSet(movementSafeEquipSet(appliedSet));
     end
-    applyConditionalEquipsForSet(setName, effectiveForce);
+    if usedScaleResolver == true then
+        local recoverySet = setToEquip;
+        if movementSafetyActive() == true then
+            recoverySet = movementSafeEquipSet(recoverySet);
+        end
+        appliedSet = equipProfileSlotsDroppedByScale(setName, recoverySet, appliedSet, effectiveForce);
+    end
+    applyConditionalEquipsForSet(setName, appliedSet, effectiveForce);
+    profile.ApplyBuffItemOverlaysForSet(setName, effectiveForce);
+    applyGlobalConditionalEquips(effectiveForce);
+
     applySecondarySlotLocksForSet(setName);
     local equippedSet = resolvedReconciliationExpectedSet(setName, setToEquip, appliedSet, effectiveForce);
     scheduleReconciliationSnapshot(setName, equippedSet, effectiveForce);
     markStableEquipForceNeeded(setName, effectiveForce);
+    state.LastEquippedSetName = setName;
     return true;
 end
 
@@ -14537,9 +15388,71 @@ local function equipNamedSetIfNotClear(setName, force)
     return equipNamedSet(setName, force);
 end
 
-local function equipOvertDefensiveSet(setName)
+function profile.OddLuaRuntime.ManualOverrideSourceSetName(setName)
+    local candidates = {};
+    local transition = nil;
+    if type(mechanicsSwapPlanner) == 'table' and type(mechanicsSwapPlanner.transitions) == 'table' then
+        transition = mechanicsSwapPlanner.transitions[setName];
+    end
+    if type(transition) == 'table' then
+        table.insert(candidates, transition.sourceSet);
+    end
+    if type(mechanicsSwapPlanner) == 'table' then
+        table.insert(candidates, mechanicsSwapPlanner.baselineSet);
+    end
+    table.insert(candidates, 'Aftercast');
+    table.insert(candidates, 'Idle');
+
+    local seen = {};
+    for _, candidate in ipairs(candidates) do
+        if type(candidate) == 'string' and candidate ~= '' and candidate ~= setName
+            and seen[candidate] ~= true
+        then
+            seen[candidate] = true;
+            if type(sets[candidate]) == 'table' and not isClearSet(sets[candidate]) then
+                return candidate;
+            end
+        end
+    end
+    return nil;
+end
+
+function profile.OddLuaRuntime.BuildManualOverrideSet(setName)
+    local targetSet = sets[setName];
+    if type(targetSet) ~= 'table' or isClearSet(targetSet) then
+        return nil, nil;
+    end
+    local sourceSetName = profile.OddLuaRuntime.ManualOverrideSourceSetName(setName);
+    if sourceSetName == nil then
+        return nil, nil;
+    end
+    local composedSet = overlayEquipSet(sets[sourceSetName], targetSet);
+    for _, slot in ipairs(equipmentSlots) do
+        if composedSet[slot] == nil then
+            composedSet[slot] = 'remove';
+        end
+    end
+    return composedSet, sourceSetName;
+end
+
+function profile.OddLuaRuntime.EquipManualOverrideSet(setName, force)
+    local composedSet = profile.OddLuaRuntime.BuildManualOverrideSet(setName);
+    if type(composedSet) ~= 'table' then
+        return false;
+    end
+    return equipNamedSet(setName, force, composedSet);
+end
+
+local function equipOvertDefensiveSet(setName, unlockWeapons)
     if not setName then
         return false;
+    end
+
+    -- Ordinary three-target pressure still needs defensive armor, but it must
+    -- keep Scale's weapon guard.  Only zero TP or the already-qualified
+    -- sub-60% HP emergency is allowed to unlock weapons.
+    if unlockWeapons ~= true then
+        return equipNamedSet(setName, true);
     end
 
     local status = {};
@@ -14552,11 +15465,17 @@ local function equipOvertDefensiveSet(setName)
     local previousWeaponLockEnabled = status.weaponLockEnabled == true;
 
     if scale and scale.SetWeaponLockEnabled then
-        scale.SetWeaponLockEnabled(false);
+        local unlockOk = pcall(scale.SetWeaponLockEnabled, false);
+        if unlockOk ~= true then
+            return equipNamedSet(setName, true);
+        end
+    else
+        return equipNamedSet(setName, true);
     end
     local ok, equipped = pcall(equipNamedSet, setName, true);
-    if scale and scale.SetWeaponLockEnabled then
-        scale.SetWeaponLockEnabled(previousWeaponLockEnabled);
+    local restoreOk = pcall(scale.SetWeaponLockEnabled, previousWeaponLockEnabled);
+    if restoreOk ~= true then
+        return false;
     end
     return ok == true and equipped == true;
 end
@@ -14572,13 +15491,222 @@ local function forceEquipInlineSet(set, ignoreWarpRingLock)
     end
 
     if gFunc and gFunc.ForceEquipSet then
-        gFunc.ForceEquipSet(setToEquip);
+        gFunc.ForceEquipSet(movementSafeEquipSet(setToEquip));
         return true;
     elseif gFunc and gFunc.EquipSet then
-        gFunc.EquipSet(setToEquip);
+        gFunc.EquipSet(movementSafeEquipSet(setToEquip));
         return true;
     end
     return false;
+end
+
+function profile.OddLuaRuntime.ExplicitSetMpBridgePlan()
+    if not mechanicsSwapPlanner or mechanicsSwapPlanner.loaded ~= true then
+        return nil;
+    end
+    local explicitTransitions = mechanicsSwapPlanner.explicitTransitions;
+    if type(explicitTransitions) ~= 'table' then
+        return nil;
+    end
+    local plan = explicitTransitions.setmp;
+    if type(plan) ~= 'table' or plan.available ~= true then
+        return nil;
+    end
+    if plan.targetSet ~= 'IdleMaxMP' or type(sets[plan.targetSet]) ~= 'table'
+        or isClearSet(sets[plan.targetSet]) then
+        return nil;
+    end
+    if type(plan.sourceSet) ~= 'string' or plan.sourceSet == ''
+        or type(plan.sourceEquipment) ~= 'table'
+        or type(plan.sourceVariants) ~= 'table'
+        or type(plan.targetEquipment) ~= 'table'
+        or type(plan.slot) ~= 'string' or plan.slot == ''
+        or type(plan.sourceItem) ~= 'string' or plan.sourceItem == ''
+        or type(plan.bridgeItem) ~= 'string' or plan.bridgeItem == ''
+        or type(plan.finalItem) ~= 'string' or plan.finalItem == ''
+    then
+        return nil;
+    end
+
+    local knownSlot = false;
+    for _, slot in ipairs(equipmentSlots) do
+        if slot == plan.slot then
+            knownSlot = true;
+            break;
+        end
+    end
+    if knownSlot ~= true
+        or not reconciliationNamesMatch(plan.sourceItem, plan.sourceEquipment[plan.slot] or '')
+        or reconciliationNamesMatch(plan.sourceItem, plan.bridgeItem)
+        or reconciliationNamesMatch(plan.bridgeItem, plan.finalItem)
+    then
+        return nil;
+    end
+
+    local targetItem = reconciliationExpectedName(plan.targetEquipment[plan.slot]);
+    if targetItem == nil or not reconciliationNamesMatch(plan.finalItem, targetItem) then
+        return nil;
+    end
+    for slot, expected in pairs(plan.targetEquipment) do
+        local namedTarget = reconciliationExpectedName(sets[plan.targetSet][slot]);
+        if namedTarget == nil or not reconciliationNamesMatch(expected, namedTarget) then
+            return nil;
+        end
+    end
+    if (tonumber(plan.conversionAmount) or 0) <= 0
+        or (tonumber(plan.bridgeHpCost) or -1) < 0
+        or (tonumber(plan.hpCost) or -1) < 0
+        or (tonumber(plan.mpGain) or 0) <= 0
+        or tonumber(plan.sourceKnownHp) == nil
+        or tonumber(plan.sourceKnownMp) == nil
+        or tonumber(plan.targetHp) == nil
+        or tonumber(plan.targetMp) == nil
+    then
+        return nil;
+    end
+    return plan;
+end
+
+function profile.OddLuaRuntime.ExplicitSetMpBridgeGate(player, plan)
+    if profile.OddLuaRuntime.PlayerContextReady(player) ~= true then
+        return false, 'player unavailable';
+    end
+    if isEngaged(player) or isResting(player) then
+        return false, 'not idle';
+    end
+    if state.Playstyle == 'Craft' then
+        return false, 'craft active';
+    end
+    if state.WarpRingLocked == true then
+        return false, 'warp ring locked';
+    end
+    if state.IdleOverrideSet ~= nil then
+        return false, 'override active';
+    end
+    if profile.OddLuaRuntime.DangerousStatusState() ~= false
+        or profile.OddLuaRuntime.HasWeakness() ~= false
+        or profile.OddLuaRuntime.StatusListState(profile.OddLuaRuntime.CurseStatusBuffs) ~= false
+    then
+        return false, 'status unsafe';
+    end
+    if profile.OddLuaRuntime.ActiveSafetyReason(player) ~= 'none'
+        or profile.OddLuaRuntime.ShouldEquipIdleCombat(player)
+        or isEmergencyHp(player)
+    then
+        return false, 'safety active';
+    end
+    if profile.OddLuaRuntime.ShouldEquipIdleMaxMP(player) ~= true then
+        return false, 'MP floor inactive';
+    end
+
+    local hp = profile.OddLuaRuntime.PlayerHp(player);
+    local maxHp = tonumber(player.MaxHP or player.maxHP or player.HPMax or player.hpmax);
+    local mp = profile.OddLuaRuntime.PlayerMp(player);
+    local maxMp = tonumber(player.MaxMP or player.maxMP or player.MPMax or player.mpmax);
+    if hp == nil or maxHp == nil or mp == nil or maxMp == nil
+        or hp <= 0 or maxHp < hp or mp < 0 or maxMp < mp
+    then
+        return false, 'pools unavailable';
+    end
+    local observed = observeReconciliationEquipment();
+    if type(observed) ~= 'table' then
+        return false, 'source mismatch';
+    end
+    for slot, expected in pairs(plan.sourceEquipment) do
+        if not reconciliationNamesMatch(expected, observed[slot] or '') then
+            return false, 'source mismatch';
+        end
+    end
+
+    local sourceHp = tonumber(plan.sourceKnownHp);
+    local sourceMp = tonumber(plan.sourceKnownMp);
+    for slot, variants in pairs(plan.sourceVariants) do
+        if type(variants) ~= 'table' then
+            return false, 'source variants invalid';
+        end
+        local matched = false;
+        local variantHp = nil;
+        local variantMp = nil;
+        for _, variant in ipairs(variants) do
+            if type(variant) == 'table'
+                and reconciliationNamesMatch(variant.item or '', observed[slot] or '')
+            then
+                matched = true;
+                variantHp = math.max(variantHp or tonumber(variant.hp) or 0, tonumber(variant.hp) or 0);
+                variantMp = math.max(variantMp or tonumber(variant.mp) or 0, tonumber(variant.mp) or 0);
+            end
+        end
+        if matched ~= true then
+            return false, 'source variant mismatch';
+        end
+        sourceHp = sourceHp + (variantHp or 0);
+        sourceMp = sourceMp + (variantMp or 0);
+    end
+
+    local targetHp = tonumber(plan.targetHp);
+    local targetMp = tonumber(plan.targetMp);
+    if targetMp < sourceMp then
+        return false, 'final MP pool unsafe';
+    end
+    local requiredHpCost = math.max(tonumber(plan.bridgeHpCost), sourceHp - targetHp, 0);
+    if maxHp - hp < requiredHpCost then
+        return false, 'HP headroom low';
+    end
+    return true, nil, observed;
+end
+
+function profile.OddLuaRuntime.TryExplicitSetMpBridge(player)
+    local plan = profile.OddLuaRuntime.ExplicitSetMpBridgePlan();
+    if plan == nil then
+        return false;
+    end
+    if state.HpToMpBridgeInFlight == true then
+        return true;
+    end
+
+    local allowed, reason, observed = profile.OddLuaRuntime.ExplicitSetMpBridgeGate(player, plan);
+    if allowed ~= true then
+        message('HP-to-MP bridge skipped: ' .. tostring(reason) .. '.');
+        return true;
+    end
+
+    local bridgeSet = {};
+    bridgeSet[plan.slot] = plan.bridgeItem;
+    local finalSet = {};
+    finalSet[plan.slot] = plan.finalItem;
+    local sourceSet = {};
+    for slot in pairs(plan.targetEquipment) do
+        local observedName = observed[slot];
+        sourceSet[slot] = observedName ~= nil and observedName ~= '' and observedName or 'remove';
+    end
+
+    state.HpToMpBridgeInFlight = true;
+    local ok, result = pcall(function()
+        if forceEquipInlineSet(bridgeSet, true) ~= true then
+            error('bridge equip unavailable');
+        end
+        if forceEquipInlineSet(plan.targetEquipment, true) ~= true then
+            error('target set unavailable');
+        end
+        if forceEquipInlineSet(finalSet, true) ~= true then
+            error('final equip unavailable');
+        end
+        return true;
+    end);
+    if ok ~= true or result ~= true then
+        local restoreOk, restored = pcall(forceEquipInlineSet, sourceSet, true);
+        state.HpToMpBridgeInFlight = false;
+        if restoreOk == true and restored == true then
+            message('HP-to-MP bridge failed; source restored.');
+        else
+            message('HP-to-MP bridge failed; restore unavailable.');
+        end
+        return true;
+    end
+
+    state.HpToMpBridgeInFlight = false;
+    message('HP-to-MP bridge queued.');
+    return true;
 end
 
 local oddLuaWarpRing = {};
@@ -14639,12 +15767,469 @@ local function useWarpRing()
 end
 
 local function equipFirstAvailable(setNames, force)
+    local triedSird = false;
     for _, setName in ipairs(setNames or {}) do
+        if setName == 'SIRD' then
+            triedSird = true;
+        elseif setName == 'Midcast' and not triedSird then
+            triedSird = true;
+            if equipNamedSetIfNotClear('SIRD', force) then
+                return true;
+            end
+        end
         if setName and equipNamedSetIfNotClear(setName, force) then
             return true;
         end
     end
     return false;
+end
+
+function profile.OddLuaRuntime.EquipSurvivalDefensiveOverlay()
+    if state.IdleOverrideSet ~= nil and state.IdleOverrideSet ~= '' then
+
+        return equipNamedSetIfNotClear(state.IdleOverrideSet, false);
+    end
+    return false;
+end
+
+function profile.OverrideStateText()
+    if state.IdleOverrideSet and state.IdleOverrideSet ~= '' then
+        return tostring(state.IdleOverrideSet);
+    end
+    return 'off';
+end
+
+function profile.ResistStateText()
+    return profile.OverrideStateText();
+end
+
+function profile.SetIdleOverrideSet(setName, label)
+    local messageLabel = label or 'Override';
+    if setName == nil or setName == '' then
+        if state.IdleOverrideSet == nil or state.IdleOverrideSet == '' then
+            message(messageLabel .. '=off.');
+            return false;
+        end
+        state.IdleOverrideSet = nil;
+        message(messageLabel .. '=off.');
+        return true;
+    end
+    if state.IdleOverrideSet == setName then
+        state.IdleOverrideSet = nil;
+        message(messageLabel .. '=off.');
+        return true;
+    end
+    if not sets[setName] or isClearSet(sets[setName]) then
+        message('Not Applicable / Missing Equipment');
+        return false;
+    end
+    local composedSet = profile.OddLuaRuntime.BuildManualOverrideSet(setName);
+    if type(composedSet) ~= 'table' then
+        message('Not Applicable / Missing Override Baseline');
+        return false;
+    end
+    state.IdleOverrideSet = setName;
+    message(messageLabel .. '=' .. tostring(setName) .. '.');
+    return true;
+end
+
+function profile.HandleOverrideCommand(args)
+    local command = normalize(args and args[1]);
+    local value = normalize(args and args[2]);
+    if command == 'override' or command == 'defense' or command == 'def' then
+        if value == '' or value == 'status' then
+            message('Override=' .. profile.OverrideStateText() .. '.');
+            return false;
+        elseif value == 'off' or value == 'clear' then
+            command = 'defenseoff';
+        else
+            command = value;
+        end
+    end
+    local setName = profile.DefenseAliases[command];
+    if setName == nil then
+        setName = profile.ResistAliases[command];
+    end
+    if setName == nil then
+        message('Unknown override command. Use pdt|mdt|dt|evasion|safe|survival|tank|defenseoff.');
+        return false;
+    end
+    return profile.SetIdleOverrideSet(setName, 'Override');
+end
+
+function profile.HandleResistCommand(args)
+    local command = normalize(args and args[1]);
+    local value = normalize(args and args[2]);
+    if command == 'resist' or command == 'res' then
+        if value == '' or value == 'status' then
+            message('Resist override=' .. profile.ResistStateText() .. '.');
+            return false;
+        elseif value == 'off' or value == 'clear' then
+            command = 'resoff';
+        elseif value:sub(-3) == 'res' then
+            command = value;
+        elseif value:sub(-6) == 'resist' then
+            command = value;
+        end
+        if command == 'resist' or command == 'res' then
+            command = value .. 'res';
+        end
+    end
+    local setName = profile.ResistAliases[command];
+    if setName == nil then
+        message('Unknown resist command. Use fireres|iceres|earthres|windres|waterres|thunderres|lightningres|lightres|darkres|statusres|charmres|resoff.');
+        return false;
+    end
+    return profile.SetIdleOverrideSet(setName, 'Resist override');
+end
+
+function profile.OddLuaRuntime.IdlePoolText(label, threshold, extra)
+    if (tonumber(threshold or 0) or 0) <= 0 and (tonumber(extra or 0) or 0) <= 0 then
+        return label .. '=off';
+    end
+    return label .. '=' .. tostring(tonumber(threshold or 0) or 0) .. '+' .. tostring(tonumber(extra or 0) or 0);
+end
+
+function profile.IdlePoolStateText()
+    return profile.OddLuaRuntime.IdlePoolText('mp', state.IdleMaxMPThreshold, state.IdleMaxMPAdd)
+        .. '; ' .. profile.OddLuaRuntime.IdlePoolText('hp', state.IdleMaxHPThreshold, state.IdleMaxHPAdd);
+end
+
+function profile.OddLuaRuntime.ParseIdlePoolNumber(value)
+    if tonumber(value) == nil then
+        return nil;
+    end
+    return math.max(0, math.floor(tonumber(value)));
+end
+
+function profile.OddLuaRuntime.UpdateIdlePoolField(fieldName, value, label)
+    if value == nil then
+        message('Idle pool floors: ' .. profile.IdlePoolStateText() .. '.');
+        return false;
+    end
+    if state[fieldName] == value then
+        message(label .. '=' .. tostring(value) .. '.');
+        return false;
+    end
+    state[fieldName] = value;
+    if fieldName == 'IdleMaxMPThreshold' or fieldName == 'IdleMaxMPAdd' then
+        state.IdleMaxMPActive = false;
+    elseif fieldName == 'IdleMaxHPThreshold' or fieldName == 'IdleMaxHPAdd' then
+        state.IdleMaxHPActive = false;
+    end
+    message(label .. '=' .. tostring(value) .. '.');
+    return true;
+end
+
+function profile.HandleIdlePoolCommand(args)
+    local command = normalize(args and args[1]);
+    local value = profile.OddLuaRuntime.ParseIdlePoolNumber(args and args[2]);
+    if command == 'setmp' then
+        local changed = profile.OddLuaRuntime.UpdateIdlePoolField('IdleMaxMPThreshold', value, 'Set MP');
+        if changed ~= true then
+            return false, false;
+        end
+        return true, profile.OddLuaRuntime.TryExplicitSetMpBridge(getPlayer());
+    elseif command == 'addmp' then
+        return profile.OddLuaRuntime.UpdateIdlePoolField('IdleMaxMPAdd', value, 'Add MP');
+    elseif command == 'resetmp' then
+        if state.IdleMaxMPThreshold == 0 and state.IdleMaxMPAdd == 0 then
+            message('Idle pool floors: ' .. profile.IdlePoolStateText() .. '.');
+            return false;
+        end
+        state.IdleMaxMPThreshold = 0;
+        state.IdleMaxMPAdd = 0;
+        state.IdleMaxMPActive = false;
+        message('Reset MP.');
+        return true;
+    elseif command == 'sethp' then
+        return profile.OddLuaRuntime.UpdateIdlePoolField('IdleMaxHPThreshold', value, 'Set HP');
+    elseif command == 'addhp' then
+        return profile.OddLuaRuntime.UpdateIdlePoolField('IdleMaxHPAdd', value, 'Add HP');
+    elseif command == 'resethp' then
+        if state.IdleMaxHPThreshold == 0 and state.IdleMaxHPAdd == 0 then
+            message('Idle pool floors: ' .. profile.IdlePoolStateText() .. '.');
+            return false;
+        end
+        state.IdleMaxHPThreshold = 0;
+        state.IdleMaxHPAdd = 0;
+        state.IdleMaxHPActive = false;
+        message('Reset HP.');
+        return true;
+    end
+    message('Idle pool floors: ' .. profile.IdlePoolStateText() .. '.');
+    return false;
+end
+
+function profile.OddLuaPet.currentPetName()
+    local pet = profile.OddLuaPet.getPet();
+    if type(pet) == 'string' then
+        return pet;
+    end
+    if type(pet) ~= 'table' then
+        return '';
+    end
+    if pet.Name ~= nil then
+        return tostring(pet.Name);
+    elseif pet.name ~= nil then
+        return tostring(pet.name);
+    elseif pet.PetName ~= nil then
+        return tostring(pet.PetName);
+    elseif pet.petName ~= nil then
+        return tostring(pet.petName);
+    elseif type(pet.Resource) == 'table' and pet.Resource.Name ~= nil then
+        return tostring(pet.Resource.Name);
+    elseif type(pet.Item) == 'table' and pet.Item.Name ~= nil then
+        return tostring(pet.Item.Name);
+    end
+    return '';
+end
+
+function profile.OddLuaPet.petSetToken(petName)
+    local token = tostring(petName or '');
+    token = string.gsub(token, '^%s+', '');
+    token = string.gsub(token, '%s+$', '');
+    token = string.gsub(token, '[^%w]+', '_');
+    token = string.gsub(token, '_+', '_');
+    token = string.gsub(token, '^_+', '');
+    token = string.gsub(token, '_+$', '');
+    return token;
+end
+
+function profile.OddLuaPet.titlePetSetToken(token)
+    local parts = {};
+    for part in string.gmatch(string.lower(tostring(token or '')), '[^_]+') do
+        local first = string.sub(part, 1, 1);
+        local rest = string.sub(part, 2);
+        if first ~= '' then
+            parts[#parts + 1] = string.upper(first) .. rest;
+        end
+    end
+    return table.concat(parts, '_');
+end
+
+function profile.OddLuaPet.addPetOverlayCandidate(candidates, seen, setName)
+    if setName and setName ~= '' and not seen[setName] then
+        seen[setName] = true;
+        candidates[#candidates + 1] = setName;
+    end
+end
+
+function profile.OddLuaPet.petOverlaySetNames(petName)
+    local token = profile.OddLuaPet.petSetToken(petName);
+    if token == '' then
+        return {};
+    end
+
+    local titleToken = profile.OddLuaPet.titlePetSetToken(token);
+    local lowerToken = string.lower(token);
+    local candidates = {};
+    local seen = {};
+    for _, prefix in ipairs({ 'Pet_', 'Avatar_', 'Jug_', 'SMNPet_', 'BSTPet_', 'Wyvern_' }) do
+        profile.OddLuaPet.addPetOverlayCandidate(candidates, seen, prefix .. titleToken);
+        profile.OddLuaPet.addPetOverlayCandidate(candidates, seen, prefix .. lowerToken);
+    end
+    return candidates;
+end
+
+function profile.OddLuaPet.equipPetOverlayForCurrentPet(force)
+    return equipFirstAvailable(profile.OddLuaPet.petOverlaySetNames(profile.OddLuaPet.currentPetName()), force);
+end
+
+function profile.OddLuaPet.equipPetActionSet(setNames, force)
+    local equipped = equipFirstAvailable(setNames, force);
+    local overlayEquipped = profile.OddLuaPet.equipPetOverlayForCurrentPet(force);
+    return equipped or overlayEquipped;
+end
+
+profile.OddLuaPet.PinPolicies = {
+    rage = {
+        SetNames = { 'BloodPactRage', 'BloodPact', 'PetDamage', 'SummoningMagic', 'JobAbility' },
+        StartSlackSeconds = 1.0,
+        FinishSlackSeconds = 1.0,
+    },
+    ward = {
+        SetNames = { 'BloodPactWard', 'SummoningMagic', 'PetTank', 'AvatarPerp', 'JobAbility' },
+        StartSlackSeconds = 1.0,
+        FinishSlackSeconds = 1.0,
+    },
+    ready_sic = {
+        SetNames = { 'PetReady', 'PetDamage', 'PetTank', 'JobAbility' },
+        StartSlackSeconds = 1.0,
+        FinishSlackSeconds = 1.0,
+    },
+};
+
+-- Exact cap-75 actions whose server formulas consume the PetMagic objective.
+-- Hybrids, breath/fixed-damage moves, heals, post-cap actions, and unknowns
+-- deliberately stay on their existing fail-closed policy chains.
+profile.OddLuaPet.MagicalActionNames = {};
+for _, actionName in ipairs({
+    'Searing Light', 'Level ? Holy', 'Howling Moon',
+    'Fire II', 'Fire IV', 'Meteor Strike', 'Inferno',
+    'Stone II', 'Stone IV', 'Geocrush', 'Earthen Fury',
+    'Water II', 'Water IV', 'Grand Fall', 'Tidal Wave',
+    'Aero II', 'Aero IV', 'Wind Blade', 'Aerial Blast',
+    'Blizzard II', 'Blizzard IV', 'Heavenly Strike', 'Diamond Dust',
+    'Thunder II', 'Thunderspark', 'Thunder IV', 'Thunderstorm', 'Judgment Bolt',
+    'Somnolence', 'Mewing Lullaby', 'Eerie Eye', 'Sleepga', 'Nightmare',
+    'Clarsach Call', 'Sonic Buffet', 'Tornado II',
+    'Dust Cloud', 'Fireball', 'Cursed Sphere', 'Venom', 'Dream Flower',
+    'Scream', 'Roar', 'Infrasonics', 'Sheep Song', 'Spore', 'Hi-Freq Field',
+    'Spoil', 'Sandblast', 'Sandpit', 'Venom Spray', 'Soporific',
+    'Gloeosuccus', 'Palsy Pollen', 'Numbing Noise', 'Toxic Spit',
+    'Filamented Hold', 'Intimidate',
+    'Dia', 'Dia II', 'Slow', 'Paralyze', 'Silence',
+    'Fire', 'Fire III', 'Blizzard', 'Blizzard III', 'Aero', 'Aero III',
+    'Stone', 'Stone III', 'Thunder', 'Thunder III', 'Water', 'Water III',
+    'Poison', 'Poison II', 'Bio', 'Bio II', 'Drain', 'Aspir', 'Blind',
+    'Dispel', 'Absorb-INT',
+}) do
+    profile.OddLuaPet.MagicalActionNames[normalize(actionName)] = true;
+end
+
+function profile.OddLuaPet.isMagicalAction(action)
+    if type(action) ~= 'table' then
+        return false;
+    end
+    return profile.OddLuaPet.MagicalActionNames[normalize(action.Name or action.name)] == true;
+end
+
+function profile.OddLuaPet.setNamesForObservedAction(policy, action)
+    local setNames = {};
+    local seen = {};
+    local function add(setName)
+        if type(setName) == 'string' and setName ~= '' and seen[setName] ~= true then
+            seen[setName] = true;
+            setNames[#setNames + 1] = setName;
+        end
+    end
+    if profile.OddLuaPet.isMagicalAction(action) then
+        add('PetMagic');
+    end
+    for _, setName in ipairs(type(policy) == 'table' and policy.SetNames or {}) do
+        add(setName);
+    end
+    return setNames;
+end
+
+function profile.OddLuaPet.getPetAction()
+    if not gData or type(gData.GetPetAction) ~= 'function' then
+        return nil, false;
+    end
+    local ok, action = pcall(gData.GetPetAction);
+    if ok ~= true then
+        return nil, false;
+    end
+    return action, true;
+end
+
+function profile.OddLuaPet.canPinAction(kind)
+    if type(profile.OddLuaPet.PinPolicies[kind]) ~= 'table' then
+        return false;
+    end
+    if type(gSettings) == 'table' and gSettings.HorizonMode == true then
+        return false;
+    end
+    return gData ~= nil and type(gData.GetPetAction) == 'function';
+end
+
+function profile.OddLuaPet.clearActionPin()
+    state.PetActionPin = nil;
+end
+
+function profile.OddLuaPet.clampDelay(value, minimum, maximum)
+    local number = tonumber(value) or minimum;
+    if number < minimum then
+        return minimum;
+    elseif number > maximum then
+        return maximum;
+    end
+    return number;
+end
+
+function profile.OddLuaPet.beginActionPin(kind)
+    local policy = profile.OddLuaPet.PinPolicies[kind];
+    if type(policy) ~= 'table' then
+        profile.OddLuaPet.clearActionPin();
+        return false;
+    end
+    if profile.OddLuaPet.canPinAction(kind) ~= true then
+        profile.OddLuaPet.clearActionPin();
+        return profile.OddLuaPet.equipPetActionSet(policy.SetNames, false);
+    end
+
+    local settings = type(gSettings) == 'table' and gSettings or {};
+    local AbilityDelay = profile.OddLuaPet.clampDelay(settings.AbilityDelay, 0, 5);
+    local PetskillDelay = profile.OddLuaPet.clampDelay(settings.PetskillDelay, 0, 8);
+    local startedAt = os.clock();
+    state.PetActionPin = {
+        Kind = kind,
+        Policy = policy,
+        Observed = false,
+        StartDeadline = startedAt + AbilityDelay + policy.StartSlackSeconds,
+        FailSafeDeadline = startedAt + AbilityDelay + PetskillDelay + policy.FinishSlackSeconds,
+    };
+    profile.OddLuaPet.equipPetActionSet(policy.SetNames, false);
+    return true;
+end
+
+function profile.OddLuaPet.maintainActionPin(player, force, allowEquip)
+    local pin = state.PetActionPin;
+    if type(pin) ~= 'table' or type(pin.Policy) ~= 'table' then
+        if allowEquip ~= true
+            or profile.OddLuaRuntime.PlayerContextReady(player) ~= true
+            or (type(gSettings) == 'table' and gSettings.HorizonMode == true) then
+            return false;
+        end
+        local autonomousAction, known = profile.OddLuaPet.getPetAction();
+        if known == true and profile.OddLuaPet.isMagicalAction(autonomousAction) then
+            return profile.OddLuaPet.equipPetActionSet({ 'PetMagic' }, force);
+        end
+        return false;
+    end
+    if profile.OddLuaRuntime.PlayerContextReady(player) ~= true
+        or profile.OddLuaPet.canPinAction(pin.Kind) ~= true then
+        profile.OddLuaPet.clearActionPin();
+        return false;
+    end
+
+    local now = os.clock();
+    if now > pin.FailSafeDeadline then
+        profile.OddLuaPet.clearActionPin();
+        return false;
+    end
+
+    local action, known = profile.OddLuaPet.getPetAction();
+    if known ~= true then
+        profile.OddLuaPet.clearActionPin();
+        return false;
+    end
+    if type(action) == 'table' then
+        pin.Observed = true;
+        if allowEquip == false then
+            return false;
+        end
+        return profile.OddLuaPet.equipPetActionSet(
+            profile.OddLuaPet.setNamesForObservedAction(pin.Policy, action),
+            force
+        );
+    end
+    if pin.Observed == true or now > pin.StartDeadline then
+        profile.OddLuaPet.clearActionPin();
+        return false;
+    end
+    if allowEquip == false then
+        return false;
+    end
+    return profile.OddLuaPet.equipPetActionSet(pin.Policy.SetNames, force);
+end
+
+function profile.OddLuaPet.isPetOrientedSetName(setName)
+    local intent = normalize(setIntents[setName] or '');
+    local name = normalize(setName);
+    return intent == 'petdamage' or intent == 'pettank'
+        or name == 'avatarperp' or name == 'playstyle_avatarperp';
 end
 
 local function canonicalElement(element)
@@ -14703,6 +16288,230 @@ local function activeCombatStyle()
     return state.Playstyle;
 end
 
+function profile.OddLuaRuntime.SyncActiveStyleWeapons()
+    if not scale or not scale.Status or not scale.SetWeaponLockEnabled or not scale.ForceEquipSet then
+        return false, 'Scale legal weapon resolver is unavailable';
+    end
+
+    local activeSetName = setNameFor(activeCombatStyle());
+    local activeSet = sets[activeSetName];
+    if type(activeSet) ~= 'table' then
+        return false, 'active style has no resolved equipment set';
+    end
+    activeSet = setWithSubjobLegalOffhand(activeSetName, activeSet);
+
+    local requested = {};
+    for _, slot in ipairs({ 'Main', 'Sub', 'Range' }) do
+        if activeSet[slot] ~= nil then
+            requested[slot] = activeSet[slot];
+        end
+    end
+    if next(requested) == nil then
+        return false, 'active style has no Main, Sub, or Range selection';
+    end
+
+    local statusOk, status = pcall(scale.Status);
+    if statusOk ~= true or type(status) ~= 'table' then
+        return false, 'Scale weapon-lock status is unavailable';
+    end
+    local previousWeaponLockEnabled = status.weaponLockEnabled == true;
+    local unlockOk = pcall(scale.SetWeaponLockEnabled, false);
+    if unlockOk ~= true then
+        return false, 'Scale weapon lock could not be disabled';
+    end
+
+    -- ForceEquipSet resolves owned/legal replacements, including the generated
+    -- offhand relationship, before dispatching this deliberate one-shot swap.
+    local equipOk, resolved = pcall(
+        scale.ForceEquipSet,
+        activeSetName .. '_WeaponSync',
+        requested,
+        setIntents[activeSetName]
+    );
+    local restoreOk = pcall(scale.SetWeaponLockEnabled, previousWeaponLockEnabled);
+    if restoreOk ~= true then
+        return false, 'Scale weapon lock could not be restored';
+    end
+    if equipOk ~= true then
+        return false, 'legal weapon resolution failed: ' .. tostring(resolved or 'unknown error');
+    end
+    if type(resolved) ~= 'table' or next(resolved) == nil then
+        return false, 'Scale found no owned legal active-style weapons';
+    end
+    return true, activeSetName;
+end
+
+function profile.OddLuaRuntime.AvoidNegativeTickGear()
+    local explicitTransitions = mechanicsSwapPlanner and mechanicsSwapPlanner.explicitTransitions;
+    local plan = type(explicitTransitions) == 'table' and explicitTransitions.avoidtick or nil;
+    if type(plan) ~= 'table' or plan.available ~= true or type(plan.actions) ~= 'table' then
+        return false, 'no owned negative-tick avoidance plan';
+    end
+    local player = getPlayer();
+    if profile.OddLuaRuntime.PlayerContextReady(player) ~= true then
+        return false, 'player context is not ready';
+    end
+    if not isEngaged(player) then
+        return false, 'player is not engaged';
+    end
+    local mp = profile.OddLuaRuntime.PlayerMp(player);
+    if mp == nil or mp <= 0 then
+        return false, 'player MP is not positive';
+    end
+    local observed, observeError, observedIds = observeReconciliationEquipment();
+    if type(observed) ~= 'table' then
+        return false, observeError or 'equipment observation unavailable';
+    end
+    if type(observedIds) ~= 'table' then
+        return false, 'equipment item IDs are unavailable';
+    end
+
+    local activeSetName = setNameFor(activeCombatStyle());
+    local activeSet = sets[activeSetName];
+    if type(activeSet) ~= 'table' then
+        activeSet = {};
+    end
+    local legalSet = setWithSubjobLegalOffhand(activeSetName, activeSet);
+    local replacements = {};
+    local details = {};
+    for _, action in ipairs(plan.actions) do
+        if type(action) == 'table' then
+            local slot = tostring(action.slot or '');
+            local harmfulItem = tostring(action.item or '');
+            local harmfulItemId = tonumber(action.itemId);
+            if slot ~= '' and harmfulItem ~= ''
+                and harmfulItemId ~= nil and harmfulItemId > 0
+                and observedIds[slot] == harmfulItemId
+                and reconciliationNamesMatch(harmfulItem, observed[slot] or '')
+            then
+                local safeItem = legalSet[slot];
+                local safeName = movementEquipItemName(safeItem);
+                if safeName == nil or reconciliationNamesMatch(harmfulItem, safeName) then
+                    replacements[slot] = 'remove';
+                    safeName = 'remove';
+                else
+                    replacements[slot] = safeItem;
+                end
+                details[#details + 1] = slot .. ' ' .. harmfulItem .. '->' .. tostring(safeName);
+            end
+        end
+    end
+    if next(replacements) == nil then
+        return false, 'no observed owned negative-tick item is equipped';
+    end
+    if forceEquipInlineSet(replacements, false) ~= true then
+        return false, 'safe replacement equip is unavailable';
+    end
+    return true, table.concat(details, ', ');
+end
+
+function profile.PrintConditionalOverlayStatus()
+    local setName = state.LastEquippedSetName or setNameFor(activeCombatStyle());
+    if not conditionals or not conditionals.ResolveOverlay then
+        message('Conditional overlays: set=' .. tostring(setName or 'unknown') .. '; unavailable.');
+        return;
+    end
+
+    local context = reconciliationEquipContext(false);
+    local okSet, _, setOwners = pcall(function()
+        return conditionals.ResolveOverlay(conditionalEquips[setName], context);
+    end);
+    local okGlobal, _, globalOwners = pcall(function()
+        return conditionals.ResolveOverlay(conditionalEquips.Global, context);
+    end);
+    if okSet ~= true or okGlobal ~= true
+        or type(setOwners) ~= 'table' or type(globalOwners) ~= 'table' then
+        message('Conditional overlays: set=' .. tostring(setName or 'unknown') .. '; unavailable.');
+        return;
+    end
+
+    local winners = {};
+    local function recordOwners(scope, owners)
+        for slot, owner in pairs(owners) do
+            if type(owner) == 'table' then
+                winners[slot] = {
+                    scope = scope,
+                    conditionType = tostring(owner.conditionType or 'conditional'),
+                    conditionName = tostring(owner.conditionName or ''),
+                    item = tostring(owner.item or ''),
+                };
+            end
+        end
+    end
+    recordOwners('set', setOwners);
+    -- Global conditionals are applied after set-local conditionals at runtime.
+    recordOwners('global', globalOwners);
+
+    local groups = {};
+    local orderedGroups = {};
+    for _, slot in ipairs(equipmentSlots) do
+        local owner = winners[slot];
+        if owner then
+            local conditionName = owner.conditionName;
+            if conditionName == '' then
+                conditionName = '?';
+            end
+            local key = owner.scope .. ':' .. owner.conditionType .. '=' .. conditionName;
+            local group = groups[key];
+            if not group then
+                group = { label = key, slots = {} };
+                groups[key] = group;
+                orderedGroups[#orderedGroups + 1] = group;
+            end
+            group.slots[#group.slots + 1] = slot .. '=' .. owner.item;
+        end
+    end
+
+    if #orderedGroups == 0 then
+        message('Conditional overlays: set=' .. tostring(setName or 'unknown') .. '; winners=none.');
+        return;
+    end
+    local parts = {};
+    for _, group in ipairs(orderedGroups) do
+        parts[#parts + 1] = group.label .. '[' .. table.concat(group.slots, ',') .. ']';
+    end
+    message('Conditional overlays: set=' .. tostring(setName or 'unknown')
+        .. '; winners=' .. table.concat(parts, ' | ') .. '.');
+end
+
+profile.OddLuaRuntime.StableWeaponPlaystyles = {
+    Tank = true,
+    Enmity = true,
+    MagicDefense = true,
+    PetDamage = true,
+    PetTank = true,
+};
+
+local persistentCombatOverlayPlaystyles = {
+    Enmity = true,
+    PetDamage = true,
+    PetTank = true,
+};
+
+function profile.OddLuaRuntime.ShouldEstablishStablePlaystyleWeapons(player)
+    return profile.OddLuaRuntime.StableWeaponPlaystyles[state.Playstyle] == true
+        and isEngaged(player)
+        and playerTp(player) == 0;
+end
+
+function profile.OddLuaRuntime.EquipStablePlaystyle(setName, force)
+    if not scale or not scale.Status or not scale.SetWeaponLockEnabled then
+        return false;
+    end
+    local statusOk, status = pcall(scale.Status);
+    if statusOk ~= true or type(status) ~= 'table' then
+        return false;
+    end
+    local previousWeaponLockEnabled = status.weaponLockEnabled == true;
+    local unlockOk = pcall(scale.SetWeaponLockEnabled, false);
+    if unlockOk ~= true then
+        return false;
+    end
+    local equipOk, equipped = pcall(equipNamedSet, setName, force);
+    local restoreOk = pcall(scale.SetWeaponLockEnabled, previousWeaponLockEnabled);
+    return restoreOk == true and equipOk == true and equipped == true;
+end
+
 local function equipCombatStyle(force)
     if state.Playstyle == 'Craft' and isEngaged(getPlayer()) then
         message('Craft cannot equip while engaged.');
@@ -14712,8 +16521,26 @@ local function equipCombatStyle(force)
         return equipNamedSet('TP', force);
     end
 
-    local activeSet = setNameFor(activeCombatStyle());
+    local activeStyle = activeCombatStyle();
+    local activeSet = setNameFor(activeStyle);
+    if persistentCombatOverlayPlaystyles[activeStyle] == true
+        and activeStyle ~= DEFAULT_PLAYSTYLE
+        and state.LastEquippedSetName ~= activeSet
+    then
+        -- These labeled sets contain only positive, style-specific rows. Restore
+        -- the complete default combat base first so sparse slots cannot retain
+        -- a prior action snapshot or named-pet overlay.
+        equipNamedSet(setNameFor(DEFAULT_PLAYSTYLE), force);
+    end
+    if profile.OddLuaRuntime.ShouldEstablishStablePlaystyleWeapons(getPlayer())
+        and profile.OddLuaRuntime.EquipStablePlaystyle(activeSet, force)
+    then
+        return true;
+    end
     if equipNamedSet(activeSet, force) then
+        if profile.OddLuaPet.isPetOrientedSetName(activeSet) then
+            profile.OddLuaPet.equipPetOverlayForCurrentPet(force);
+        end
         return true;
     end
     if equipNamedSet('TP', force) then
@@ -14721,6 +16548,22 @@ local function equipCombatStyle(force)
     end
     return equipNamedSet('Playstyle_Damage', force);
 end
+
+local function equipCombatStyleWithExplicitGearMode(force)
+    state.ExplicitGearModeDefaultRouting = true;
+    local ok, equipped = pcall(equipCombatStyle, force);
+    if ok == true and equipped == true then
+        profile.OddLuaRuntime.ApplyExplicitGearMode('default', force);
+    end
+    state.ExplicitGearModeDefaultRouting = false;
+    if ok ~= true then
+        error(equipped);
+    end
+    return equipped;
+end
+
+
+
 
 local function lockstyleCombatSet()
     if not equipNamedSet('TP', true) then
@@ -14798,37 +16641,74 @@ end
 
 local function idleSecondarySlotLockSetNames(player, environment)
     local setNames = {};
-    if isClearSet(sets['Aftercast']) then
-        return setNames;
+    if shouldEquipInCityMovement(player, environment) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'IdleCity');
+    elseif profile.OddLuaRuntime.ShouldEquipIdleCombat(player) then
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'IdleCombat');
+    else
+        addSecondarySlotLockSetNameIfNotClear(setNames, 'IdleNonCombat');
     end
-
-    addSecondarySlotLockSetNameIfNotClear(setNames, 'Aftercast');
-    if #setNames == 0 then
-        if isClearSet(sets['Idle']) then
-            return setNames;
+    if not profile.OddLuaRuntime.ShouldEquipIdleCombat(player) then
+        if profile.OddLuaRuntime.ShouldEquipIdleMaxMP(player) then
+            addSecondarySlotLockSetNameIfNotClear(setNames, 'IdleMaxMP');
         end
-        addSecondarySlotLockSetNameIfNotClear(setNames, 'Idle');
+        if profile.OddLuaRuntime.ShouldEquipIdleMaxHP(player) then
+            addSecondarySlotLockSetNameIfNotClear(setNames, 'IdleMaxHP');
+        end
     end
-    addMovementSecondarySlotLockSetNames(setNames, player, environment);
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Aftercast');
+    addSecondarySlotLockSetNameIfNotClear(setNames, 'Idle');
+    if not profile.OddLuaRuntime.ShouldEquipIdleCombat(player) then
+        addMovementSecondarySlotLockSetNames(setNames, player, environment);
+    end
     return setNames;
 end
 
+function profile.OddLuaRuntime.EquipIdleContextSet(setName, force)
+    return equipNamedSetIfNotClear(setName, force);
+end
+
 local function equipBaseIdleState(player, force)
+    local environment = getEnvironment();
+    local equipped = false;
+
+    -- Idle context sets are overlays and may contain only one or two slots.
+    -- Establish a complete baseline before applying them so a sparse overlay
+    -- cannot leave stale gear or empty slots from the previous job/action.
     if isClearSet(sets['Aftercast']) then
         equipNamedSet('Aftercast', force);
-        return true;
+        equipped = true;
+    else
+        equipped = equipNamedSetIfNotClear('Aftercast', force);
     end
 
-    local equipped = equipNamedSetIfNotClear('Aftercast', force);
     if not equipped then
         if isClearSet(sets['Idle']) then
             equipNamedSet('Idle', force);
-            return true;
+            equipped = true;
+        else
+            equipped = equipNamedSetIfNotClear('Idle', force);
         end
-        equipped = equipNamedSetIfNotClear('Idle', force);
     end
 
-    equipMovement(player, getEnvironment(), force);
+    if shouldEquipInCityMovement(player, environment) and profile.OddLuaRuntime.EquipIdleContextSet('IdleCity', force) then
+        equipped = true;
+    elseif profile.OddLuaRuntime.ShouldEquipIdleCombat(player) and profile.OddLuaRuntime.EquipIdleContextSet('IdleCombat', force) then
+        equipped = true;
+    elseif profile.OddLuaRuntime.EquipIdleContextSet('IdleNonCombat', force) then
+        equipped = true;
+    end
+
+    if not profile.OddLuaRuntime.ShouldEquipIdleCombat(player) then
+        if profile.OddLuaRuntime.ShouldEquipIdleMaxMP(player) then
+            profile.OddLuaRuntime.EquipIdleContextSet('IdleMaxMP', force);
+        end
+        if profile.OddLuaRuntime.ShouldEquipIdleMaxHP(player) then
+            profile.OddLuaRuntime.EquipIdleContextSet('IdleMaxHP', force);
+        end
+        equipMovement(player, environment, force);
+    end
+
     if equipped then
         return true;
     end
@@ -14847,48 +16727,70 @@ local function equipIdleState(player, force)
 end
 
 local function equipDefaultForPlayer(player, force)
-    if hasDangerousStatus() then
-        equipNamedSet('PDT', force);
-    elseif player and isEngaged(player) then
-        local defensiveSet = shouldEquipOvertDefense(player);
-        if defensiveSet then
-            local equippedDefensive = equipOvertDefensiveSet(defensiveSet);
-            if equippedDefensive then
-                return;
+    return profile.OddLuaRuntime.RunReconciliationComposition(function()
+        if profile.OddLuaRuntime.PlayerContextReady(player) ~= true then
+            profile.OddLuaPet.clearActionPin();
+            return false;
+        end
+
+        local petPinMayEquip = state.WarpRingLocked ~= true
+            and not isResting(player)
+            and state.Playstyle ~= 'Craft'
+            and profile.OddLuaRuntime.ActiveSafetyReason(player) == 'none';
+        if profile.OddLuaPet.maintainActionPin(player, force, petPinMayEquip) then
+            return true;
+        end
+        if hasDangerousStatus() then
+            local defensiveSet = firstAvailableDefensiveSet();
+            if defensiveSet ~= nil then
+                equipNamedSet(defensiveSet, force);
             end
-        end
-        if isEmergencyHp(player) then
-            equipNamedSet('PDT', force);
+        elseif profile.OddLuaRuntime.HasWeakness() == true then
+            local defensiveSet = firstAvailableDefensiveSet();
+            if defensiveSet ~= nil then
+                equipNamedSet(defensiveSet, force);
+            end
+        elseif player and isResting(player) then
+            equipNamedSet('Resting', force);
+        elseif state.Playstyle == 'Craft' then
+            if not equipNamedSet('Crafting', force) then
+                equipNamedSet('Idle', force);
+            end
+        elseif state.IdleOverrideSet ~= nil then
+            if profile.OddLuaRuntime.EquipManualOverrideSet(state.IdleOverrideSet, force) then
+                return true;
+            end
+            state.IdleOverrideSet = nil;
+            return equipDefaultForPlayer(player, force);
+        elseif player and isEngaged(player) then
+            local defensiveSet, unlockDefensiveWeapons = shouldEquipOvertDefense(player);
+            if defensiveSet then
+                local equippedDefensive = equipOvertDefensiveSet(defensiveSet, unlockDefensiveWeapons);
+                if equippedDefensive then
+                    return;
+                end
+            end
+            if isEmergencyHp(player) then
+                local emergencyDefensiveSet = firstAvailableDefensiveSet();
+                if emergencyDefensiveSet ~= nil then
+                    equipNamedSet(emergencyDefensiveSet, force);
+                end
+            else
+
+            equipCombatStyleWithExplicitGearMode(force);
+            end
         else
-            equipCombatStyle(force);
+            equipIdleState(player, force);
         end
-    elseif state.Playstyle == 'Craft' then
-        if not equipNamedSet('Crafting', force) then
-            equipNamedSet('Idle', force);
-        end
-    elseif player and isResting(player) then
-        equipNamedSet('Resting', force);
-    else
-        equipIdleState(player, force);
-    end
+    end);
 end
 
 local oddLuaNumberRow = {
-    renderEvent = 'oddlua_number_row_Oddone_29938_DNC',
-    imgui = nil,
-    overlayRegistered = false,
     utilityFallbacks = {
         craft = { 'Craft', 'Fishing', 'Gathering', 'Clamming', 'Movement', 'Resting', 'Treasure', 'Survival' },
         movement = { 'Movement', 'Movement_City', 'Movement_Night', 'Movement_DuskToDawn', 'InCity', 'Survival' },
     },
 };
-
-if type(require) == 'function' then
-    local ok, loaded = pcall(require, 'imgui');
-    if ok and loaded then
-        oddLuaNumberRow.imgui = loaded;
-    end
-end
 
 function oddLuaNumberRow.setBooleanValue(current, value)
     local valueText = normalize(value);
@@ -14904,44 +16806,169 @@ function oddLuaNumberRow.bindPalette()
     if state.NumberRowPaletteEnabled ~= true then
         return;
     end
-    queueTypedCommand('/bind 1 /lac fwd styleprev', -1);
-    queueTypedCommand('/bind 2 /lac fwd stylenext', -1);
-    queueTypedCommand('/bind 3 /lac fwd styles', -1);
-    queueTypedCommand('/bind 4 /lac fwd warp', -1);
-    queueTypedCommand('/bind 5 /lac fwd lockstyle', -1);
-    queueTypedCommand('/bind 6 /lac fwd status', -1);
-    queueTypedCommand('/bind 7 /lac fwd utility craft', -1);
-    queueTypedCommand('/bind 8 /lac fwd utility movement', -1);
-    queueTypedCommand('/bind 9 /lac fwd palette missing', -1);
-    queueTypedCommand('/bind 0 /lac fwd palette missing', -1);
-    queueTypedCommand('/bind - /lac fwd palette missing', -1);
-    queueTypedCommand('/bind = /lac fwd palette missing', -1);
+    local bindingGeneration = state.BindingGeneration;
+    local commands = {
+        '/bind NUMPAD. /lac fwd styleprev',
+        '/bind NUMPAD0 /lac fwd stylenext',
+        '/bind NUMPAD1 /lac fwd styles',
+        '/bind NUMPAD3 /lac fwd lockstyle',
+        '/bind NUMPAD5 /lac fwd utility craft',
+        '/bind NUMPAD7 /lac fwd warp',
+        '/bind NUMPAD9 /lac fwd palette missing',
+    };
+    -- Queueing every bind during OnLoad can wedge Ashita; stagger them.
+    for index, command in ipairs(commands) do
+        local bindCommand = command;
+        local delay = (index - 1) * 0.20;
+        if not scheduleTask(delay, function()
+            if not oddLuaNumberRow.isBindingGenerationCurrent(bindingGeneration) then
+                return;
+            end
+            queueTypedCommand(bindCommand, -1);
+        end) then
+            message('Keypad bind scheduling unavailable; use /lac fwd keypad on after load.');
+            return;
+        end
+    end
 end
 
 function oddLuaNumberRow.unbindPalette()
-    queueTypedCommand('/unbind 1', -1);
-    queueTypedCommand('/unbind 2', -1);
-    queueTypedCommand('/unbind 3', -1);
-    queueTypedCommand('/unbind 4', -1);
-    queueTypedCommand('/unbind 5', -1);
-    queueTypedCommand('/unbind 6', -1);
-    queueTypedCommand('/unbind 7', -1);
-    queueTypedCommand('/unbind 8', -1);
-    queueTypedCommand('/unbind 9', -1);
-    queueTypedCommand('/unbind 0', -1);
-    queueTypedCommand('/unbind -', -1);
-    queueTypedCommand('/unbind =', -1);
+    local bindingGeneration = state.BindingGeneration;
+    local commands = {
+        '/unbind NUMPAD.',
+        '/unbind NUMPAD0',
+        '/unbind NUMPAD1',
+        '/unbind NUMPAD3',
+        '/unbind NUMPAD5',
+        '/unbind NUMPAD7',
+        '/unbind NUMPAD9',
+    };
+    -- Queueing every unbind during OnUnload can heap-corrupt Ashita; stagger them.
+    for index, command in ipairs(commands) do
+        local unbindCommand = command;
+        local delay = (index - 1) * 0.20;
+        if not scheduleTask(delay, function()
+            if not oddLuaNumberRow.isBindingGenerationCurrent(bindingGeneration) then
+                return;
+            end
+            queueTypedCommand(unbindCommand, -1);
+        end) then
+            message('Keypad unbind scheduling unavailable; binds will be cleared on next profile unload.');
+            return;
+        end
+    end
+end
+
+function oddLuaNumberRow.clearLegacyPaletteBinds()
+    local bindingGeneration = state.BindingGeneration;
+    local commands = {
+        '/unbind NUMPAD.',
+        '/unbind NUMPAD0',
+        '/unbind NUMPAD1',
+        '/unbind NUMPAD2',
+        '/unbind NUMPAD3',
+        '/unbind NUMPAD4',
+        '/unbind NUMPAD5',
+        '/unbind NUMPAD6',
+        '/unbind NUMPAD7',
+        '/unbind NUMPAD8',
+        '/unbind NUMPAD9',
+        '/unbind UP',
+        '/unbind DOWN',
+        '/unbind LEFT',
+        '/unbind RIGHT',
+        '/unbind 1',
+        '/unbind 2',
+        '/unbind 3',
+        '/unbind 4',
+        '/unbind 5',
+        '/unbind 6',
+        '/unbind 7',
+        '/unbind 8',
+        '/unbind 9',
+        '/unbind 0',
+        '/unbind -',
+        '/unbind =',
+    };
+    -- Clear legacy keypad and number-row captures only on explicit cleanup.
+    for index, command in ipairs(commands) do
+        local unbindCommand = command;
+        local delay = (index - 1) * 0.20;
+        if not scheduleTask(delay, function()
+            if not oddLuaNumberRow.isBindingGenerationCurrent(bindingGeneration) then
+                return;
+            end
+            queueTypedCommand(unbindCommand, -1);
+        end) then
+            message('Keypad legacy cleanup scheduling unavailable; retry /lac fwd keypad clear after load.');
+            return;
+        end
+    end
+end
+
+function oddLuaNumberRow.paletteEntryText(binding)
+    if not binding then
+        return '';
+    end
+    if binding.kind == 'unbound' or binding.key == nil or binding.key == '' then
+        return 'Unbound';
+    end
+    local displayKey = binding.displayKey;
+    if displayKey == nil or displayKey == '' then
+        displayKey = binding.key;
+    end
+    if binding.kind == 'command-only' then
+        return tostring(displayKey) .. ' ' .. tostring(binding.label)
+            .. ' [unbound; command ' .. tostring(binding.literal) .. ']';
+    end
+    return tostring(displayKey) .. ' ' .. tostring(binding.label);
+end
+
+function oddLuaNumberRow.paletteEntriesText(firstIndex, lastIndex)
+    local parts = {};
+    for index = firstIndex, lastIndex do
+        local text = oddLuaNumberRow.paletteEntryText(numberRowBindings[index]);
+        if text ~= '' then
+            parts[#parts + 1] = text;
+        end
+    end
+    return table.concat(parts, ' | ');
+end
+
+function oddLuaNumberRow.printPalette()
+    local enabledText = 'off';
+    if state.NumberRowPaletteEnabled == true then
+        enabledText = 'on';
+    end
+    message('Keypad palette=' .. enabledText .. '; /lac fwd keypad on|off|clear.');
+    message('Keypad 1: ' .. oddLuaNumberRow.paletteEntriesText(1, 6));
+    message('Keypad 2: ' .. oddLuaNumberRow.paletteEntriesText(7, 12));
+end
+
+function oddLuaNumberRow.clearPaletteBinds()
+    state.NumberRowPaletteEnabled = false;
+    oddLuaNumberRow.unbindPalette();
+    oddLuaNumberRow.clearLegacyPaletteBinds();
+    message('OddLua keypad palette: cleared');
 end
 
 function oddLuaNumberRow.setPaletteEnabled(value)
     local enabled = oddLuaNumberRow.setBooleanValue(state.NumberRowPaletteEnabled, value);
+    if state.NumberRowPaletteEnabled == enabled then
+        if enabled then
+            message('OddLua keypad palette: already on');
+        else
+            message('OddLua keypad palette: already off');
+        end
+        return;
+    end
     state.NumberRowPaletteEnabled = enabled;
     if enabled then
         oddLuaNumberRow.bindPalette();
-        message('OddLua number row palette: on');
+        message('OddLua keypad palette: on');
     else
         oddLuaNumberRow.unbindPalette();
-        message('OddLua number row palette: off');
+        message('OddLua keypad palette: off');
     end
 end
 
@@ -14983,87 +17010,79 @@ function oddLuaNumberRow.equipUtilityIntent(intent)
     return false;
 end
 
-function oddLuaNumberRow.toggleIsOn(binding)
-    if not binding or binding.toggle == nil or binding.toggle == '' then
-        return false;
-    end
-    return state[binding.toggle] == true;
-end
-
-function oddLuaNumberRow.renderOverlay()
-    if state.NumberRowPaletteEnabled ~= true or oddLuaNumberRow.imgui == nil then
-        return;
-    end
-    local imgui = oddLuaNumberRow.imgui;
-    local flags = 0;
-    if bit and bit.bor then
-        flags = bit.bor(
-            ImGuiWindowFlags_NoDecoration or 0,
-            ImGuiWindowFlags_AlwaysAutoResize or 0,
-            ImGuiWindowFlags_NoMove or 0,
-            ImGuiWindowFlags_NoSavedSettings or 0,
-            ImGuiWindowFlags_NoFocusOnAppearing or 0,
-            ImGuiWindowFlags_NoNav or 0
-        );
-    end
-    local onColor = { 0.78, 1.0, 0.72, 1.0 };
-    local offColor = { 0.35, 0.40, 0.36, 1.0 };
-    local neutralColor = { 0.90, 0.94, 0.90, 1.0 };
-    local title = 'OddLua Oddone_29938 DNC';
-    if imgui.SetNextWindowPos then
-        imgui.SetNextWindowPos({ 16, 8 }, ImGuiCond_Always or 0);
-    end
-    if imgui.SetNextWindowBgAlpha then
-        imgui.SetNextWindowBgAlpha(0.42);
-    end
-    if imgui.Begin and imgui.Begin(title .. '##numberrow', true, flags) then
-        imgui.TextColored(neutralColor, title);
-        for index, binding in ipairs(numberRowBindings) do
-            if index > 1 and imgui.SameLine then
-                imgui.SameLine();
-            end
-            if binding.kind == 'toggle' and binding.toggle ~= '' then
-                if oddLuaNumberRow.toggleIsOn(binding) then
-                    imgui.TextColored(onColor, binding.key .. ' ' .. binding.label);
-                else
-                    imgui.TextColored(offColor, binding.key .. ' ' .. binding.label);
-                end
-            else
-                imgui.TextColored(neutralColor, binding.key .. ' ' .. binding.label);
-            end
+local function blueMagicRouteKey(action)
+    local value = action;
+    if type(action) == 'table' then
+        value = action.Name or action.name;
+        if value == nil or tostring(value) == '' then
+            value = action.DisplayName or action.displayName;
         end
     end
-    if imgui.End then
-        imgui.End();
-    end
+    local key = normalize(value);
+    key = string.gsub(key, '[^%w]+', ' ');
+    key = string.gsub(key, '%s+', ' ');
+    key = string.gsub(key, '^%s+', '');
+    return string.gsub(key, '%s+$', '');
 end
 
-function oddLuaNumberRow.registerOverlay()
-    if oddLuaNumberRow.overlayRegistered == true or oddLuaNumberRow.imgui == nil or not ashita or not ashita.events then
+local function equipBlueMagic(action)
+    local route = blueMagicRoutes[blueMagicRouteKey(action)];
+    if route == 'MagicalBlueMagic' then
+        local environment = getEnvironment();
+        local element = action and action.Element;
+        local candidates = {};
+        if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, element) then
+            table.insert(candidates, setNameForElement('MagicalBlueWeather', element));
+        end
+        if environment and environment.DayElement and elementMatches(environment.DayElement, element) then
+            table.insert(candidates, setNameForElement('MagicalBlueDay', element));
+        end
+        table.insert(candidates, 'MagicalBlueMagic');
+        table.insert(candidates, 'MagicalBlue');
+        table.insert(candidates, 'BlueMagic');
+        table.insert(candidates, 'Midcast');
+        equipFirstAvailable(candidates, false);
         return;
     end
-    ashita.events.register('d3d_present', oddLuaNumberRow.renderEvent, oddLuaNumberRow.renderOverlay);
-    oddLuaNumberRow.overlayRegistered = true;
-end
-
-function oddLuaNumberRow.unregisterOverlay()
-    if oddLuaNumberRow.overlayRegistered ~= true or not ashita or not ashita.events then
-        return;
-    end
-    ashita.events.unregister('d3d_present', oddLuaNumberRow.renderEvent);
-    oddLuaNumberRow.overlayRegistered = false;
-end
-
-local function equipBlueMagic(name)
-    local route = blueMagicRoutes[normalize(name)];
     if route and equipNamedSet(route, false) then
         return;
     end
     equipFirstAvailable({ 'BlueMagic', 'PhysicalBlueMagic', 'MagicalBlueMagic', 'Midcast' }, false);
 end
 
+local elementalDebuffStyleByName = {
+    burn = 'Burn',
+    choke = 'Choke',
+    drown = 'Drown',
+    frost = 'Frost',
+    rasp = 'Rasp',
+    shock = 'Shock',
+};
+
+function oddLuaNumberRow.advanceBindingGeneration()
+    local lifecycle = package.loaded['oddlua.binding_lifecycle'];
+    if type(lifecycle) ~= 'table' then
+        lifecycle = { generation = 0 };
+        package.loaded['oddlua.binding_lifecycle'] = lifecycle;
+    end
+    lifecycle.generation = (tonumber(lifecycle.generation) or 0) + 1;
+    return lifecycle.generation;
+end
+
+function oddLuaNumberRow.isBindingGenerationCurrent(generation)
+    local lifecycle = package.loaded['oddlua.binding_lifecycle'];
+    return type(lifecycle) == 'table'
+        and tonumber(lifecycle.generation) == tonumber(generation);
+end
+
 local function equipElementalMagic(action)
     action = action or {};
+    local actionName = normalize(action.Name);
+    local debuffStyle = elementalDebuffStyleByName[actionName];
+    if debuffStyle ~= nil then
+        equipFirstAvailable({ debuffStyle, 'MagicAccuracy', 'Elemental', 'Midcast' }, false);
+        return;
+    end
     local environment = getEnvironment();
     local element = action.Element;
     local candidates = {};
@@ -15079,28 +17098,63 @@ local function equipElementalMagic(action)
     table.insert(candidates, 'Nuke');
     table.insert(candidates, 'Midcast');
     equipFirstAvailable(candidates, false);
+    if state.MagicBurstMode == true then
+        equipNamedSetIfNotClear('MagicBurst', false);
+    end
 end
+
+local elementalBarspellNames = {
+    baraero = true,
+    baraera = true,
+    barblizzard = true,
+    barblizzara = true,
+    barfire = true,
+    barfira = true,
+    barstone = true,
+    barstonra = true,
+    barthunder = true,
+    barthundra = true,
+    barwater = true,
+    barwatera = true,
+};
 
 local function equipEnhancingMagic(name)
     local value = normalize(name);
     if string.find(value, 'stoneskin', 1, true) then
-        equipFirstAvailable({ 'Stoneskin', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        profile.OddLuaRuntime.EquipSurvivalDefensiveOverlay();
+        equipFirstAvailable({ 'Stoneskin', 'EnhancingDuration', 'Enhancing' }, false);
+    elseif string.find(value, 'spikes', 1, true) then
+        equipFirstAvailable({ 'Spikes', 'Enhancing' }, false);
+    elseif string.find(value, 'blink', 1, true) then
+        profile.OddLuaRuntime.EquipSurvivalDefensiveOverlay();
+        equipFirstAvailable({ 'SIRD', 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'refresh', 1, true) then
-        equipFirstAvailable({ 'Refresh', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'Refresh', 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'regen', 1, true) then
-        equipFirstAvailable({ 'Regen', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'Regen', 'EnhancingDuration', 'Enhancing' }, false);
+    elseif string.find(value, 'en', 1, true) == 1 then
+        -- Enspell is the post-cast melee playstyle. At spell resolution, use
+        -- enhancing skill and duration rather than TP/haste/attack equipment.
+        equipFirstAvailable({ 'Enhancing', 'EnhancingDuration' }, false);
     elseif string.find(value, 'sneak', 1, true) or string.find(value, 'invisible', 1, true) or string.find(value, 'deodorize', 1, true) then
-        equipFirstAvailable({ 'SneakInvisible', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'SneakInvisible', 'Enhancing' }, false);
+    elseif elementalBarspellNames[value] == true then
+        equipFirstAvailable({ 'Barspell', 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'bar', 1, true) == 1 then
-        equipFirstAvailable({ 'Barspell', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        -- Status-resistance Barspells have duration but no elemental Barspell
+        -- potency/MDEF term. Never fall through to unrelated generic Midcast
+        -- (usually magic accuracy); keep the current gear if neither sparse
+        -- duration nor enhancing-skill gear is available.
+        equipFirstAvailable({ 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'phalanx', 1, true) then
-        equipFirstAvailable({ 'Phalanx', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'Phalanx', 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'aquaveil', 1, true) then
-        equipFirstAvailable({ 'Aquaveil', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        profile.OddLuaRuntime.EquipSurvivalDefensiveOverlay();
+        equipFirstAvailable({ 'Aquaveil', 'SIRD', 'EnhancingDuration', 'Enhancing' }, false);
     elseif string.find(value, 'haste', 1, true) then
-        equipFirstAvailable({ 'Haste', 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'Haste', 'EnhancingDuration', 'Enhancing' }, false);
     else
-        equipFirstAvailable({ 'EnhancingDuration', 'Enhancing', 'Midcast' }, false);
+        equipFirstAvailable({ 'Enhancing', 'EnhancingDuration' }, false);
     end
 end
 
@@ -15118,14 +17172,14 @@ local function equipEnfeeblingMagic(name)
         equipFirstAvailable({ 'Slow', 'Enfeebling', 'Midcast' }, false);
     elseif string.find(value, 'paraly', 1, true) then
         equipFirstAvailable({ 'Paralyze', 'Enfeebling', 'Midcast' }, false);
+    elseif string.find(value, 'poison', 1, true) then
+        equipFirstAvailable({ 'Poison', 'Enfeebling', 'Midcast' }, false);
     elseif string.find(value, 'blind', 1, true) then
         equipFirstAvailable({ 'Blind', 'Enfeebling', 'Midcast' }, false);
     elseif string.find(value, 'dispel', 1, true) or string.find(value, 'finale', 1, true) then
         equipFirstAvailable({ 'Dispel', 'Enfeebling', 'Midcast' }, false);
     elseif string.find(value, 'dia', 1, true) then
         equipFirstAvailable({ 'Dia', 'Enfeebling', 'Midcast' }, false);
-    elseif string.find(value, 'bio', 1, true) then
-        equipFirstAvailable({ 'Bio', 'DarkMagic', 'Enfeebling', 'Midcast' }, false);
     else
         equipFirstAvailable({ 'Enfeebling', 'Midcast' }, false);
     end
@@ -15133,12 +17187,27 @@ end
 
 local function equipDarkMagic(name)
     local value = normalize(name);
-    if string.find(value, 'drain', 1, true) or string.find(value, 'aspir', 1, true) then
-        equipFirstAvailable({ 'DrainAspir', 'DarkMagic', 'Midcast' }, false);
+    if value == 'dread spikes' then
+        equipFirstAvailable({ 'DreadSpikes', 'DarkDuration', 'DarkMagic', 'Midcast' }, false);
+    elseif string.find(value, 'drain', 1, true) or string.find(value, 'aspir', 1, true) then
+        local environment = getEnvironment();
+        local candidates = {};
+        if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, 'Dark') then
+            table.insert(candidates, 'DrainWeather_Dark');
+        end
+        if environment and environment.DayElement and elementMatches(environment.DayElement, 'Dark') then
+            table.insert(candidates, 'DrainDay_Dark');
+        end
+        table.insert(candidates, 'DrainAspir');
+        table.insert(candidates, 'DarkMagic');
+        table.insert(candidates, 'Midcast');
+        equipFirstAvailable(candidates, false);
     elseif string.find(value, 'absorb', 1, true) then
         equipFirstAvailable({ 'Absorb', 'DarkMagic', 'Midcast' }, false);
     elseif string.find(value, 'stun', 1, true) then
         equipFirstAvailable({ 'Stun', 'DarkMagic', 'Midcast' }, false);
+    elseif string.find(value, 'bio', 1, true) then
+        equipFirstAvailable({ 'Bio', 'DarkMagic', 'Midcast' }, false);
     else
         equipFirstAvailable({ 'DarkMagic', 'Midcast' }, false);
     end
@@ -15146,22 +17215,65 @@ end
 
 local function equipSong(name)
     local value = normalize(name);
-    if string.find(value, 'elegy', 1, true) or string.find(value, 'requiem', 1, true)
-        or string.find(value, 'threnody', 1, true) or string.find(value, 'lullaby', 1, true)
-        or string.find(value, 'finale', 1, true) then
+    if string.find(value, 'minuet', 1, true) then
+        equipFirstAvailable({ 'Song_Minuet', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'paeon', 1, true) then
+        equipFirstAvailable({ 'Song_Paeon', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'lullaby', 1, true) then
+        equipFirstAvailable({ 'Song_Lullaby', 'SongDebuff', 'Song', 'Midcast' }, false);
+    elseif string.find(value, 'madrigal', 1, true) then
+        equipFirstAvailable({ 'Song_Madrigal', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'etude', 1, true) then
+        equipFirstAvailable({ 'Song_Etude', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'ballad', 1, true) then
+        equipFirstAvailable({ 'Song_Ballad', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'march', 1, true) then
+        equipFirstAvailable({ 'Song_March', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'carol', 1, true) then
+        equipFirstAvailable({ 'Song_Carol', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'elegy', 1, true) then
+        equipFirstAvailable({ 'Song_Elegy', 'SongDebuff', 'Song', 'Midcast' }, false);
+    elseif string.find(value, 'prelude', 1, true) then
+        equipFirstAvailable({ 'Song_Prelude', 'SongBuff', 'Song' }, false);
+    elseif string.find(value, 'requiem', 1, true) then
+        equipFirstAvailable({ 'Song_Requiem', 'SongDebuff', 'Song', 'Midcast' }, false);
+    elseif string.find(value, 'threnody', 1, true) or string.find(value, 'finale', 1, true) then
         equipFirstAvailable({ 'SongDebuff', 'Song', 'Midcast' }, false);
     else
-        equipFirstAvailable({ 'SongBuff', 'Song', 'Midcast' }, false);
+        equipFirstAvailable({ 'SongBuff', 'Song' }, false);
     end
 end
 
-local function equipNinjutsu(name)
-    local value = normalize(name);
-    if string.find(value, 'utsusemi', 1, true) then
-        equipFirstAvailable({ 'Utsusemi', 'Precast', 'FastCast' }, false);
-    elseif string.find(value, 'kurayami', 1, true) or string.find(value, 'hojo', 1, true)
-        or string.find(value, 'jubaku', 1, true) or string.find(value, 'dokumori', 1, true) then
+local function equipNinjutsu(action)
+    local function isElementalNinjutsu(name)
+        return string.find(name, 'katon', 1, true) == 1
+            or string.find(name, 'hyoton', 1, true) == 1
+            or string.find(name, 'huton', 1, true) == 1
+            or string.find(name, 'doton', 1, true) == 1
+            or string.find(name, 'raiton', 1, true) == 1
+            or string.find(name, 'suiton', 1, true) == 1;
+    end
+
+    local name = normalize(action and action.Name);
+    if string.find(name, 'utsusemi', 1, true) then
+        profile.OddLuaRuntime.EquipSurvivalDefensiveOverlay();
+        equipFirstAvailable({ 'Utsusemi', 'SIRD', 'Precast', 'FastCast' }, false);
+    elseif string.find(name, 'kurayami', 1, true) or string.find(name, 'hojo', 1, true)
+        or string.find(name, 'jubaku', 1, true) or string.find(name, 'dokumori', 1, true) then
         equipFirstAvailable({ 'NinjutsuEnfeeble', 'Ninjutsu', 'Midcast' }, false);
+    elseif isElementalNinjutsu(name) then
+        local environment = getEnvironment();
+        local element = action and action.Element;
+        local candidates = {};
+        if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, element) then
+            table.insert(candidates, setNameForElement('NinjutsuWeather', element));
+        end
+        if environment and environment.DayElement and elementMatches(environment.DayElement, element) then
+            table.insert(candidates, setNameForElement('NinjutsuDay', element));
+        end
+        table.insert(candidates, 'Ninjutsu');
+        table.insert(candidates, 'Midcast');
+        equipFirstAvailable(candidates, false);
     else
         equipFirstAvailable({ 'Ninjutsu', 'Midcast' }, false);
     end
@@ -15176,65 +17288,225 @@ local function equipSummoning(name)
     end
 end
 
+function profile.OddLuaRuntime.RollSetName(actionName)
+    local value = normalize(actionName);
+    value = string.gsub(value, '%s+roll$', '');
+    value = string.gsub(value, '[^%w%s]', '');
+    local suffix = '';
+    for token in string.gmatch(value, '%w+') do
+        suffix = suffix .. string.upper(string.sub(token, 1, 1)) .. string.sub(token, 2);
+    end
+    if suffix == '' then
+        return 'Roll';
+    end
+    return 'Roll_' .. suffix;
+end
+
 local function equipAbility()
     local action = getAction();
     local name = normalize(action and action.Name);
     local actionType = normalize(action and action.Type);
     if actionType == 'quick draw' then
-        equipFirstAvailable({ 'QuickDraw', 'MagicAccuracy', 'Midcast' }, false);
+        local quickDrawElements = {
+            ['dark shot'] = 'Dark',
+            ['earth shot'] = 'Earth',
+            ['fire shot'] = 'Fire',
+            ['ice shot'] = 'Ice',
+            ['light shot'] = 'Light',
+            ['thunder shot'] = 'Thunder',
+            ['water shot'] = 'Water',
+            ['wind shot'] = 'Wind',
+        };
+        local function equipQuickDraw(action)
+            local name = normalize(action and action.Name);
+            local element = quickDrawElements[name] or (action and action.Element);
+            local accuracyShot = name == 'dark shot' or name == 'light shot';
+            local environment = getEnvironment();
+            equipFirstAvailable({ 'QuickDraw', 'MagicAccuracy', 'Midcast' }, false);
+            if accuracyShot then
+                -- Preserve a valid marksmanship gun/bullet, then layer the
+                -- sparse Dark/Light Shot accuracy objective over it.
+                equipNamedSetIfNotClear('QuickDrawAccuracy', false);
+                equipNamedSetIfNotClear(setNameForElement('QuickDrawAccuracy', element), false);
+            end
+            -- Weather and day bonuses stack on the server, so apply both
+            -- matching overlays instead of stopping at the first one found.
+            if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, element) then
+                equipNamedSetIfNotClear(setNameForElement('QuickDrawWeather', element), false);
+            end
+            if environment and environment.DayElement and elementMatches(environment.DayElement, element) then
+                equipNamedSetIfNotClear(setNameForElement('QuickDrawDay', element), false);
+            end
+        end
+        equipQuickDraw(action);
     elseif actionType == 'corsair roll' then
-        equipFirstAvailable({ 'Roll', 'JobAbility' }, false);
+        equipFirstAvailable({ profile.OddLuaRuntime.RollSetName(name), 'Roll', 'JobAbility' }, false);
+    elseif string.find(name, 'barrage', 1, true) then
+        -- BARRAGE_COUNT is read on the consuming ranged attack. Preload the
+        -- exact sparse set here; HandleMidshot reapplies it while active.
+        equipNamedSetIfNotClear('Barrage', false);
+    elseif string.find(name, 'berserk', 1, true) then
+        equipFirstAvailable({ 'Berserk', 'JobAbility' }, false);
+    elseif string.find(name, 'aggressor', 1, true) then
+        equipFirstAvailable({ 'Aggressor', 'JobAbility' }, false);
+    elseif string.find(name, 'retaliation', 1, true) then
+        -- The global status overlay keeps RETALIATION equipped for live hits.
+        equipNamedSetIfNotClear('Retaliation', false);
+    elseif name == 'warcry' then
+        -- LuAshitacast holds this snapshot through ability resolution, then HandleDefault restores normal gear.
+        equipFirstAvailable({ 'Warcry', 'JobAbility' }, false);
+    elseif name == 'sentinel' then
+        -- Snapshot the exact Sentinel effect plus Enmity only for Sentinel.
+        -- HandleDefault restores the current combat or idle state.
+        equipFirstAvailable({ 'Sentinel', 'Enmity', 'JobAbility' }, false);
     elseif actionType == 'blood pact: rage' then
-        equipFirstAvailable({ 'BloodPactRage', 'PetReady', 'JobAbility' }, false);
+        profile.OddLuaPet.beginActionPin('rage');
     elseif actionType == 'blood pact: ward' then
-        equipFirstAvailable({ 'BloodPactWard', 'PetTank', 'JobAbility' }, false);
+        profile.OddLuaPet.beginActionPin('ward');
+    elseif name == 'super jump' then
+        -- Super Jump deals no damage and has no cap-75 snapshot modifier.
+        -- Preserve current gear when its exact set is intentionally clear.
+        equipNamedSetIfNotClear('SuperJump', false);
+    elseif name == 'spirit link' then
+        equipFirstAvailable({ 'SpiritLink', 'WyvernHealing', 'JobAbility' }, false);
+    elseif name == 'sneak attack' then
+        equipFirstAvailable({ 'SneakAttack', 'SATA', 'JobAbility' }, false);
+    elseif name == 'trick attack' then
+        equipFirstAvailable({ 'TrickAttack', 'SATA', 'JobAbility' }, false);
     elseif string.find(name, 'third eye', 1, true) then
-        equipFirstAvailable({ 'ThirdEye', 'JobAbility' }, false);
+        -- The global status overlay keeps THIRD_EYE_COUNTER_RATE equipped
+        -- while Third Eye is present; never substitute generic JA gear.
+        equipNamedSetIfNotClear('ThirdEye', false);
     elseif string.find(name, 'meditate', 1, true) then
-        equipFirstAvailable({ 'Meditate', 'JobAbility' }, false);
-    elseif string.find(name, 'provoke', 1, true) or string.find(name, 'sentinel', 1, true)
-        or string.find(name, 'warcry', 1, true) or string.find(name, 'cover', 1, true)
+        equipNamedSetIfNotClear('Meditate', false);
+    elseif name == 'warding circle' then
+        -- Hold the exact circle snapshot through activation; HandleDefault restores normal gear.
+        equipNamedSetIfNotClear('WardingCircle', false);
+    elseif name == 'ancient circle' then
+        equipNamedSetIfNotClear('AncientCircle', false);
+    elseif name == 'arcane circle' then
+        equipNamedSetIfNotClear('ArcaneCircle', false);
+    elseif name == 'holy circle' then
+        equipNamedSetIfNotClear('HolyCircle', false);
+    elseif name == 'flee' then
+        equipNamedSetIfNotClear('Flee', false);
+    elseif name == 'hide' then
+        equipNamedSetIfNotClear('Hide', false);
+    elseif name == 'camouflage' then
+        equipNamedSetIfNotClear('Camouflage', false);
+    elseif name == 'mug' then
+        -- Apply only direct non-weapon Mug modifiers through resolution.
+        -- HandleDefault restores the current combat or idle state.
+        equipNamedSetIfNotClear('Mug', false);
+    elseif name == 'charm' then
+        equipFirstAvailable({ 'Charm', 'JobAbility' }, false);
+    elseif name == 'chakra' then
+        -- Chakra has no generic cure-potency lane. Missing exact gear is a
+        -- no-op so unrelated JobAbility equipment cannot replace live gear.
+        equipNamedSetIfNotClear('Chakra', false);
+    elseif name == 'counterstance' then
+        -- COUNTERSTANCE_EFFECT snapshots now; counter-rate/damage rows are
+        -- held later by the global Counterstance-status overlay.
+        equipNamedSetIfNotClear('Counterstance', false);
+    elseif name == 'rampart' then
+        -- Hold the duration snapshot through activation; HandleDefault restores normal gear.
+        equipNamedSetIfNotClear('Rampart', false);
+    elseif name == 'shield bash' then
+        -- Apply only direct non-weapon modifiers. Preserve the live legal
+        -- Main/shield pair and TP; HandleDefault restores the current state.
+        equipNamedSetIfNotClear('ShieldBash', false);
+    elseif name == 'cover' then
+        -- Keep the normal activation enmity gear, then preload the sparse Body
+        -- overlay. The global Cover-status condition holds it for live hits.
+        equipFirstAvailable({ 'Enmity', 'JobAbility' }, false);
+        equipNamedSetIfNotClear('CoverActive', false);
+    elseif string.find(name, 'provoke', 1, true)
         or string.find(name, 'palisade', 1, true) or string.find(name, 'flash', 1, true) then
         equipFirstAvailable({ 'Enmity', 'JobAbility' }, false);
+    elseif name == 'healing waltz' then
+        equipFirstAvailable({ 'HealingWaltz', 'StatusRemoval', 'JobAbility' }, false);
     elseif string.find(name, 'waltz', 1, true) then
         equipFirstAvailable({ 'Waltz', 'Cure', 'JobAbility' }, false);
+    elseif string.find(name, 'flourish', 1, true) then
+        equipFirstAvailable({ 'Flourish', 'Steps', 'Accuracy', 'JobAbility' }, false);
     elseif string.find(name, 'step', 1, true) then
         equipFirstAvailable({ 'Steps', 'Accuracy', 'JobAbility' }, false);
     elseif string.find(name, 'samba', 1, true) then
-        equipFirstAvailable({ 'Samba', 'TP', 'JobAbility' }, false);
+        equipNamedSetIfNotClear('Samba', false);
+    elseif actionType == 'jig' or actionType == 'jigs'
+        or name == 'spectral jig' or name == 'chocobo jig' or name == 'chocobo jig ii' then
+        -- Hold the duration snapshot through ability resolution; HandleDefault restores normal gear.
+        equipFirstAvailable({ 'Jig', 'JobAbility' }, false);
+    elseif string.find(name, 'high jump', 1, true) then
+        if state.Playstyle == 'Accuracy' then
+            if equipFirstAvailable({ 'HighJumpAccuracy', 'HighJump', 'JumpAccuracy', 'Jump', 'Weaponskill', 'JobAbility' }, false) then
+                return;
+            end
+        end
+        equipFirstAvailable({ 'HighJump', 'Jump', 'Weaponskill', 'JobAbility' }, false);
     elseif string.find(name, 'jump', 1, true) then
+        if state.Playstyle == 'Accuracy' then
+            if equipFirstAvailable({ 'JumpAccuracy', 'Jump', 'Weaponskill', 'JobAbility' }, false) then
+                return;
+            end
+        end
         equipFirstAvailable({ 'Jump', 'Weaponskill', 'JobAbility' }, false);
-    elseif string.find(name, 'ready', 1, true) or string.find(name, 'sic', 1, true) then
-        equipFirstAvailable({ 'PetReady', 'PetDamage', 'JobAbility' }, false);
+    elseif name == 'reward' then
+        -- Reward snapshots master gear while preserving weapons and the equipped pet-food Ammo.
+        equipNamedSetIfNotClear('Reward', false);
+    elseif actionType == 'ready' or name == 'ready' or name == 'sic' then
+        profile.OddLuaPet.beginActionPin('ready_sic');
     else
         equipNamedSet('JobAbility', false);
     end
 end
 
 local function equipWeaponskill()
+    local function isMagicalWeaponSkillName(name)
+        return string.find(name, 'aeolian', 1, true) or string.find(name, 'cyclone', 1, true)
+            or string.find(name, 'energy', 1, true) or string.find(name, 'red lotus', 1, true)
+            or string.find(name, 'seraph', 1, true) or string.find(name, 'sanguine', 1, true)
+            or string.find(name, 'wildfire', 1, true) or string.find(name, 'leaden', 1, true)
+            or string.find(name, 'jinpu', 1, true) or string.find(name, 'koki', 1, true)
+            or string.find(name, 'goten', 1, true) or string.find(name, 'kagero', 1, true);
+    end
+
     local action = getAction();
     local name = action and action.Name;
     local key = weaponSkillRouteKey(name);
     local exactRoute = weaponSkillRoutes[key];
     local accuracyRoute = weaponSkillAccuracyRoutes[key];
+    local normalizedName = normalize(name);
+    local magicalWeaponSkill = isMagicalWeaponSkillName(normalizedName);
     if state.Playstyle == 'Accuracy' then
         if accuracyRoute and equipNamedSet(accuracyRoute, false) then
             return;
         end
     end
+    if magicalWeaponSkill then
+        local environment = getEnvironment();
+        local element = action and action.Element;
+        local candidates = {};
+        if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, element) then
+            table.insert(candidates, setNameForElement('WSElementalWeather', element));
+        end
+        if environment and environment.DayElement and elementMatches(environment.DayElement, element) then
+            table.insert(candidates, setNameForElement('WSElementalDay', element));
+        end
+        if exactRoute then
+            table.insert(candidates, exactRoute);
+        end
+        table.insert(candidates, 'WSElemental');
+        table.insert(candidates, 'Elemental');
+        table.insert(candidates, 'Weaponskill');
+        equipFirstAvailable(candidates, false);
+        return;
+    end
     if exactRoute and equipNamedSet(exactRoute, false) then
         return;
     end
-    local normalizedName = normalize(name);
     if state.Playstyle == 'Accuracy' then
         equipFirstAvailable({ 'WeaponSkillAccuracy', 'Weaponskill' }, false);
-    elseif string.find(normalizedName, 'aeolian', 1, true) or string.find(normalizedName, 'cyclone', 1, true)
-        or string.find(normalizedName, 'energy', 1, true) or string.find(normalizedName, 'red lotus', 1, true)
-        or string.find(normalizedName, 'seraph', 1, true) or string.find(normalizedName, 'sanguine', 1, true)
-        or string.find(normalizedName, 'wildfire', 1, true) or string.find(normalizedName, 'leaden', 1, true)
-        or string.find(normalizedName, 'jinpu', 1, true) or string.find(normalizedName, 'koki', 1, true)
-        or string.find(normalizedName, 'goten', 1, true) or string.find(normalizedName, 'kagero', 1, true) then
-        equipFirstAvailable({ 'WSElemental', 'Elemental', 'Weaponskill' }, false);
     else
         equipNamedSet('Weaponskill', false);
     end
@@ -15257,15 +17529,19 @@ profile.OnLoad = function()
         });
     end
 
+    equipDefaultForPlayer(getPlayer(), true);
     message('OddLua dynamic profile loaded for Oddone_29938. Default combat style: ' .. state.Playstyle .. '. Use /lac fwd help for commands and one-button setup.');
-    message('Use /lac fwd subjob for level-37 subjob capabilities.');
+    message('Configured default Subjob=NIN. Use /lac fwd subjob for level-37 capabilities.');
+    state.BindingGeneration = oddLuaNumberRow.advanceBindingGeneration();
     oddLuaNumberRow.bindPalette();
-    oddLuaNumberRow.registerOverlay();
 
 end
 
 profile.OnUnload = function()
-    oddLuaNumberRow.unregisterOverlay();
+    state.ReconcileEnabled = false;
+    cancelPendingReconciliationSnapshot();
+    state.ReconcileLastRecordedSignature = nil;
+    state.BindingGeneration = oddLuaNumberRow.advanceBindingGeneration();
     oddLuaNumberRow.unbindPalette();
     unlockSecondarySlotLocks();
 
@@ -15318,23 +17594,127 @@ profile.HandleCommand = function(args)
         equipDefaultForPlayer(getPlayer(), true);
     elseif command == 'lockstyle' or command == 'stylelock' then
         lockstyleCombatSet();
+    elseif command == 'weaponsync' or command == 'syncweapons' then
+        local synced, detail = profile.OddLuaRuntime.SyncActiveStyleWeapons();
+        if synced == true then
+            message('Weapon sync complete: style=' .. tostring(detail) .. '; Scale weapon lock restored.');
+        else
+            message('Weapon sync failed: ' .. tostring(detail or 'unknown error') .. '.');
+        end
     elseif command == 'warp' then
         useWarpRing();
     elseif command == 'warpclear' then
         clearWarpRing();
+    elseif command == 'buffitems' or command == 'buffitem' or command == 'buffoverlays' then
+        profile.HandleBuffItemOverlayCommand(args);
+    elseif command == 'burst' or command == 'magicburst' or command == 'mburst' then
+        if value == '' or value == 'status' then
+            message('Magic Burst mode=' .. (state.MagicBurstMode and 'on' or 'off') .. '; use /lac fwd burst on|off|status.');
+            return;
+        elseif value == 'on' then
+            if type(sets['MagicBurst']) ~= 'table' or isClearSet(sets['MagicBurst']) then
+                state.MagicBurstMode = false;
+                message('Magic Burst mode unavailable: no resolved MagicBurst equipment set.');
+                return;
+            end
+            state.MagicBurstMode = true;
+            message('Magic Burst mode=on.');
+        elseif value == 'off' then
+            state.MagicBurstMode = false;
+            message('Magic Burst mode=off.');
+        else
+            message('Unknown burst option. Use /lac fwd burst on|off|status.');
+        end
+
+
+
+
+    elseif command == 'mode' or command == 'gearmode' or command == 'skillup' or command == 'proc' then
+        local selectedMode = value;
+        if command == 'proc' and selectedMode == '' then
+            selectedMode = 'proc';
+        elseif command == 'skillup' and selectedMode ~= 'magic' then
+            selectedMode = 'combat';
+        end
+        if selectedMode == '' or selectedMode == 'status' then
+            message('Gear mode=' .. tostring(state.ExplicitGearMode)
+                .. '; available=' .. profile.OddLuaRuntime.ExplicitGearModeAvailabilityText()
+                .. '; use /lac fwd mode combat|magic|proc|off|status.');
+            return;
+        end
+        if selectedMode == 'combatskillup' or selectedMode == 'combat_skillup' then
+            selectedMode = 'combat';
+        elseif selectedMode == 'magicskillup' or selectedMode == 'magic_skillup' then
+            selectedMode = 'magic';
+        end
+        if selectedMode == 'off' then
+            state.ExplicitGearMode = 'off';
+            equipDefaultForPlayer(getPlayer(), true);
+            message('Gear mode=off. Normal combat and spell gear restored.');
+            return;
+        end
+        if explicitGearModeSetNames[selectedMode] == nil then
+            message('Unknown gear mode. Use /lac fwd mode combat|magic|proc|off|status.');
+            return;
+        end
+        if explicitGearModeSetAvailable(selectedMode) ~= true then
+            state.ExplicitGearMode = 'off';
+            equipDefaultForPlayer(getPlayer(), true);
+            message('Gear mode unavailable: no resolved ' .. tostring(explicitGearModeSetNames[selectedMode]) .. ' equipment set. Mode remains off.');
+            return;
+        end
+        state.ExplicitGearMode = selectedMode;
+        equipDefaultForPlayer(getPlayer(), true);
+        if selectedMode == 'proc' then
+            message('Gear mode=proc. This explicit choice deliberately swaps Main and may reset TP; no action is automated.');
+        elseif selectedMode == 'combat' then
+            message('Gear mode=combat. Owned combat skill-gain gear overlays only while engaged.');
+        else
+            message('Gear mode=magic. Owned magic skill-gain gear overlays only at spell resolution.');
+        end
+    elseif command == 'override' or command == 'defense' or command == 'def' or profile.DefenseAliases[command] ~= nil then
+        if profile.HandleOverrideCommand(args) then
+            equipDefaultForPlayer(getPlayer(), true);
+        end
+    elseif command == 'resist' or command == 'res' or profile.ResistAliases[command] ~= nil then
+        if profile.HandleResistCommand(args) then
+            equipDefaultForPlayer(getPlayer(), true);
+        end
+    elseif command == 'setmp' or command == 'addmp' or command == 'resetmp'
+        or command == 'sethp' or command == 'addhp' or command == 'resethp' then
+        local changed, handled = profile.HandleIdlePoolCommand(args);
+        if changed and handled ~= true then
+            equipDefaultForPlayer(getPlayer(), true);
+        end
     elseif command == 'utility' then
         oddLuaNumberRow.equipUtilityIntent(value);
+    elseif command == 'keypad' then
+        if value == '' or value == 'status' or value == 'help' or value == 'list' or value == 'map' then
+            oddLuaNumberRow.printPalette();
+            return;
+        elseif value == 'clear' or value == 'cleanup' or value == 'unbind' then
+            oddLuaNumberRow.clearPaletteBinds();
+            return;
+        end
+        oddLuaNumberRow.setPaletteEnabled(value);
     elseif command == 'palette' or command == 'numberrow' then
         if value == 'missing' then
             message('Not Applicable / Missing Equipment');
             return;
         end
+        if value == 'clear' or value == 'cleanup' or value == 'unbind' then
+            oddLuaNumberRow.clearPaletteBinds();
+            return;
+        end
         oddLuaNumberRow.setPaletteEnabled(value);
+    elseif command == 'overlays' or command == 'overlay'
+        or command == 'conditionals' or command == 'conditional' then
+        profile.PrintConditionalOverlayStatus();
     elseif command == 'mechanics' then
-        handleMechanicsCommand(args);
+        profile.OddLuaRuntime.HandleMechanicsCommand(args);
     elseif command == 'reconcile' then
         handleReconcileCommand(args);
-    elseif command == 'refreshgear' or command == 'reprocessgear' or command == 'rebuildgear' then
+    elseif command == 'updategear' or command == 'gearupdate' or command == 'refreshgear' or command == 'reprocessgear' or command == 'rebuildgear' then
         startOddLuaGearRefresh(args);
     elseif command == 'status' then
         local subjob, subjobName = currentSubjobProfile();
@@ -15342,7 +17722,12 @@ profile.HandleCommand = function(args)
         if subjob and subjob.capabilities then
             capabilityText = table.concat(subjob.capabilities, ',');
         end
-        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText .. '; help=/lac fwd help; styles=/lac fwd styles');
+        local keypadText = 'off';
+        if state.NumberRowPaletteEnabled == true then
+            keypadText = 'on';
+        end
+        local buffItemsText = profile.BuffItemOverlayStateText();
+        message('Style=' .. state.Playstyle .. '; active=' .. activeCombatStyle() .. '; Subjob=' .. tostring(subjobName or '') .. '; capabilities=' .. capabilityText .. '; keypad=' .. keypadText .. '; buffitems=' .. buffItemsText .. '; burst=' .. (state.MagicBurstMode and 'on' or 'off') .. '; gearmode=' .. tostring(state.ExplicitGearMode) .. '; override=' .. profile.OverrideStateText() .. '; safety=' .. profile.OddLuaRuntime.ActiveSafetyReason(getPlayer()) .. '; mpfloor=' .. profile.IdlePoolStateText() .. '; help=/lac fwd help; styles=/lac fwd styles; keypad=/lac fwd keypad');
     elseif command == 'subjob' or command == 'sj' then
         local subjob, subjobName = currentSubjobProfile();
         if not subjob then
@@ -15377,6 +17762,23 @@ profile.HandleItem = function()
 end
 
 profile.HandlePrecast = function()
+    local action = getAction();
+    local name = normalize(action and action.Name);
+    local skill = normalize(action and action.Skill);
+    if skill == 'healing magic'
+        and (string.find(name, 'cure', 1, true) == 1 or string.find(name, 'cura', 1, true) == 1) then
+        if equipFirstAvailable({ 'CurePrecast', 'FastCast' }, false) then
+            return;
+        end
+    end
+    if skill == 'singing' or skill == 'stringed instrument' or skill == 'wind instrument' then
+        if equipFirstAvailable({ 'SongPrecast', 'FastCast' }, false) then
+            return;
+        end
+    end
+    if skill == 'elemental magic' and equipNamedSetIfNotClear('ElementalPrecast', false) then
+        return;
+    end
     equipNamedSet('FastCast', false);
     equipNamedSet('Precast', false);
 end
@@ -15389,9 +17791,30 @@ profile.HandleMidcast = function()
 
     local name = normalize(action.Name);
     local skill = normalize(action.Skill);
-    if skill == 'healing magic' then
-        if string.find(name, 'cure', 1, true) or string.find(name, 'curaga', 1, true) then
-            equipNamedSet('Cure', false);
+    if name == 'flash' then
+        equipFirstAvailable({ 'Flash', 'Enmity', 'Divine' }, false);
+    elseif skill == 'divine magic'
+        and (string.find(name, 'banish', 1, true) == 1 or string.find(name, 'holy', 1, true) == 1) then
+        equipFirstAvailable({ 'DivineDamage', 'Divine', 'Midcast' }, false);
+    elseif skill == 'divine magic' and name == 'repose' then
+        equipFirstAvailable({ 'Divine', 'MagicAccuracy', 'Midcast' }, false);
+    elseif name == 'cursna' then
+        equipFirstAvailable({ 'Cursna', 'StatusRemoval' }, false);
+    elseif profile.OddLuaRuntime.StatusRemovalSpells[name] == true then
+        equipNamedSetIfNotClear('StatusRemoval', false);
+    elseif skill == 'healing magic' then
+        if string.find(name, 'cure', 1, true) == 1 or string.find(name, 'cura', 1, true) == 1 then
+            local environment = getEnvironment();
+            local candidates = {};
+            if environment and environment.WeatherElement and elementMatches(environment.WeatherElement, 'Light') then
+                table.insert(candidates, 'CureWeather_Light');
+            end
+            if environment and environment.DayElement and elementMatches(environment.DayElement, 'Light') then
+                table.insert(candidates, 'CureDay_Light');
+            end
+            table.insert(candidates, 'Cure');
+            table.insert(candidates, 'Healing');
+            equipFirstAvailable(candidates, false);
         else
             equipNamedSet('Healing', false);
         end
@@ -15400,22 +17823,27 @@ profile.HandleMidcast = function()
     elseif skill == 'enfeebling magic' then
         equipEnfeeblingMagic(name);
     elseif skill == 'divine magic' then
-        equipNamedSet('Divine', false);
+        equipFirstAvailable({ 'Divine', 'Midcast' }, false);
     elseif skill == 'elemental magic' then
         equipElementalMagic(action);
     elseif skill == 'dark magic' then
         equipDarkMagic(name);
     elseif skill == 'blue magic' then
-        equipBlueMagic(name);
+        equipBlueMagic(action);
     elseif skill == 'singing' or skill == 'stringed instrument' or skill == 'wind instrument' then
         equipSong(name);
     elseif skill == 'geomancy' then
-        equipNamedSet('Geomancy', false);
+        if string.sub(name, 1, 5) == 'indi-' then
+            equipFirstAvailable({ 'IndiDuration', 'Geomancy', 'GeoMagic', 'Midcast' }, false);
+        else
+            equipFirstAvailable({ 'Geomancy', 'GeoMagic', 'Midcast' }, false);
+        end
     elseif skill == 'summoning magic' or skill == 'summoning' then
         equipSummoning(name);
     elseif skill == 'ninjutsu' then
-        equipNinjutsu(name);
+        equipNinjutsu(action);
     end
+    profile.OddLuaRuntime.ApplyExplicitGearMode('midcast', false);
 end
 
 profile.HandlePreshot = function()
@@ -15425,7 +17853,18 @@ profile.HandlePreshot = function()
 end
 
 profile.HandleMidshot = function()
-    equipFirstAvailable({ 'RangedMidshot', 'RangedAccuracy', 'Ranged' }, false);
+    -- Preshot is deliberately sparse Snapshot/Rapid Shot gear. Restore a
+    -- complete ranged-combat base before applying the sparse midshot overlay,
+    -- so unscored slots never retain preshot gear or arbitrary filler.
+    if not equipNamedSetIfNotClear('RangedAccuracy', false) then
+        equipNamedSetIfNotClear('Ranged', false);
+    end
+    equipNamedSetIfNotClear('RangedMidshot', false);
+    if hasBuff('Barrage') then
+        -- BARRAGE_COUNT is evaluated on this ranged attack, not when the
+        -- ability applies its status.
+        equipNamedSetIfNotClear('Barrage', false);
+    end
 end
 
 profile.HandleWeaponskill = function()

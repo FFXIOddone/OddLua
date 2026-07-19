@@ -5,10 +5,10 @@
 /bind F1 /lac fwd warp
 -- F2: switch to accuracy style
 /bind F2 /lac fwd style accuracy
--- F3: switch to damage style
-/bind F3 /lac fwd style damage
--- F4: switch to jump style
-/bind F4 /lac fwd style jump
+-- F3: switch to jump style
+/bind F3 /lac fwd style jump
+-- F4: switch to storetp style
+/bind F4 /lac fwd style storetp
 -- F5: switch to weaponskill style
 /bind F5 /lac fwd style weaponskill
 -- F6: show available styles

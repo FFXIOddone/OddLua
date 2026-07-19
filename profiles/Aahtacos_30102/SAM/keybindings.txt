@@ -43,13 +43,17 @@
 /bind ^F8 /lac fwd samhelp
 -- Ctrl+F9: SAM Konzen-ittai + Shoha
 /bind ^F9 /lac fwd konzenshoha
--- Ctrl+F10: SAM Seigan + Third Eye
-/bind ^F10 /lac fwd seiganeye
--- Ctrl+F11: SAM Sekkanoki + Gekko
-/bind ^F11 /lac fwd sekkagekko
--- Ctrl+F12: SAM Berserk + Warcry
-/bind ^F12 /lac fwd warbuffs
--- Alt+F1: clear Warp Ring lock
-/bind !F1 /lac fwd warpclear
--- Alt+F2: show OddLua help
-/bind !F2 /lac fwd help
+-- Ctrl+F10: /lac fwd meditate
+/bind ^F10 /lac fwd meditate
+-- Ctrl+F11: SAM Seigan + Third Eye
+/bind ^F11 /lac fwd seiganeye
+-- Ctrl+F12: SAM Sekkanoki + Gekko
+/bind ^F12 /lac fwd sekkagekko
+-- Alt+F1: /lac fwd thirdeye
+/bind !F1 /lac fwd thirdeye
+-- Alt+F2: SAM Berserk + Warcry
+/bind !F2 /lac fwd warbuffs
+-- Alt+F3: clear Warp Ring lock
+/bind !F3 /lac fwd warpclear
+-- Alt+F4: show OddLua help
+/bind !F4 /lac fwd help

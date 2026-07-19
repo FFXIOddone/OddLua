@@ -62,15 +62,40 @@ local function playerMpp(player)
     return nil;
 end
 
-local function hasBuff(context, buff)
+local function buffState(context, buff)
+    if type(context) == 'table' and type(context.getBuffCount) == 'function' then
+        local ok, count, known = pcall(context.getBuffCount, buff);
+        if ok ~= true or known ~= true or type(count) ~= 'number' then
+            return nil;
+        end
+        return count > 0;
+    end
     if type(context) == 'table' and type(context.hasBuff) == 'function' then
-        return context.hasBuff(buff) == true;
+        local ok, active = pcall(context.hasBuff, buff);
+        if ok ~= true or type(active) ~= 'boolean' then
+            return nil;
+        end
+        return active;
     end
     if gData and gData.GetBuffCount then
         local ok, count = pcall(gData.GetBuffCount, buff);
-        return ok == true and type(count) == 'number' and count > 0;
+        if ok == true and type(count) == 'number' then
+            return count > 0;
+        end
     end
-    return false;
+    return nil;
+end
+
+function conditionals.StatusSpellTypeMatches(statusName, spellType, context)
+    if type(context) ~= 'table' or type(context.action) ~= 'table' then
+        return false;
+    end
+    local action = context.action;
+    local actionSpellType = action.Type or action.type or action.SpellType or action.spellType;
+    if normalize(actionSpellType) ~= normalize(spellType) then
+        return false;
+    end
+    return buffState(context, statusName) == true;
 end
 
 local function getPlayer(context)
@@ -94,6 +119,16 @@ local function getEnvironment(context)
         end
     end
     return nil;
+end
+
+local function itemHasUsesLeft(context, entry)
+    if type(entry) ~= 'table' or type(entry.item) ~= 'table' then
+        return true;
+    end
+    if type(context) == 'table' and type(context.itemHasUsesLeft) == 'function' then
+        return context.itemHasUsesLeft(entry) == true;
+    end
+    return false;
 end
 
 local function environmentAreaText(environment)
@@ -135,6 +170,17 @@ local function areaMatches(condition, environment)
     return false;
 end
 
+local function slotSideMatches(condition, slot)
+    if type(condition) ~= 'table' or normalize(condition.type) ~= 'slot_side' then
+        return false;
+    end
+
+    local side = normalize(condition.name);
+    local normalizedSlot = normalize(slot);
+    return (side == 'right_ear' and normalizedSlot == 'ear2')
+        or (side == 'left_ear' and normalizedSlot == 'ear1');
+end
+
 function conditionals.ConditionMatches(condition, context)
     if type(condition) ~= 'table' then
         return false;
@@ -142,14 +188,35 @@ function conditionals.ConditionMatches(condition, context)
 
     local conditionType = normalize(condition.type);
     if conditionType == 'status' then
-        if type(condition.buffs) == 'table' then
+        if type(condition.buffs) == 'table' and #condition.buffs > 0 then
             for _, buff in ipairs(condition.buffs) do
-                if hasBuff(context, buff) then
+                if buffState(context, buff) == true then
                     return true;
                 end
             end
+            return false;
         end
-        return hasBuff(context, condition.name);
+        return buffState(context, condition.name) == true;
+    elseif conditionType == 'status_all' then
+        if type(condition.buffs) ~= 'table' or #condition.buffs == 0 then
+            return false;
+        end
+        for _, buff in ipairs(condition.buffs) do
+            if buffState(context, buff) ~= true then
+                return false;
+            end
+        end
+        return true;
+    elseif conditionType == 'missing_status' then
+        if type(condition.buffs) == 'table' and #condition.buffs > 0 then
+            for _, buff in ipairs(condition.buffs) do
+                if buffState(context, buff) ~= false then
+                    return false;
+                end
+            end
+            return true;
+        end
+        return buffState(context, condition.name) == false;
     elseif conditionType == 'weather' then
         local environment = getEnvironment(context);
         local wanted = normalize(condition.name);
@@ -184,16 +251,28 @@ function conditionals.ConditionMatches(condition, context)
     return false;
 end
 
-function conditionals.BuildOverlay(entries, context)
+function conditionals.ResolveOverlay(entries, context)
     if type(entries) ~= 'table' then
-        return {};
+        return {}, {};
     end
 
     local overlay = {};
-    for _, entry in ipairs(entries) do
-        if conditionals.ConditionMatches(entry.condition, context) then
+    local owners = {};
+    for index, entry in ipairs(entries) do
+        if itemHasUsesLeft(context, entry) then
+            local conditionType = normalize(entry.condition and entry.condition.type);
+            local entryMatches = conditionType ~= 'slot_side'
+                and conditionals.ConditionMatches(entry.condition, context);
             for slot, item in pairs(entry.slots or {}) do
-                overlay[slot] = item;
+                if entryMatches or slotSideMatches(entry.condition, slot) then
+                    overlay[slot] = item;
+                    owners[slot] = {
+                        conditionType = conditionType,
+                        conditionName = normalize(entry.condition and entry.condition.name),
+                        item = item,
+                        index = index,
+                    };
+                end
             end
         end
     end
@@ -202,7 +281,13 @@ function conditionals.BuildOverlay(entries, context)
         and type(context.state) == 'table'
         and context.state.WarpRingLocked == true then
         overlay.Ring2 = nil;
+        owners.Ring2 = nil;
     end
+    return overlay, owners;
+end
+
+function conditionals.BuildOverlay(entries, context)
+    local overlay = conditionals.ResolveOverlay(entries, context);
     return overlay;
 end
 
