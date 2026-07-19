@@ -2664,6 +2664,21 @@ def test_job_generation_manifest_includes_command_registry_and_bindings() -> Non
     assert "/lac fwd style accuracy" in binding_literals
     assert manifest["keyBindings"]["conflicts"] == []
     assert manifest["keyBindings"]["unbound"] == []
-    assert number_row["keys"] == ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="]
+    assert number_row["keys"] == [
+        "NUMPAD.",
+        "NUMPAD0",
+        "NUMPAD1",
+        "NUMPAD2",
+        "NUMPAD3",
+        "NUMPAD4",
+        "NUMPAD5",
+        "NUMPAD6",
+        "NUMPAD7",
+        "NUMPAD8",
+        "NUMPAD9",
+    ]
+    assert number_row["displayKeys"] == [".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ""]
     assert number_row["bindings"][0]["literal"] == "/lac fwd styleprev"
-    assert number_row["bindings"][3]["literal"] == "/lac fwd warp"
+    assert number_row["bindings"][8]["key"] == "NUMPAD7"
+    assert number_row["bindings"][8]["literal"] == "/lac fwd warp"
+    assert number_row["unbound"] == ["slot12"]

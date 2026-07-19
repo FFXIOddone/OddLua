@@ -1,6 +1,7 @@
 param(
     [string]$LogRoot = (Join-Path $PSScriptRoot 'reports\game-refresh'),
-    [string]$StatusPath = ''
+    [string]$StatusPath = '',
+    [string]$LuashitacastRoot = (Join-Path $PSScriptRoot '..\client\Ashita\config\addons\luashitacast')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,12 +51,24 @@ try {
     & (Join-Path $PSScriptRoot 'Build-OddLuaStatsDb.ps1')
 
     Write-RefreshStatus -State 'running' -Message 'Building and applying OddLua profiles.' -Step 'apply'
-    & (Join-Path $PSScriptRoot 'Apply-OddLuaAllJobs.ps1')
+    & (Join-Path $PSScriptRoot 'Apply-OddLuaAllJobs.ps1') -LuashitacastRoot $LuashitacastRoot
 
     Write-RefreshStatus -State 'running' -Message 'Checking generated Lua syntax.' -Step 'syntax'
-    & python (Join-Path $PSScriptRoot 'tools\check_lua_syntax.py') --root (Join-Path $PSScriptRoot 'dist\packs') --min-files 1
+    & python (Join-Path $PSScriptRoot 'tools\check_lua_syntax.py') --root (Join-Path $PSScriptRoot 'dist\packs') --min-files 34 --json
     if ($LASTEXITCODE -ne 0) {
         throw "Lua syntax check failed with exit code $LASTEXITCODE."
+    }
+
+    Write-RefreshStatus -State 'running' -Message 'Checking generated profile runtime UX.' -Step 'runtime-ux'
+    & python (Join-Path $PSScriptRoot 'tools\audit_runtime_ux.py') --profile-root (Join-Path $PSScriptRoot 'dist\packs') --min-profile-count 36 --json
+    if ($LASTEXITCODE -ne 0) {
+        throw "Runtime UX audit failed with exit code $LASTEXITCODE."
+    }
+
+    Write-RefreshStatus -State 'running' -Message 'Checking installed LuAshitacast profile parity.' -Step 'install-parity'
+    & python (Join-Path $PSScriptRoot 'tools\audit_profile_health.py') --all --dist-root (Join-Path $PSScriptRoot 'dist\packs') --install-root $LuashitacastRoot --report-root (Join-Path $PSScriptRoot 'reports\live-reconciliation') --json --compact-json
+    if ($LASTEXITCODE -ne 0) {
+        throw "Installed profile health audit failed with exit code $LASTEXITCODE."
     }
 
     Write-RefreshStatus -State 'success' -Message 'OddLua refresh complete; LuAshitacast can reload.' -Step 'complete'

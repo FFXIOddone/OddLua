@@ -1,10 +1,13 @@
 from pathlib import Path
+import shutil
+import subprocess
 import sqlite3
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from oddlua.contracts import SUPPORTED_JOBS
+from oddlua.planning.command_registry import EXPLICIT_GEAR_MODES_FEATURE
 from oddlua.renderer import SLOT_ORDER, derive_semantic_sets, render_profile
 from oddlua.subjobs import VIABLE_SUBJOBS_BY_MAIN_JOB, build_subjob_profiles
 
@@ -95,7 +98,10 @@ def test_rendered_lua_uses_dynamic_luashitacast_state_handlers() -> None:
         "    equipDefaultForPlayer(getPlayer(), false);"
     ) in lua
     assert "equipCurrent(false);" not in lua
-    assert "profile.HandlePrecast = function()\n    equipNamedSet('FastCast', false);" in lua
+    precast = lua[lua.index("profile.HandlePrecast = function()") : lua.index("profile.HandleMidcast = function()")]
+    assert "if skill == 'elemental magic' and equipNamedSetIfNotClear('ElementalPrecast', false) then" in precast
+    assert "equipNamedSet('FastCast', false);" in precast
+    assert "equipNamedSet('Precast', false);" in precast
     assert "elseif skill == 'blue magic' then" in lua
     assert "equipFirstAvailable({ 'BlueMagic', 'PhysicalBlueMagic', 'MagicalBlueMagic', 'Midcast' }, false);" in lua
     assert "local function equipWeaponskill()" in lua
@@ -111,6 +117,7 @@ def test_rendered_lua_integrates_overt_defense_pressure_with_weapon_lock_overrid
         job="THF",
         sets={
             "Melt": {"Main": "Thief's Knife", "Body": "Scorpion Harness"},
+            "Dt": {"Main": "Terra's Staff", "Sub": "Reign Grip", "Body": "Darksteel Harness"},
             "PDT": {"Main": "Terra's Staff", "Sub": "Reign Grip", "Body": "Darksteel Harness"},
             "Hybrid": {"Body": "Scorpion Harness +1"},
             "MDT": {"Body": "Coral Scale Mail +1"},
@@ -125,17 +132,21 @@ def test_rendered_lua_integrates_overt_defense_pressure_with_weapon_lock_overrid
     assert "local function playerTp(player)" in lua
     assert "local function countOvertDefenseThreats(player)" in lua
     assert "local function shouldEquipOvertDefense(player)" in lua
-    assert "local function equipOvertDefensiveSet(setName)" in lua
-    assert "scale.SetWeaponLockEnabled(false);" in lua
+    assert "local function equipOvertDefensiveSet(setName, unlockWeapons)" in lua
+    assert "local candidates = { 'IdleCombat', 'Dt', 'PDT', 'Playstyle_Safe', 'Safe', 'Survival', 'Tank', 'Evasion', 'MDT', 'MagicDefense' };" in lua
+    assert "'Hybrid'" not in lua[lua.index("local function firstAvailableDefensiveSet") : lua.index("local function providedThreatEntities")]
+    assert "local unlockOk = pcall(scale.SetWeaponLockEnabled, false);" in lua
     assert "local previousWeaponLockEnabled = status.weaponLockEnabled == true;" in lua
     assert "if hpp ~= nil and hpp < OVERT_DEFENSE_HP_FORCE_HPP then" in lua
     assert "if tp < OVERT_DEFENSE_TP_UNLOCK then" in lua
 
     default_block = lua[lua.index("local function equipDefaultForPlayer") : lua.index("local function equipBlueMagic")]
-    assert default_block.index("local defensiveSet = shouldEquipOvertDefense(player);") < default_block.index(
+    assert default_block.index("local defensiveSet, unlockDefensiveWeapons = shouldEquipOvertDefense(player);") < default_block.index(
         "isEmergencyHp(player)"
     )
-    assert "equipOvertDefensiveSet(defensiveSet);" in default_block
+    assert "equipOvertDefensiveSet(defensiveSet, unlockDefensiveWeapons);" in default_block
+    assert "firstAvailableDefensiveSet();" in default_block
+    assert "equipNamedSet('PDT', force);" not in default_block
 
 
 def test_rendered_lua_routes_exact_weaponskill_sets_before_generic_fallbacks() -> None:
@@ -180,11 +191,11 @@ def test_rendered_lua_routes_blue_magic_by_spell_name_not_active_style() -> None
     assert "    ['frenetic rip'] = 'PhysicalBlueMagic'," in lua
     assert "    ['charged whisker'] = 'MagicalBlueMagic'," in lua
     assert "    ['wild carrot'] = 'Cure'," in lua
-    assert "local function equipBlueMagic(name)" in lua
-    assert "local route = blueMagicRoutes[normalize(name)];" in lua
+    assert "local function equipBlueMagic(action)" in lua
+    assert "local route = blueMagicRoutes[blueMagicRouteKey(action)];" in lua
     assert "if route and equipNamedSet(route, false) then" in lua
     assert "equipFirstAvailable({ 'BlueMagic', 'PhysicalBlueMagic', 'MagicalBlueMagic', 'Midcast' }, false);" in lua
-    assert "equipBlueMagic(name);" in lua
+    assert "equipBlueMagic(action);" in lua
     assert "local function equipBlueMagic()\n    local active = activeCombatStyle();" not in lua
 
 
@@ -208,39 +219,104 @@ def test_rendered_aahtacos_sam_keeps_auto_combat_controls() -> None:
     assert "AutoThirdEye = false," in lua
     assert "AutoWarBuffs = false," in lua
     assert "AutoCombat = false," in lua
-    assert "local THIRD_EYE_COMMAND = '/ja \"Third Eye\" <me>';" in lua
+    assert "profile.OddLuaSamRuntime = {" in lua
+    assert "ThirdEyeCommand = '/ja \"Third Eye\" <me>'," in lua
     assert "local function maybeAutoThirdEye(player)" in lua
     assert "if not hasBuff('Seigan') then" in lua
     assert "if hasBuff('Third Eye') then" in lua
     assert "isAbilityOnCooldown('Third Eye')" in lua
     assert "elseif command == 'seiganeye' then" in lua
     assert "{ delay = 1, text = '/ja \"Seigan\" <me>' }," in lua
-    assert "{ delay = 3, text = '/ja \"Third Eye\" <me>' }," in lua
+    assert "{ delay = 3, text = '/lac fwd thirdeye' }," in lua
+    assert "binding = '/bind !3 /lac fwd meditate'" in lua
+    assert "binding = '/bind !6 /lac fwd thirdeye'" in lua
+    assert "elseif command == 'meditate' then" in lua
+    assert "profile.OddLuaRuntime.TrySamManualAbility('meditate');" in lua
+    assert "elseif command == 'thirdeye' or command == 'third_eye' then" in lua
+    assert "profile.OddLuaRuntime.TrySamManualAbility('thirdeye');" in lua
     assert "elseif command == 'autoeye' or command == 'autothirdeye' then" in lua
     assert "elseif command == 'autocombat' or command == 'autoincombat' then" in lua
     assert "maybeAutoThirdEye(player);" in lua
     assert "maybeAutoWarBuffs(player);" in lua
-    assert "equipFirstAvailable({ 'ThirdEye', 'JobAbility' }, false);" in lua
-    assert "equipFirstAvailable({ 'Meditate', 'JobAbility' }, false);" in lua
+    assert "equipNamedSetIfNotClear('ThirdEye', false);" in lua
+    assert "equipNamedSetIfNotClear('Meditate', false);" in lua
+
+    queue_block = _lua_function_block(lua, "queueSamCommands")
+    third_eye_block = _lua_function_block(lua, "maybeAutoThirdEye")
+    war_buffs_block = _lua_function_block(lua, "maybeAutoWarBuffs")
+    assert "local function queueSamCommands(label, commands, automatic)" in queue_block
+    assert "if automatic == true" in queue_block
+    assert "profile.OddLuaRuntime.CanIssueAutomaticJobAbility(getPlayer()) ~= true" in queue_block
+    assert "profile.OddLuaSamRuntime.LastAutoWarBuffAt[command.ability] = -9999;" in queue_block
+    assert "local queued = queueTypedCommand(command.text, delay);" in queue_block
+    assert "dispatch(1);" in queue_block
+    assert third_eye_block.index("profile.OddLuaRuntime.CanIssueAutomaticJobAbility(player) ~= true") < third_eye_block.index(
+        "local onCooldown = isThirdEyeOnCooldown();"
+    )
+    assert war_buffs_block.index("profile.OddLuaRuntime.CanIssueAutomaticJobAbility(player) ~= true") < war_buffs_block.index(
+        "local now = os.clock();"
+    )
+    assert "queueSamCommands('Seigan active; Third Eye queued.', {" in third_eye_block
+    assert "    }, true);" in third_eye_block
+    assert "queueSamCommands('Auto WAR buffs queued.', commands, true);" in war_buffs_block
+    assert "ability = buff.ability," in war_buffs_block
+    manual_start = lua.index("elseif command == 'seiganeye' then")
+    manual_end = lua.index("elseif command == 'autoeye'", manual_start)
+    manual_block = lua[manual_start:manual_end]
+    assert "queueSamCommands('Seigan + Third Eye queued.', {" in manual_block
+    assert "{ delay = 3, text = '/lac fwd thirdeye' }," in manual_block
+    assert "}, true);" not in manual_block
+
+    level_start = lua.index("function profile.OddLuaRuntime.SamMainJobLevel(player)")
+    manual_start = lua.index("function profile.OddLuaRuntime.TrySamManualAbility(key)")
+    level_guard = lua[level_start:manual_start]
+    manual_guard = lua[manual_start:lua.index("\nlocal function queueSamCommands", manual_start)]
+    assert "main-job level exceeds the CatsEye level-75 cap" in level_guard
+    assert "mainLevel < spec.level" in manual_guard
+    assert "profile.OddLuaRuntime.HasIncapacitatingStatus() ~= false" in manual_guard
+    assert "profile.OddLuaRuntime.HasAmnesia() ~= false" in manual_guard
+    assert "local count, known = getBuffCount(spec.buff);" in manual_guard
+    assert "local onCooldown = isAbilityOnCooldown(spec.label);" in manual_guard
+    assert manual_guard.index("count > 0") < manual_guard.index("queueTypedCommand(spec.command, 1)")
+    assert manual_guard.index("onCooldown == true") < manual_guard.index("queueTypedCommand(spec.command, 1)")
+    assert "; autoCombat=' .. (state.AutoCombat and 'on' or 'off')" in lua
+    assert "; autoThirdEye=' .. (state.AutoThirdEye and 'on' or 'off')" in lua
+    assert "; autoWAR=' .. (state.AutoWarBuffs and 'on' or 'off')" in lua
 
 
-def test_rendered_aahtacos_sam_stays_under_luajit_top_level_local_limit() -> None:
+def test_rendered_aahtacos_sam_stays_under_luajit_top_level_local_limit(tmp_path: Path) -> None:
     lua = render_profile(
         player="Aahtacos",
         player_id="30102",
         job="SAM",
-        sets={"Aftercast": {"Body": "Hachiman Domaru"}},
+        sets={
+            "Aftercast": {"Body": "Hachiman Domaru"},
+            "CombatSkillup": {"Body": "Hachiman Domaru"},
+            "MagicSkillup": {"Body": "Hachiman Domaru"},
+            "Proc": {"Body": "Hachiman Domaru"},
+        },
         default_playstyle="Aftercast",
-        profile_features=("aahtacos_sam_controls",),
+        profile_features=(EXPLICIT_GEAR_MODES_FEATURE, "aahtacos_sam_controls"),
     )
 
-    top_level_local_count = sum(
-        1
-        for line in lua.splitlines()
-        if line.startswith("local ")
+    return_marker = "\nreturn profile;"
+    assert lua.count(return_marker) == 1
+    margin_probe = "\n".join(
+        f"local __oddlua_luajit_margin_{index} = nil;" for index in range(4)
     )
+    lua = lua.replace(return_marker, f"\n{margin_probe}{return_marker}", 1)
 
-    assert top_level_local_count <= 200
+    luajit = shutil.which("luajit")
+    assert luajit is not None
+    source = tmp_path / "Aahtacos_SAM.lua"
+    source.write_text(lua, encoding="utf-8")
+    completed = subprocess.run(
+        [luajit, "-b", str(source), str(tmp_path / "Aahtacos_SAM.luac")],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
 def test_rendered_lua_accepts_raw_resting_status_values() -> None:
@@ -313,7 +389,7 @@ def test_rendered_missing_semantic_sets_are_blank_debug_sets() -> None:
     assert "Ear1 = 'Loquac. Earring'," in _lua_set_block(lua, "FastCast")
 
 
-def test_generated_clear_sets_bypass_scale_resolution() -> None:
+def test_generated_clear_sets_are_runtime_noops_without_strip_or_reconcile() -> None:
     lua = render_profile(
         player="Tester",
         player_id="1",
@@ -321,11 +397,26 @@ def test_generated_clear_sets_bypass_scale_resolution() -> None:
         sets={"Enspell": {"Main": "Somnia Melodiam"}},
         default_playstyle="Enspell",
     )
+    equip_block = lua[
+        lua.index("local function equipNamedSet(setName, force, requestedSet)") : lua.index(
+            "local function equipNamedSetIfNotClear"
+        )
+    ]
 
     assert "local function isClearSet(set)" in lua
-    assert "if isClearSet(setToEquip) then" in lua
-    assert "gFunc.EquipSet(setToEquip);" in lua
-    assert "gFunc.ForceEquipSet(setToEquip);" in lua
+    assert (
+        "if isClearSet(setToEquip) then\n"
+        "        markStableEquipForceNeeded(setName, effectiveForce);\n"
+        "        return false;\n"
+        "    end\n\n"
+        "    releaseSecondarySlotLocksNotInSet(setName);"
+    ) in equip_block
+    clear_guard = equip_block[
+        equip_block.index("if isClearSet(setToEquip) then") : equip_block.index("if state.WarpRingLocked == true then")
+    ]
+    assert "gFunc.EquipSet(setToEquip);" not in clear_guard
+    assert "gFunc.ForceEquipSet(setToEquip);" not in clear_guard
+    assert "scheduleReconciliationSnapshot" not in clear_guard
 
 
 def test_rendered_lua_locks_secondary_slots_for_multi_slot_equipment() -> None:
@@ -459,8 +550,22 @@ def test_rendered_lua_applies_status_conditional_equips_after_matching_set() -> 
     assert "condition = { type = 'status', name = 'paralysis', buffs = { 'paralysis' } }" in lua
     assert "slots = { Neck = 'Halting Stole' }" in lua
     assert "gFunc.LoadFile('common/conditionals.lua')" in lua
-    assert "conditionals.ApplyForSet(conditionalEquips, setName, {" in lua
-    assert "applyConditionalEquipsForSet(setName, effectiveForce);" in lua
+    assert "buildConditionalOverlayForSet(setName, {" in lua
+    assert "ActiveConditionalOverlaySlots = {}" in lua
+    conditional_block = _lua_function_block(lua, "applyConditionalEquipsForSet")
+    assert "local previousSlots = state.ActiveConditionalOverlaySlots;" in conditional_block
+    assert "local restoration = {};" in conditional_block
+    assert "local baseItem = type(baseSet) == 'table' and baseSet[slot] or nil;" in conditional_block
+    assert "for _, candidate in ipairs({ restoration, overlay }) do" in conditional_block
+    assert "applyConditionalEquipsForSet(setName, appliedLockedSet, effectiveForce);" in lua
+    assert "applyConditionalEquipsForSet(setName, appliedSet, effectiveForce);" in lua
+    equip_block = _lua_function_block(lua, "equipNamedSet")
+    assert equip_block.index("gFunc.EquipSet(appliedLockedSet);") < equip_block.index(
+        "applyConditionalEquipsForSet(setName, appliedLockedSet, effectiveForce);"
+    )
+    assert equip_block.index("appliedSet = scale.EquipSet(setName, setToEquip, setIntents[setName]);") < equip_block.index(
+        "applyConditionalEquipsForSet(setName, appliedSet, effectiveForce);"
+    )
 
 
 def test_resolver_sets_render_under_exact_names_without_fallback() -> None:
@@ -494,6 +599,7 @@ def test_rendered_lua_exports_expanded_semantic_set_contract() -> None:
             "MagicAccuracy": {"Neck": "Enfeebling Torque"},
             "FastCast": {"Ear1": "Loquac. Earring"},
             "Cure": {"Neck": "Colossus's Torque"},
+            "Stoneskin": {"Neck": "Stone Gorget"},
         },
         default_playstyle="Enspell",
     )
@@ -587,11 +693,11 @@ def test_rendered_lua_exports_and_routes_movement_sets() -> None:
     assert "local function equipIdleState(player, force)" in lua
     assert "if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('InCity', force) then" in lua
     assert lua.index("equipNamedSetIfNotClear('Movement_City', force)") < lua.index("equipNamedSetIfNotClear('InCity', force)")
-    assert "equipMovement(player, getEnvironment(), force);" in lua
+    assert "equipMovement(player, environment, force);" in lua
     assert "if equipMovement(getEnvironment(), force) then\n            return;" not in lua
 
 
-def test_rendered_lua_applies_movement_in_city_or_out_of_combat_on_foot() -> None:
+def test_rendered_lua_applies_movement_only_while_actually_moving_on_foot() -> None:
     lua = render_profile(
         player="Tester",
         player_id="1",
@@ -611,14 +717,15 @@ def test_rendered_lua_applies_movement_in_city_or_out_of_combat_on_foot() -> Non
     movement_context_block = _lua_function_block(lua, "addMovementSecondarySlotLockSetNames")
 
     assert "local function isMounted(player)" in lua
-    assert "local function isOnFoot(player)" in lua
-    assert "local mountedStatusIds = { 252 };" in lua
+    assert "function profile.OddLuaRuntime.IsOnFoot(player)" in lua
+    assert "profile.OddLuaRuntime.MountedStatusBuffs = { 'chocobo', 'mount', 'mounted', 252 };" in lua
     assert "local function canEquipMovement(player, environment)" in lua
-    assert "if isCity(environment) then" in movement_gate
-    assert "not isEngaged(player)" in movement_gate
-    assert "isOnFoot(player)" in movement_gate
-    assert "not isResting(player)" not in movement_gate
-    assert "return isCity(environment);" in incity_gate
+    assert "if not profile.OddLuaRuntime.IsOnFoot(player) then" in movement_gate
+    assert "profile.OddLuaRuntime.PlayerIsMoving(player) == true" in movement_gate
+    assert "return isMounted(player) == false;" in lua
+    assert "not isEngaged(player)" not in movement_gate
+    assert "return isCity(environment) and profile.OddLuaRuntime.IsOnFoot(player);" in incity_gate
+    assert "return profile.OddLuaRuntime.PlayerIsMoving(player) == true;" in movement_gate
     assert "if not canEquipMovement(player, environment) then" in movement_block
     assert "if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('Movement_City', force) then" in movement_block
     assert "if shouldEquipInCityMovement(player, environment) and equipNamedSetIfNotClear('InCity', force) then" in movement_block
@@ -712,7 +819,7 @@ def test_default_idle_routes_to_idle_state_before_movement_overlay() -> None:
     assert "local function equipIdleState(player, force)" in lua
     assert "if isClearSet(sets['Aftercast']) then" in lua
     assert "equipNamedSet('Aftercast', force);" in lua
-    assert "equipMovement(player, getEnvironment(), force);" in lua
+    assert "equipMovement(player, environment, force);" in lua
     assert "equipIdleState(player, force);" in lua
 
 
